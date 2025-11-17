@@ -1,8 +1,9 @@
 <template>
-  Home
+  foods
 </template>
 
 <script lang="ts" setup>
+
 </script>
 
 <style>
