@@ -1,5 +1,5 @@
 export interface IFoods {
-  id: number
+  id?: number
   name: string
   picture?: string
   asGrams: boolean
@@ -8,12 +8,12 @@ export interface IFoods {
 }
 
 export interface IFoodsTypes {
-  id: number
+  id?: number
   types: string
 }
 
 export interface IFoodsDetails {
-  id: number
+  id?: number
   kcal: number
   glucide: number
   protein: number

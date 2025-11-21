@@ -1,4 +1,5 @@
 <template>
+  <FormAddFood />
   <UPageList
     divide
   >
@@ -9,21 +10,27 @@
     >
       <template #body>
         <UUser
-          :name="item.name"
           :avatar="{
             src: item.picture,
             alt: item.name,
           }"
           size="xl"
         >
+          <template #name>
+            <div class="flex">
+              <span class="mr-2">
+                {{ item.name }}
+              </span>
+              <CardTypes
+                v-if="item.foodTypes"
+                :food-types="item.foodTypes"
+              />
+            </div>
+          </template>
           <template #description>
             <div class="mb-2">
               price : {{ item.foodDetail?.price }} €
             </div>
-            <CardTypes
-              v-if="item.foodTypes"
-              :food-types="item.foodTypes"
-            />
           </template>
         </UUser>
       </template>
@@ -34,9 +41,7 @@
 <script lang="ts" setup>
 import { useFoods } from '~/composables/useFoods'
 
-const { getListFoods, foods } = useFoods()
-
-getListFoods()
+const { foods } = useFoods()
 </script>
 
 <style>
