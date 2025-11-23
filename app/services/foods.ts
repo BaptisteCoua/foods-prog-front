@@ -4,6 +4,8 @@ export function foodsService() {
   const config = useRuntimeConfig()
 
   const getFoodsList = (): Promise<IFoods[]> => {
+    console.log('refresh')
+
     return $fetch<IFoods[]>('/foods/details',
       { baseURL: config.public.baseURL },
     )
@@ -18,8 +20,27 @@ export function foodsService() {
     )
   }
 
+  const deleteFoodsWithDetails = (food: IFoods) => {
+    return $fetch<IFoods>('/foods/' + food.id,
+      { baseURL: config.public.baseURL,
+        method: 'DELETE',
+      },
+    )
+  }
+
+  const updateFoodsWithDetails = (food: IFoods) => {
+    return $fetch<IFoods>('/foods',
+      { baseURL: config.public.baseURL,
+        method: 'PUT',
+        body: food,
+      },
+    )
+  }
+
   return {
     getFoodsList,
     createOneFoodWithDetails,
+    deleteFoodsWithDetails,
+    updateFoodsWithDetails,
   }
 }

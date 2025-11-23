@@ -1,7 +1,7 @@
 <template>
   <UButton
     icon="i-lucide:plus"
-    @click="changeStatusModal"
+    @click="changeStatusModal('new')"
   >
     Ajouter un aliment
   </UButton>
@@ -76,12 +76,17 @@
           :key="key"
           :label="key"
           :description="`${value} ${foodDetailIndo.foodDetail![key]}`"
+
           class="flex items-center justify-between not-last:pb-4 gap-2"
         >
           <UInputNumber
             v-model="foodForm.foodDetail![key]"
             class="w-30"
+            :step="0.1"
             :min="0"
+            :format-options="{
+
+            }"
           />
         </UFormField>
       </UPageCard>
@@ -92,7 +97,7 @@
         label="Annuler"
         color="neutral"
         variant="outline"
-        @click="changeStatusModal"
+        @click="changeStatusModal('new')"
       />
       <UButton
         label="Ajouter"
@@ -104,19 +109,29 @@
 </template>
 
 <script lang="ts" setup>
-const { createFoodInfos, resetValueFoodForm, refreshFoods, asGramType, asGramTypeValue, foodForm } = useFoods()
+const { createFoodInfos, resetValueFoodForm, refreshFoods, updateFoodInfos, asGramType, asGramTypeValue, foodForm } = useFoods()
 const { foodTypes } = useFoodTypes()
+const toast = useToast()
 
 const modalOpened = ref<boolean>(false)
+const choiceForm = ref<'edit' | 'new'>('new')
 
-const changeStatusModal = () => {
+const changeStatusModal = (choice: 'edit' | 'new') => {
+  choiceForm.value = choice
   modalOpened.value = !modalOpened.value
 }
 
 const validateForm = async () => {
-  createFoodInfos()
-  changeStatusModal()
+  if (choiceForm.value === 'edit')
+    await updateFoodInfos(foodForm.value)
+  await createFoodInfos()
   refreshFoods()
+  changeStatusModal('new')
+
+  toast.add({
+    title: 'Aliment ajouté',
+    icon: 'i-lucide:book-plus',
+  })
 }
 
 const foodDetailIndo = computed<any>(() => {
@@ -124,12 +139,16 @@ const foodDetailIndo = computed<any>(() => {
     name: '',
     asGrams: '',
     foodDetail: {
-      kcal: 'kcal',
-      glucide: 'g',
-      protein: 'g',
-      lipid: 'g',
+      kcal: 'kcal /100g',
+      glucide: 'g /100g',
+      protein: 'g /100g',
+      lipid: 'g /100g',
       price: '€' + asGramTypeValue.value,
     },
   }
+})
+
+defineExpose({
+  changeStatusModal,
 })
 </script>

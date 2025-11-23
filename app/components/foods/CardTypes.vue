@@ -5,6 +5,7 @@
       :key="i"
       variant="subtle"
       class="rounded-full"
+      color="neutral"
     >
       {{ value.types }}
     </UBadge>
