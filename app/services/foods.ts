@@ -4,8 +4,6 @@ export function foodsService() {
   const config = useRuntimeConfig()
 
   const getFoodsList = (): Promise<IFoods[]> => {
-    console.log('refresh')
-
     return $fetch<IFoods[]>('/foods/details',
       { baseURL: config.public.baseURL },
     )

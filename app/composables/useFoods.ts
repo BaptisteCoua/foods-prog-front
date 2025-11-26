@@ -47,6 +47,7 @@ export function useFoods() {
   }
 
   return {
+    createEmptyFoodForm,
     createFoodInfos,
     resetValueFoodForm,
     refreshFoods,
