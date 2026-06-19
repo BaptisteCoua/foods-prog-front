@@ -1,28 +1,32 @@
-// https://nuxt.com/docs/api/configuration/nuxt-config
-export default defineNuxtConfig({
-  modules: ['@nuxt/eslint', '@nuxt/ui'],
-  components: [
-    {
-      path: '~/components',
-      extensions: ['.vue'],
-      pathPrefix: false,
-    },
+import { defineOSDDNuxtConfig } from 'nuxt-osdd'
+
+// OSDD project (nuxt-osdd). Business + technical concerns live in root-level
+// functional/* and technical/* layer buckets; the `osdd` key wires them into
+// `extends`. There is no `app/` directory at the project root.
+export default defineOSDDNuxtConfig({
+  modules: [
+    '@nuxt/eslint',
+    '@pinia/nuxt',
+    'pinia-plugin-persistedstate/nuxt',
   ],
+  components: [{ path: '~/components', pathPrefix: false }],
   devtools: { enabled: true },
-  css: ['~/assets/css/main.css'],
-  runtimeConfig: {
-    public: {
-      baseURL: 'http://localhost:3000',
-    },
-  },
-  devServer: {
-    port: 4000,
-  },
   compatibilityDate: '2025-07-15',
   eslint: {
     config: {
       stylistic: true,
     },
   },
-
+  osdd: {
+    technical: ['Vuetify', 'Theme', 'ApiClient', 'Forms', 'Auth'],
+    functional: ['Dashboard'],
+  },
+  // @pinia/nuxt only auto-imports stores from the root srcDir by default, so the
+  // per-layer stores/ folders are registered explicitly here.
+  pinia: {
+    storesDirs: [
+      './technical/*/app/stores/**',
+      './functional/*/app/stores/**',
+    ],
+  },
 })

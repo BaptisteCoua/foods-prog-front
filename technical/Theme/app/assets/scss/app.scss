@@ -1,0 +1,43 @@
+// Project-wide presentation: page transitions + motion defaults.
+// Component styles stay scoped; only truly global rules live here.
+
+html,
+body {
+  scroll-behavior: smooth;
+}
+
+// Default page transition (slide + fade), mobile-app feel.
+.page-enter-active,
+.page-leave-active {
+  transition: opacity 0.25s ease, transform 0.25s ease;
+}
+
+.page-enter-from {
+  opacity: 0;
+  transform: translateY(8px);
+}
+
+.page-leave-to {
+  opacity: 0;
+  transform: translateY(-8px);
+}
+
+// Layout transition (cross-fade between auth and app shells).
+.layout-enter-active,
+.layout-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.layout-enter-from,
+.layout-leave-to {
+  opacity: 0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .page-enter-active,
+  .page-leave-active,
+  .layout-enter-active,
+  .layout-leave-active {
+    transition: none;
+  }
+}
