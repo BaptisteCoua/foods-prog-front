@@ -10,11 +10,11 @@ export const useMainNav = () => {
   const route = useRoute()
 
   const items: MainNavItem[] = [
-    { value: 'home', to: '/', icon: 'mdi-home-variant', label: 'Accueil' },
-    { value: 'planning', to: '/planning', icon: 'mdi-calendar-week', label: 'Planning' },
-    { value: 'recipes', to: '/recipes', icon: 'mdi-silverware-fork-knife', label: 'Recettes' },
-    { value: 'ingredients', to: '/ingredients', icon: 'mdi-basket', label: 'Ingrédients' },
-    { value: 'profile', to: '/profile', icon: 'mdi-account-circle', label: 'Profil' },
+    { value: 'home', to: '/', icon: 'mdi-home-variant-outline', label: 'Accueil' },
+    { value: 'planning', to: '/planning', icon: 'mdi-calendar-blank-outline', label: 'Planning' },
+    { value: 'recipes', to: '/recipes', icon: 'mdi-book-open-outline', label: 'Recettes' },
+    { value: 'ingredients', to: '/ingredients', icon: 'mdi-food-apple-outline', label: 'Ingrédients' },
+    { value: 'profile', to: '/profile', icon: 'mdi-account-outline', label: 'Profil' },
   ]
 
   const active = computed(() => {

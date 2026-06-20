@@ -1,8 +1,8 @@
 import type { ThemeDefinition } from 'vuetify'
 
-// Project branding: "chaleureux & appétissant" — warm cream backgrounds,
-// terracotta primary, herb green + warm yellow accents. These are the only
-// project-specific values; the generic Vuetify wiring lives in the Vuetify layer.
+// Project branding: "minimal premium" — near-neutral base, lots of air, a single
+// emerald accent, and a curated macro palette (protein / carb / fat) for data
+// legibility. Custom colour keys are exposed by Vuetify as rgb(var(--v-theme-<key>)).
 
 export const THEME_LIGHT = 'foodLight'
 export const THEME_DARK = 'foodDark'
@@ -11,44 +11,56 @@ export const DEFAULT_THEME = THEME_LIGHT
 const foodLight: ThemeDefinition = {
   dark: false,
   colors: {
-    'background': '#FBF6EE',
+    'background': '#FBFBFA',
     'surface': '#FFFFFF',
-    'surface-variant': '#F3E9DA',
-    'on-surface-variant': '#6F5D4F',
-    'primary': '#E2683C',
+    'surface-variant': '#F5F5F3',
+    'on-surface-variant': '#8A8A93',
+    'primary': '#10B981',
     'on-primary': '#FFFFFF',
-    'secondary': '#6F8E5A',
+    'secondary': '#18181B',
     'on-secondary': '#FFFFFF',
-    'tertiary': '#F2B441',
-    'on-tertiary': '#3A2E22',
-    'on-background': '#3A2E28',
-    'on-surface': '#3A2E28',
-    'error': '#C8463C',
-    'success': '#5E9C5A',
-    'warning': '#E8A53B',
-    'info': '#5B8AA6',
+    'on-background': '#18181B',
+    'on-surface': '#18181B',
+    'error': '#E5484D',
+    'success': '#10B981',
+    'warning': '#F59E0B',
+    'info': '#6366F1',
+    'macro-protein': '#6366F1',
+    'macro-carb': '#F59E0B',
+    'macro-fat': '#FB7185',
+  },
+  variables: {
+    'border-color': '#18181B',
+    'border-opacity': 0.08,
+    'theme-faint': '#B5B5BC',
   },
 }
 
 const foodDark: ThemeDefinition = {
   dark: true,
   colors: {
-    'background': '#1C1714',
-    'surface': '#261F1A',
-    'surface-variant': '#352B24',
-    'on-surface-variant': '#C7B5A6',
-    'primary': '#F0824E',
-    'on-primary': '#2A150C',
-    'secondary': '#90B47C',
-    'on-secondary': '#16210F',
-    'tertiary': '#F4C25E',
-    'on-tertiary': '#332714',
-    'on-background': '#F2E9E0',
-    'on-surface': '#F2E9E0',
-    'error': '#F0857A',
-    'success': '#88C083',
-    'warning': '#F2C063',
-    'info': '#8FBAD4',
+    'background': '#0B0B0C',
+    'surface': '#151517',
+    'surface-variant': '#1D1D20',
+    'on-surface-variant': '#9A9AA3',
+    'primary': '#34D399',
+    'on-primary': '#04231A',
+    'secondary': '#FAFAFA',
+    'on-secondary': '#18181B',
+    'on-background': '#FAFAFA',
+    'on-surface': '#FAFAFA',
+    'error': '#FF6369',
+    'success': '#34D399',
+    'warning': '#FBBF24',
+    'info': '#818CF8',
+    'macro-protein': '#818CF8',
+    'macro-carb': '#FBBF24',
+    'macro-fat': '#FB7185',
+  },
+  variables: {
+    'border-color': '#FFFFFF',
+    'border-opacity': 0.1,
+    'theme-faint': '#5A5A62',
   },
 }
 

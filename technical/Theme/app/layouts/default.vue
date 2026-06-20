@@ -2,11 +2,11 @@
   <div>
     <v-app-bar
       flat
-      density="comfortable"
+      height="64"
       class="app-bar"
     >
       <template #prepend>
-        <AppLogo class="ms-2" />
+        <AppLogo class="ms-3" />
       </template>
       <v-spacer />
       <ThemeToggle />
@@ -20,7 +20,7 @@
     </v-app-bar>
 
     <v-main class="app-main">
-      <v-container class="py-4">
+      <v-container class="app-main__container">
         <slot />
       </v-container>
     </v-main>
@@ -37,11 +37,16 @@ const { logout } = authStore
 
 <style scoped lang="scss">
 .app-bar {
-  background: rgba(var(--v-theme-surface), 0.85);
-  backdrop-filter: blur(8px);
+  background: rgba(var(--v-theme-background), 0.7) !important;
+  backdrop-filter: blur(14px);
 }
 
 .app-main {
   min-height: 100dvh;
+
+  &__container {
+    max-width: 560px;
+    padding: 12px 16px 24px;
+  }
 }
 </style>

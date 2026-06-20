@@ -5,11 +5,11 @@
   >
     <span class="app-logo__badge">
       <v-icon
-        icon="mdi-silverware-variant"
-        size="20"
+        icon="mdi-leaf"
+        size="18"
       />
     </span>
-    <span class="app-logo__name">Food<span class="app-logo__accent">Prog</span></span>
+    <span class="app-logo__name">FoodProg</span>
   </NuxtLink>
 </template>
 
@@ -19,28 +19,24 @@
 .app-logo {
   display: inline-flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.55rem;
   text-decoration: none;
-  color: inherit;
+  color: rgb(var(--v-theme-on-surface));
 
   &__badge {
     display: grid;
     place-items: center;
-    width: 34px;
-    height: 34px;
-    border-radius: 12px;
+    width: 30px;
+    height: 30px;
+    border-radius: 10px;
     color: rgb(var(--v-theme-on-primary));
-    background: linear-gradient(135deg, rgb(var(--v-theme-primary)), rgb(var(--v-theme-tertiary)));
+    background: linear-gradient(135deg, rgb(var(--v-theme-primary)), color-mix(in srgb, rgb(var(--v-theme-primary)) 55%, #0ea5e9));
   }
 
   &__name {
     font-weight: 800;
     font-size: 1.15rem;
-    letter-spacing: -0.02em;
-  }
-
-  &__accent {
-    color: rgb(var(--v-theme-primary));
+    letter-spacing: -0.03em;
   }
 }
 </style>

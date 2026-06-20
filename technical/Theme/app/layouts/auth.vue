@@ -16,7 +16,7 @@
 .auth-layout {
   min-height: 100dvh;
   background:
-    radial-gradient(120% 80% at 50% -10%, rgba(var(--v-theme-tertiary), 0.18), transparent 60%),
+    radial-gradient(120% 70% at 50% -10%, rgba(var(--v-theme-primary), 0.1), transparent 60%),
     rgb(var(--v-theme-background));
 
   &__top {

@@ -1,20 +1,45 @@
-// Project-wide presentation: page transitions + motion defaults.
+// Project-wide presentation: typography, base resets, page/layout transitions.
 // Component styles stay scoped; only truly global rules live here.
 
+:root {
+  --app-ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
 html,
-body {
+body,
+.v-application {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+html {
   scroll-behavior: smooth;
+}
+
+// Tighter, more "premium" headings.
+h1, h2, h3 {
+  letter-spacing: -0.02em;
+}
+
+// Theme colour swaps should glide, not snap.
+.v-application,
+.v-card,
+.v-app-bar,
+.v-navigation-bar {
+  transition: background-color 0.45s var(--app-ease), color 0.45s var(--app-ease),
+    border-color 0.45s var(--app-ease);
 }
 
 // Default page transition (slide + fade), mobile-app feel.
 .page-enter-active,
 .page-leave-active {
-  transition: opacity 0.25s ease, transform 0.25s ease;
+  transition: opacity 0.28s var(--app-ease), transform 0.28s var(--app-ease);
 }
 
 .page-enter-from {
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(10px);
 }
 
 .page-leave-to {
@@ -25,7 +50,7 @@ body {
 // Layout transition (cross-fade between auth and app shells).
 .layout-enter-active,
 .layout-leave-active {
-  transition: opacity 0.2s ease;
+  transition: opacity 0.22s var(--app-ease);
 }
 
 .layout-enter-from,
@@ -34,10 +59,15 @@ body {
 }
 
 @media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+
   .page-enter-active,
   .page-leave-active,
   .layout-enter-active,
-  .layout-leave-active {
-    transition: none;
+  .layout-leave-active,
+  .v-application,
+  .v-card,
+  .v-app-bar {
+    transition: none !important;
   }
 }
