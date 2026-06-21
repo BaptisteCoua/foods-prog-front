@@ -48,7 +48,7 @@
           color="primary"
           flat
           prepend-icon="mdi-arrow-right"
-          to="/profile"
+          to="/onboarding"
         >
           Compléter mon profil
         </v-btn>
