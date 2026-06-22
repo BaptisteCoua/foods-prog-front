@@ -1,6 +1,7 @@
 <template>
   <v-card
     class="ingredient-card"
+    :class="{ 'ingredient-card--compact': !detailed }"
     elevation="0"
     @click="emit('edit', ingredient)"
   >
@@ -39,33 +40,38 @@
       </v-btn>
     </div>
 
-    <div class="ingredient-card__macros">
-      <span class="ingredient-card__macro"><b>{{ ingredient.proteinG }}</b> P</span>
-      <span class="ingredient-card__macro"><b>{{ ingredient.carbG }}</b> G</span>
-      <span class="ingredient-card__macro"><b>{{ ingredient.fatG }}</b> L</span>
-      <span class="ingredient-card__base">pour {{ baseQuantityLabel(ingredient.unitType) }}</span>
-    </div>
+    <template v-if="detailed">
+      <div class="ingredient-card__macros">
+        <span class="ingredient-card__macro"><b>{{ ingredient.proteinG }}</b> P</span>
+        <span class="ingredient-card__macro"><b>{{ ingredient.carbG }}</b> G</span>
+        <span class="ingredient-card__macro"><b>{{ ingredient.fatG }}</b> L</span>
+        <span class="ingredient-card__base">pour {{ baseQuantityLabel(ingredient.unitType) }}</span>
+      </div>
 
-    <div
-      v-if="ingredient.foodTypes.length"
-      class="ingredient-card__tags"
-    >
-      <v-chip
-        v-for="type in ingredient.foodTypes"
-        :key="type.id"
-        size="x-small"
-        variant="tonal"
+      <div
+        v-if="ingredient.foodTypes.length"
+        class="ingredient-card__tags"
       >
-        {{ type.types }}
-      </v-chip>
-    </div>
+        <v-chip
+          v-for="type in ingredient.foodTypes"
+          :key="type.id"
+          size="x-small"
+          variant="tonal"
+        >
+          {{ type.types }}
+        </v-chip>
+      </div>
+    </template>
   </v-card>
 </template>
 
 <script setup lang="ts">
 import type { Ingredient } from '../types/ingredient'
 
-const props = defineProps<{ ingredient: Ingredient }>()
+const props = withDefaults(
+  defineProps<{ ingredient: Ingredient, detailed?: boolean }>(),
+  { detailed: true },
+)
 const emit = defineEmits<{ edit: [Ingredient], delete: [Ingredient] }>()
 
 const caloriesLabel = computed(() => `${props.ingredient.calories} kcal`)
@@ -81,6 +87,10 @@ const priceLabel = computed(() => formatPrice(props.ingredient.pricePerKgCents, 
 
   &:hover {
     border-color: rgba(var(--v-theme-primary), 0.4);
+  }
+
+  &--compact {
+    padding: 0.6rem 1.1rem;
   }
 
   &__head {

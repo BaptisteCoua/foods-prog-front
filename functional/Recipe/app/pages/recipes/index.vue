@@ -9,14 +9,31 @@
           {{ items.length }} recette{{ items.length > 1 ? 's' : '' }}
         </p>
       </div>
-      <v-btn
-        color="primary"
-        flat
-        prepend-icon="mdi-plus"
-        @click="openCreate"
-      >
-        Créer
-      </v-btn>
+      <div class="recipes__head-actions">
+        <v-btn
+          icon
+          variant="text"
+          density="comfortable"
+          :aria-label="detailed ? 'Affichage compact' : 'Affichage détaillé'"
+          @click="toggleView"
+        >
+          <v-icon :icon="detailed ? 'mdi-view-list-outline' : 'mdi-view-agenda-outline'" />
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            {{ detailed ? 'Affichage compact' : 'Affichage détaillé' }}
+          </v-tooltip>
+        </v-btn>
+        <v-btn
+          color="primary"
+          flat
+          prepend-icon="mdi-plus"
+          @click="openCreate"
+        >
+          Créer
+        </v-btn>
+      </div>
     </header>
 
     <v-text-field
@@ -139,6 +156,7 @@
       >
         <RecipeCard
           :recipe
+          :detailed
           @open="goToRecipe"
           @edit="openEdit"
           @delete="askDelete"
@@ -214,6 +232,8 @@ const {
   error,
   refresh,
   search,
+  detailed,
+  toggleView,
   confirmTarget,
   isDeleting,
   askDelete,
@@ -243,6 +263,12 @@ const goToRecipe = (recipe: Recipe) => navigateTo(`/recipes/${recipe.id}`)
     justify-content: space-between;
     gap: 1rem;
     padding: 0.5rem 0.25rem 0;
+  }
+
+  &__head-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
   }
 
   &__title {

@@ -9,14 +9,31 @@
           {{ items.length }} ingrédient{{ items.length > 1 ? 's' : '' }}
         </p>
       </div>
-      <v-btn
-        color="primary"
-        flat
-        prepend-icon="mdi-plus"
-        @click="openCreate"
-      >
-        Ajouter
-      </v-btn>
+      <div class="ingredients__head-actions">
+        <v-btn
+          icon
+          variant="text"
+          density="comfortable"
+          :aria-label="detailed ? 'Affichage compact' : 'Affichage détaillé'"
+          @click="toggleView"
+        >
+          <v-icon :icon="detailed ? 'mdi-view-list-outline' : 'mdi-view-agenda-outline'" />
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            {{ detailed ? 'Affichage compact' : 'Affichage détaillé' }}
+          </v-tooltip>
+        </v-btn>
+        <v-btn
+          color="primary"
+          flat
+          prepend-icon="mdi-plus"
+          @click="openCreate"
+        >
+          Ajouter
+        </v-btn>
+      </div>
     </header>
 
     <v-text-field
@@ -118,6 +135,7 @@
       >
         <IngredientCard
           :ingredient
+          :detailed
           @edit="openEdit"
           @delete="askDelete"
         />
@@ -171,6 +189,8 @@ const {
   refresh,
   search,
   selectedFoodTypeIds,
+  detailed,
+  toggleView,
   confirmTarget,
   isDeleting,
   askDelete,
@@ -196,6 +216,12 @@ const openEdit = (ingredient: typeof filteredItems.value[number]) => formDialog.
     justify-content: space-between;
     gap: 1rem;
     padding: 0.5rem 0.25rem 0;
+  }
+
+  &__head-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
   }
 
   &__title {

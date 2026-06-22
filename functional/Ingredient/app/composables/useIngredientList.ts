@@ -11,6 +11,10 @@ export const useIngredientList = () => {
   const confirmTarget = ref<Ingredient | null>(null)
   const isDeleting = ref(false)
 
+  const listView = useListViewStore()
+  const detailed = computed(() => listView.isDetailed('ingredients'))
+  const toggleView = () => listView.toggle('ingredients')
+
   const filteredItems = computed(() => {
     const query = search.value.trim().toLowerCase()
     const typeIds = selectedFoodTypeIds.value
@@ -53,6 +57,8 @@ export const useIngredientList = () => {
     refresh,
     search,
     selectedFoodTypeIds,
+    detailed,
+    toggleView,
     confirmTarget,
     isDeleting,
     askDelete,

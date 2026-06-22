@@ -1,5 +1,74 @@
 <template>
   <v-card
+    v-if="!detailed"
+    class="recipe-card recipe-card--compact"
+    elevation="0"
+    @click="emit('open', recipe)"
+  >
+    <div class="recipe-card__thumb">
+      <v-img
+        v-if="recipe.img"
+        :src="recipe.img"
+        :alt="recipe.name"
+        cover
+        height="100%"
+        :lazy-src="placeholderSrc"
+        loading="lazy"
+      />
+      <div
+        v-else
+        class="recipe-card__thumb-empty"
+      >
+        <v-icon
+          icon="mdi-silverware-fork-knife"
+          size="20"
+        />
+      </div>
+    </div>
+
+    <div class="recipe-card__compact-body">
+      <span class="recipe-card__compact-name">{{ recipe.name }}</span>
+      <span class="recipe-card__compact-meta">
+        {{ recipe.servings }} portion{{ recipe.servings > 1 ? 's' : '' }} · {{ totalTime }} · {{ ingredientCount }}
+      </span>
+    </div>
+
+    <span class="recipe-card__compact-kcal">
+      {{ formatKcal(recipe.perServing.calories) }}<small>/portion</small>
+    </span>
+
+    <v-btn
+      icon
+      variant="text"
+      size="small"
+      density="comfortable"
+      aria-label="Actions"
+      @click.stop
+    >
+      <v-icon icon="mdi-dots-vertical" />
+      <v-menu
+        activator="parent"
+        location="bottom end"
+      >
+        <v-list density="compact">
+          <v-list-item
+            prepend-icon="mdi-pencil"
+            title="Modifier"
+            @click="emit('edit', recipe)"
+          />
+          <v-list-item
+            prepend-icon="mdi-delete"
+            title="Supprimer"
+            base-color="error"
+            @click="emit('delete', recipe)"
+          />
+        </v-list>
+      </v-menu>
+    </v-btn>
+  </v-card>
+
+  <v-card
+    v-else
     class="recipe-card"
     elevation="0"
     @click="emit('open', recipe)"
@@ -124,7 +193,10 @@
 <script setup lang="ts">
 import type { Recipe } from '../types/recipe'
 
-const props = defineProps<{ recipe: Recipe }>()
+const props = withDefaults(
+  defineProps<{ recipe: Recipe, detailed?: boolean }>(),
+  { detailed: true },
+)
 const emit = defineEmits<{ open: [Recipe], edit: [Recipe], delete: [Recipe] }>()
 
 // Tiny inline blur placeholder shown while the real image lazy-loads.
@@ -156,6 +228,77 @@ const ingredientCount = computed(() => {
 
   &:hover .recipe-card__img {
     transform: scale(1.04);
+  }
+
+  &--compact {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+    padding: 0.55rem 0.7rem 0.55rem 0.55rem;
+
+    &:hover {
+      transform: none;
+    }
+  }
+
+  &__thumb {
+    flex: 0 0 auto;
+    width: 52px;
+    height: 52px;
+    border-radius: 12px;
+    overflow: hidden;
+  }
+
+  &__thumb-empty {
+    width: 100%;
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: rgba(var(--v-theme-primary), 0.55);
+    background: linear-gradient(
+      135deg,
+      rgba(var(--v-theme-primary), 0.16),
+      rgba(var(--v-theme-primary), 0.04)
+    );
+  }
+
+  &__compact-body {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  &__compact-name {
+    font-weight: 700;
+    font-size: 0.98rem;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__compact-meta {
+    font-size: 0.76rem;
+    margin-top: 0.1rem;
+    color: rgb(var(--v-theme-on-surface-variant));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__compact-kcal {
+    flex: 0 0 auto;
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: -0.01em;
+    font-variant-numeric: tabular-nums;
+
+    small {
+      font-weight: 400;
+      color: rgb(var(--v-theme-on-surface-variant));
+      font-size: 0.68rem;
+    }
   }
 
   &__media {

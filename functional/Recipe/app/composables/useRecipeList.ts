@@ -15,6 +15,10 @@ export const useRecipeList = () => {
   const confirmTarget = ref<Recipe | null>(null)
   const isDeleting = ref(false)
 
+  const listView = useListViewStore()
+  const detailed = computed(() => listView.isDetailed('recipes'))
+  const toggleView = () => listView.toggle('recipes')
+
   // Progressive rendering: keep the whole (already-fetched + filtered) list in
   // memory but only mount a growing window of cards, +15 each time the bottom
   // sentinel scrolls into view.
@@ -93,6 +97,8 @@ export const useRecipeList = () => {
     error,
     refresh,
     search,
+    detailed,
+    toggleView,
     confirmTarget,
     isDeleting,
     askDelete,

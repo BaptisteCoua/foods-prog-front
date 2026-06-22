@@ -67,6 +67,15 @@ const SLOT_LABELS = {
   SNACK: 'Collation',
 } as const
 
+// Chronological render order of the slots, derived from the (ordered) label keys:
+// petit-déjeuner en premier, puis déjeuner, dîner, collation. Used to sort today's
+// meals before flattening their dishes — the API doesn't guarantee slot order.
+const SLOT_ORDER = Object.keys(SLOT_LABELS) as (keyof typeof SLOT_LABELS)[]
+const slotRank = (slot: keyof typeof SLOT_LABELS): number => {
+  const index = SLOT_ORDER.indexOf(slot)
+  return index === -1 ? SLOT_ORDER.length : index
+}
+
 const EMPTY_NUTRITION: MealNutrition = { calories: 0, proteinG: 0, carbG: 0, fatG: 0 }
 
 // Real daily summary for the dashboard: the user's nutrition target (GET /me/target)
@@ -146,17 +155,20 @@ export const useDailySummary = () => {
     ]
   })
 
-  // Every dish of today, flattened across meals — the rows the user ticks.
+  // Every dish of today, flattened across meals in chronological slot order
+  // (petit-déjeuner → déjeuner → dîner → collation) — the rows the user ticks.
   const dishes = computed<DayDish[]>(() =>
-    (data.value?.day?.meals ?? []).flatMap(meal =>
-      meal.mealItems.map(item => ({
-        id: item.id,
-        name: item.recipe?.name ?? 'Plat',
-        slotLabel: SLOT_LABELS[meal.slot] ?? 'Repas',
-        kcal: Math.round(item.total.calories),
-        eaten: item.eaten,
-      })),
-    ),
+    [...(data.value?.day?.meals ?? [])]
+      .sort((a, b) => slotRank(a.slot) - slotRank(b.slot))
+      .flatMap(meal =>
+        meal.mealItems.map(item => ({
+          id: item.id,
+          name: item.recipe?.name ?? 'Plat',
+          slotLabel: SLOT_LABELS[meal.slot] ?? 'Repas',
+          kcal: Math.round(item.total.calories),
+          eaten: item.eaten,
+        })),
+      ),
   )
 
   const hasPlannedMeals = computed(() => dishes.value.length > 0)
