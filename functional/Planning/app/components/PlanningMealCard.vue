@@ -180,14 +180,7 @@ const formatPortionValue = (portions: number) =>
     margin: 0.6rem 0 0;
     display: flex;
     flex-direction: column;
-  }
-
-  &__item {
-    border-top: 1px solid rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.6));
-
-    &:first-child {
-      border-top: none;
-    }
+    gap: 0.4rem;
   }
 
   &__item-btn {
@@ -195,14 +188,16 @@ const formatPortionValue = (portions: number) =>
     align-items: center;
     gap: 0.6rem;
     width: 100%;
-    padding: 0.45rem 0;
+    padding: 0.5rem 0.55rem;
     text-align: left;
     cursor: pointer;
-    border-radius: 10px;
-    transition: background 0.15s var(--app-ease, ease);
+    border-radius: 12px;
+    background: rgb(var(--v-theme-surface-variant));
+    border: 1px solid rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.6));
+    transition: background 0.15s var(--app-ease, ease), border-color 0.15s var(--app-ease, ease);
 
     &:hover {
-      background: rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.4));
+      border-color: rgba(var(--v-border-color), var(--v-border-opacity));
     }
   }
 
