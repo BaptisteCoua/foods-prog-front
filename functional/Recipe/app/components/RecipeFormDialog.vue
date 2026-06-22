@@ -86,6 +86,24 @@
           <!-- Ingredient lines -->
           <div class="recipe-dialog__section">
             <span class="recipe-dialog__section-title">Ingrédients</span>
+            <div
+              v-if="nutritionPreview.hasData"
+              class="recipe-dialog__nutrition"
+            >
+              <span class="recipe-dialog__nutrition-kcal">
+                {{ formatKcal(nutritionPreview.perServing.calories) }}
+              </span>
+              <span class="recipe-dialog__nutrition-macro recipe-dialog__nutrition-macro--protein">
+                P {{ formatMacro(nutritionPreview.perServing.proteinG) }}
+              </span>
+              <span class="recipe-dialog__nutrition-macro recipe-dialog__nutrition-macro--carb">
+                G {{ formatMacro(nutritionPreview.perServing.carbG) }}
+              </span>
+              <span class="recipe-dialog__nutrition-macro recipe-dialog__nutrition-macro--fat">
+                L {{ formatMacro(nutritionPreview.perServing.fatG) }}
+              </span>
+              <span class="recipe-dialog__nutrition-unit">≈ / portion</span>
+            </div>
             <p
               v-if="!ingredients.length"
               class="recipe-dialog__hint"
@@ -97,7 +115,7 @@
               :key="index"
               class="recipe-dialog__line"
             >
-              <v-select
+              <v-autocomplete
                 v-model="line.ingredientId"
                 :items="ingredients"
                 item-title="name"
@@ -105,6 +123,8 @@
                 label="Ingrédient"
                 density="comfortable"
                 hide-details
+                auto-select-first
+                no-data-text="Aucun ingrédient trouvé"
                 class="recipe-dialog__line-select"
               />
               <v-text-field
@@ -215,6 +235,7 @@ const {
   formRef,
   form,
   title,
+  nutritionPreview,
   rules,
   addLine,
   removeLine,
@@ -295,6 +316,43 @@ defineExpose({ openCreate, openEdit })
 
   &__hint {
     font-size: 0.8rem;
+    color: rgb(var(--v-theme-on-surface-variant));
+  }
+
+  &__nutrition {
+    display: flex;
+    align-items: baseline;
+    flex-wrap: wrap;
+    gap: 0.3rem 0.7rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  &__nutrition-kcal {
+    font-weight: 800;
+    font-size: 0.95rem;
+    letter-spacing: -0.02em;
+  }
+
+  &__nutrition-macro {
+    font-size: 0.82rem;
+    font-weight: 600;
+
+    &--protein {
+      color: rgb(var(--v-theme-macro-protein));
+    }
+
+    &--carb {
+      color: rgb(var(--v-theme-macro-carb));
+    }
+
+    &--fat {
+      color: rgb(var(--v-theme-macro-fat));
+    }
+  }
+
+  &__nutrition-unit {
+    margin-left: auto;
+    font-size: 0.72rem;
     color: rgb(var(--v-theme-on-surface-variant));
   }
 

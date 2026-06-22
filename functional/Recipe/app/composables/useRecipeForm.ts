@@ -38,6 +38,7 @@ const createForm = (): RecipeFormState => ({
 // computed server-side, so we only collect quantities + ingredient ids.
 export const useRecipeForm = () => {
   const { create, update } = useRecipes()
+  const { items: ingredientLibrary } = useIngredients()
   const { required } = useValidationRules()
 
   const dialogOpen = ref(false)
@@ -51,6 +52,32 @@ export const useRecipeForm = () => {
 
   const positive = (value: unknown) =>
     (value !== null && value !== '' && Number(value) >= 1) || 'Au moins 1.'
+
+  // Live estimate while the user types: API computes the canonical nutrition on
+  // save, but there is no persisted value yet, so we approximate from the
+  // library macros (per 100 g/ml × quantity). Marked as an estimate in the UI.
+  const nutritionPreview = computed(() => {
+    const total = { calories: 0, proteinG: 0, carbG: 0, fatG: 0 }
+    for (const line of form.lines) {
+      const quantity = Number(line.quantity)
+      if (line.ingredientId === null || !(quantity > 0)) continue
+      const ingredient = ingredientLibrary.value.find(item => item.id === line.ingredientId)
+      if (!ingredient) continue
+      const factor = quantity / 100
+      total.calories += ingredient.calories * factor
+      total.proteinG += ingredient.proteinG * factor
+      total.carbG += ingredient.carbG * factor
+      total.fatG += ingredient.fatG * factor
+    }
+    const servings = Math.max(1, Number(form.servings) || 1)
+    const perServing = {
+      calories: total.calories / servings,
+      proteinG: total.proteinG / servings,
+      carbG: total.carbG / servings,
+      fatG: total.fatG / servings,
+    }
+    return { total, perServing, hasData: total.calories > 0 }
+  })
 
   const reset = () => Object.assign(form, createForm())
 
@@ -144,6 +171,7 @@ export const useRecipeForm = () => {
     formRef,
     form,
     title,
+    nutritionPreview,
     rules: { required, positive },
     addLine,
     removeLine,
