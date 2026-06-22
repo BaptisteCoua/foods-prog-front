@@ -82,6 +82,17 @@
           </div>
 
           <v-text-field
+            v-model.number="form.cookedFactor"
+            label="Rendement à la cuisson (optionnel)"
+            type="number"
+            suffix="× (cru → cuit)"
+            prepend-inner-icon="mdi-pot-steam-outline"
+            hint="Poids cuit ÷ poids cru. Ex. riz ≈ 2.7. Laisse vide si le poids ne change pas. Les valeurs nutritionnelles restent celles du cru."
+            persistent-hint
+            :rules="[rules.optionalFactor]"
+          />
+
+          <v-text-field
             v-model.number="form.priceEuros"
             label="Prix de référence"
             type="number"

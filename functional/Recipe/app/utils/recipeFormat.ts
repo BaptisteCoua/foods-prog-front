@@ -27,6 +27,18 @@ export const formatQuantity = (quantity: number): string => {
     : rounded.toLocaleString('fr-FR', { maximumFractionDigits: 1 })
 }
 
+// Cooked weight ≈ raw weight × cookingYield. Nutrition stays computed from the
+// raw quantity (it is conserved on cooking); this is only an at-a-glance hint of
+// how much the ingredient weighs once cooked. `null` when no yield is set.
+export const formatCookedWeight = (
+  rawQuantity: number,
+  cookedFactor: number | null,
+  unitType: UnitType,
+): string | null => {
+  if (!cookedFactor || cookedFactor === 1) return null
+  return `≈ ${formatQuantity(rawQuantity * cookedFactor)} ${quantityUnit(unitType)} cuit`
+}
+
 // "25 min" / "1 h 10" / "—" — sums prep + cook time.
 export const formatTotalTime = (
   prepTimeMin: number | null,

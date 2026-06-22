@@ -9,6 +9,7 @@ interface IngredientFormState {
   proteinG: number | null
   carbG: number | null
   fatG: number | null
+  cookedFactor: number | null
   priceEuros: number | null
   foodTypeIds: number[]
 }
@@ -20,6 +21,7 @@ const createForm = (): IngredientFormState => ({
   proteinG: null,
   carbG: null,
   fatG: null,
+  cookedFactor: null,
   priceEuros: null,
   foodTypeIds: [],
 })
@@ -40,6 +42,10 @@ export const useIngredientForm = () => {
   const positive = (value: unknown) =>
     (value !== null && value !== '' && Number(value) >= 0) || 'Valeur positive requise.'
 
+  // Cooking yield is optional, but when filled it must be strictly > 0.
+  const optionalFactor = (value: unknown) =>
+    value === null || value === '' || Number(value) > 0 || 'Facteur > 0 requis.'
+
   const reset = () => Object.assign(form, createForm())
 
   const openCreate = () => {
@@ -57,6 +63,7 @@ export const useIngredientForm = () => {
       proteinG: ingredient.proteinG,
       carbG: ingredient.carbG,
       fatG: ingredient.fatG,
+      cookedFactor: ingredient.cookedFactor,
       priceEuros: centsToEuros(ingredient.pricePerKgCents),
       foodTypeIds: ingredient.foodTypes.map(type => type.id),
     })
@@ -78,6 +85,7 @@ export const useIngredientForm = () => {
       proteinG: Number(form.proteinG),
       carbG: Number(form.carbG),
       fatG: Number(form.fatG),
+      cookedFactor: form.cookedFactor ? Number(form.cookedFactor) : null,
       pricePerKgCents: eurosToCents(Number(form.priceEuros)),
       foodTypes: form.foodTypeIds.map(id => ({ id })),
     }
@@ -104,7 +112,7 @@ export const useIngredientForm = () => {
     formRef,
     form,
     title,
-    rules: { required, positive },
+    rules: { required, positive, optionalFactor },
     openCreate,
     openEdit,
     close,

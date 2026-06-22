@@ -217,6 +217,12 @@
             <span>{{ line.name }}</span>
             <span class="recipe-detail__qty">
               {{ formatQuantity(line.quantity) }} {{ quantityUnit(line.unitType) }}
+              <small
+                v-if="formatCookedWeight(line.quantity, line.cookedFactor, line.unitType)"
+                class="recipe-detail__qty-cooked"
+              >
+                {{ formatCookedWeight(line.quantity, line.cookedFactor, line.unitType) }}
+              </small>
             </span>
           </li>
         </ul>
@@ -570,9 +576,17 @@ const onDelete = async () => {
   }
 
   &__qty {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
     color: rgb(var(--v-theme-on-surface-variant));
     font-variant-numeric: tabular-nums;
     white-space: nowrap;
+  }
+
+  &__qty-cooked {
+    font-size: 0.74rem;
+    color: rgb(var(--v-theme-primary));
   }
 
   &__text {

@@ -17,6 +17,10 @@ export interface Ingredient {
   proteinG: number
   carbG: number
   fatG: number
+  // Cooking yield: cooked weight / raw weight (rice ~2.7). Nutrition is
+  // conserved on cooking, so this only converts the raw weight to a cooked
+  // weight for display — it never recomputes macros. `null` = weight unchanged.
+  cookedFactor: number | null
   pricePerKgCents: number
   foodTypes: FoodType[]
 }
@@ -28,6 +32,7 @@ export interface IngredientPayload {
   proteinG: number
   carbG: number
   fatG: number
+  cookedFactor?: number | null
   pricePerKgCents: number
   foodTypes?: { id: number }[]
 }

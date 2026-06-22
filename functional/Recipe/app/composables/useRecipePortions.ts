@@ -45,6 +45,7 @@ export const useRecipePortions = (recipe: Ref<Recipe | null | undefined>) => {
       id: line.id,
       name: line.ingredient.name,
       unitType: line.ingredient.unitType,
+      cookedFactor: line.ingredient.cookedFactor,
       quantity: line.quantity * scaleFactor.value,
     })),
   )
