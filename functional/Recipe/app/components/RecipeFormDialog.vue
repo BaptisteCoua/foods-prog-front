@@ -1,23 +1,14 @@
 <template>
-  <v-dialog
+  <AppSheet
     v-model="dialogOpen"
-    :fullscreen="mobile"
-    :max-width="mobile ? undefined : 600"
-    scrollable
+    :max-width="600"
   >
-    <v-card class="recipe-dialog">
-      <v-card-title class="recipe-dialog__title">
-        <span>{{ title }}</span>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          size="small"
-          aria-label="Fermer"
-          @click="close"
-        />
-      </v-card-title>
+    <div class="recipe-dialog">
+      <header class="recipe-dialog__title">
+        {{ title }}
+      </header>
 
-      <v-card-text>
+      <div class="recipe-dialog__content">
         <v-form
           ref="formRef"
           class="recipe-dialog__form"
@@ -197,9 +188,9 @@
             prepend-inner-icon="mdi-format-list-numbered"
           />
         </v-form>
-      </v-card-text>
+      </div>
 
-      <v-card-actions class="recipe-dialog__actions">
+      <div class="recipe-dialog__actions">
         <v-btn
           variant="text"
           @click="close"
@@ -214,18 +205,16 @@
         >
           Enregistrer
         </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </div>
+    </div>
+  </AppSheet>
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
 import type { Recipe } from '../types/recipe'
 
 const emit = defineEmits<{ saved: [Recipe] }>()
 
-const { mobile } = useDisplay()
 const { items: ingredients } = useIngredients()
 const { mealTypes } = useMealTypes()
 const { dietaryRegimes } = useDietaryRegimes()
@@ -262,11 +251,14 @@ defineExpose({ openCreate, openEdit })
 <style scoped lang="scss">
 .recipe-dialog {
   &__title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    padding: 0.25rem 1.25rem 0.75rem;
+    font-size: 1.2rem;
     font-weight: 800;
     letter-spacing: -0.02em;
+  }
+
+  &__content {
+    padding: 0 1.25rem;
   }
 
   &__form {
@@ -375,8 +367,11 @@ defineExpose({ openCreate, openEdit })
   }
 
   &__actions {
+    display: flex;
+    align-items: center;
     justify-content: flex-end;
-    padding: 0.5rem 1rem 1rem;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem 1.4rem;
   }
 }
 </style>

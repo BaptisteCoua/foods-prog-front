@@ -1,19 +1,10 @@
 <template>
-  <v-dialog
+  <AppSheet
     v-model="open"
-    fullscreen
-    :scrim="false"
-    transition="dialog-bottom-transition"
+    :max-width="640"
   >
-    <v-card class="editor">
+    <div class="editor">
       <header class="editor__bar">
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          :disabled="saving"
-          aria-label="Fermer"
-          @click="close"
-        />
         <span class="editor__bar-title">Modifier mon profil</span>
         <v-btn
           variant="flat"
@@ -382,8 +373,8 @@
           </div>
         </section>
       </div>
-    </v-card>
-  </v-dialog>
+    </div>
+  </AppSheet>
 </template>
 
 <script setup lang="ts">
@@ -440,8 +431,6 @@ defineExpose({ open: openDialog, close })
 .editor {
   display: flex;
   flex-direction: column;
-  height: 100%;
-  background: rgb(var(--v-theme-background));
 
   &__bar {
     position: sticky;
@@ -451,16 +440,15 @@ defineExpose({ open: openDialog, close })
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    padding: 0.6rem 0.75rem;
+    padding: 0.4rem 0.9rem 0.6rem;
     background: rgb(var(--v-theme-surface));
     border-bottom: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   }
 
   &__bar-title {
     flex: 1;
-    text-align: center;
     font-weight: 800;
-    font-size: 1rem;
+    font-size: 1.05rem;
     letter-spacing: -0.02em;
   }
 
@@ -469,8 +457,6 @@ defineExpose({ open: openDialog, close })
   }
 
   &__body {
-    flex: 1;
-    overflow-y: auto;
     width: 100%;
     max-width: 520px;
     margin: 0 auto;

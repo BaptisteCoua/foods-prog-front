@@ -1,10 +1,10 @@
 <template>
-  <v-bottom-sheet
+  <AppSheet
     :model-value="modelValue"
-    max-width="640"
+    :max-width="640"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <v-card class="picker">
+    <div class="picker">
       <header class="picker__head">
         <div>
           <h2 class="picker__title">
@@ -17,13 +17,6 @@
             {{ slotLabel }}
           </p>
         </div>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          size="small"
-          aria-label="Fermer"
-          @click="emit('update:modelValue', false)"
-        />
       </header>
 
       <v-text-field
@@ -100,8 +93,8 @@
           </template>
         </v-list-item>
       </v-list>
-    </v-card>
-  </v-bottom-sheet>
+    </div>
+  </AppSheet>
 </template>
 
 <script setup lang="ts">
@@ -132,8 +125,7 @@ watch(() => props.modelValue, (open) => {
   display: flex;
   flex-direction: column;
   gap: 0.85rem;
-  padding: 1.1rem 1.1rem 1.4rem;
-  max-height: 78vh;
+  padding: 0.25rem 1.1rem 1.4rem;
 
   &__head {
     display: flex;

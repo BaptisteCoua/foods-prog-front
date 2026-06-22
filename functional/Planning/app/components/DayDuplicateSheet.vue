@@ -1,10 +1,10 @@
 <template>
-  <v-bottom-sheet
+  <AppSheet
     :model-value="modelValue"
-    max-width="560"
+    :max-width="560"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <v-card class="dup">
+    <div class="dup">
       <header class="dup__head">
         <div>
           <h2 class="dup__title">
@@ -14,13 +14,6 @@
             {{ formatLongDate(sourceDate) }} → vers&nbsp;:
           </p>
         </div>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          size="small"
-          aria-label="Fermer"
-          @click="emit('update:modelValue', false)"
-        />
       </header>
 
       <div class="dup__targets">
@@ -54,8 +47,8 @@
           Copier{{ selected.length ? ` (${selected.length})` : '' }}
         </v-btn>
       </div>
-    </v-card>
-  </v-bottom-sheet>
+    </div>
+  </AppSheet>
 </template>
 
 <script setup lang="ts">
@@ -97,7 +90,7 @@ watch(() => props.modelValue, (open) => {
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding: 1.1rem 1.1rem 1.4rem;
+  padding: 0.25rem 1.1rem 1.4rem;
 
   &__head {
     display: flex;

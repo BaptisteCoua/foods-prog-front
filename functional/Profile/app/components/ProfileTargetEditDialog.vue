@@ -1,14 +1,14 @@
 <template>
-  <v-dialog
+  <AppSheet
     v-model="open"
-    max-width="460"
+    :max-width="460"
   >
-    <v-card class="target-edit">
-      <v-card-title class="target-edit__title">
+    <div class="target-edit">
+      <header class="target-edit__title">
         Modifier la cible
-      </v-card-title>
+      </header>
 
-      <v-card-text>
+      <div class="target-edit__content">
         <p class="target-edit__hint">
           Les valeurs saisies remplacent la cible automatique calculée depuis ton profil.
         </p>
@@ -54,10 +54,9 @@
             :rules="rules"
           />
         </v-form>
-      </v-card-text>
+      </div>
 
-      <v-card-actions>
-        <v-spacer />
+      <div class="target-edit__actions">
         <v-btn
           variant="text"
           :disabled="saving"
@@ -72,9 +71,9 @@
         >
           Enregistrer
         </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </div>
+    </div>
+  </AppSheet>
 </template>
 
 <script setup lang="ts">
@@ -130,16 +129,28 @@ defineExpose({
 <style scoped lang="scss">
 .target-edit {
   &__title {
-    font-size: 1.15rem;
+    font-size: 1.2rem;
     font-weight: 800;
     letter-spacing: -0.02em;
-    padding-top: 1.1rem;
+    padding: 0.25rem 1.25rem 0.75rem;
+  }
+
+  &__content {
+    padding: 0 1.25rem;
   }
 
   &__hint {
     font-size: 0.82rem;
     color: rgb(var(--v-theme-on-surface-variant));
     margin-bottom: 1rem;
+  }
+
+  &__actions {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem 1.4rem;
   }
 }
 </style>

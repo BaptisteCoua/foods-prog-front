@@ -1,23 +1,14 @@
 <template>
-  <v-dialog
+  <AppSheet
     v-model="dialogOpen"
-    :fullscreen="mobile"
-    :max-width="mobile ? undefined : 520"
-    scrollable
+    :max-width="520"
   >
-    <v-card class="ingredient-dialog">
-      <v-card-title class="ingredient-dialog__title">
-        <span>{{ title }}</span>
-        <v-btn
-          icon="mdi-close"
-          variant="text"
-          size="small"
-          aria-label="Fermer"
-          @click="close"
-        />
-      </v-card-title>
+    <div class="ingredient-dialog">
+      <header class="ingredient-dialog__title">
+        {{ title }}
+      </header>
 
-      <v-card-text>
+      <div class="ingredient-dialog__content">
         <v-form
           ref="formRef"
           class="ingredient-dialog__form"
@@ -114,9 +105,9 @@
             hide-details
           />
         </v-form>
-      </v-card-text>
+      </div>
 
-      <v-card-actions class="ingredient-dialog__actions">
+      <div class="ingredient-dialog__actions">
         <v-btn
           variant="text"
           @click="close"
@@ -131,16 +122,14 @@
         >
           Enregistrer
         </v-btn>
-      </v-card-actions>
-    </v-card>
-  </v-dialog>
+      </div>
+    </div>
+  </AppSheet>
 </template>
 
 <script setup lang="ts">
-import { useDisplay } from 'vuetify'
 import { UNIT_OPTIONS } from '../types/ingredient'
 
-const { mobile } = useDisplay()
 const { foodTypes } = useFoodTypes()
 const {
   dialogOpen,
@@ -164,11 +153,14 @@ defineExpose({ openCreate, openEdit })
 <style scoped lang="scss">
 .ingredient-dialog {
   &__title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    padding: 0.25rem 1.25rem 0.75rem;
+    font-size: 1.2rem;
     font-weight: 800;
     letter-spacing: -0.02em;
+  }
+
+  &__content {
+    padding: 0 1.25rem;
   }
 
   &__form {
@@ -199,8 +191,11 @@ defineExpose({ openCreate, openEdit })
   }
 
   &__actions {
+    display: flex;
+    align-items: center;
     justify-content: flex-end;
-    padding: 0.5rem 1rem 1rem;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem 1.4rem;
   }
 }
 </style>

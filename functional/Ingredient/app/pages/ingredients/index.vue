@@ -144,17 +144,19 @@
 
     <IngredientFormDialog ref="formDialog" />
 
-    <v-dialog
+    <AppSheet
       :model-value="confirmTarget !== null"
-      max-width="400"
+      :max-width="400"
       @update:model-value="cancelDelete"
     >
-      <v-card class="ingredients__confirm">
-        <v-card-title>Supprimer ?</v-card-title>
-        <v-card-text>
+      <div class="ingredients__confirm">
+        <header class="ingredients__confirm-title">
+          Supprimer ?
+        </header>
+        <p class="ingredients__confirm-text">
           Supprimer « {{ confirmTarget?.name }} » de ta bibliothèque ? Cette action est définitive.
-        </v-card-text>
-        <v-card-actions class="ingredients__confirm-actions">
+        </p>
+        <div class="ingredients__confirm-actions">
           <v-btn
             variant="text"
             @click="cancelDelete"
@@ -169,9 +171,9 @@
           >
             Supprimer
           </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+        </div>
+      </div>
+    </AppSheet>
   </div>
 </template>
 
@@ -272,9 +274,24 @@ const openEdit = (ingredient: typeof filteredItems.value[number]) => formDialog.
     background: rgba(var(--v-theme-primary), 0.12);
   }
 
+  &__confirm-title {
+    padding: 0.25rem 1.25rem 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  &__confirm-text {
+    padding: 0 1.25rem;
+    color: rgb(var(--v-theme-on-surface-variant));
+  }
+
   &__confirm-actions {
+    display: flex;
+    align-items: center;
     justify-content: flex-end;
-    padding: 0.5rem 1rem 1rem;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem 1.4rem;
   }
 }
 </style>

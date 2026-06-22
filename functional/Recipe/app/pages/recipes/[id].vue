@@ -260,16 +260,18 @@
       @saved="() => refresh()"
     />
 
-    <v-dialog
+    <AppSheet
       v-model="confirmOpen"
-      max-width="400"
+      :max-width="400"
     >
-      <v-card class="recipe-detail__confirm">
-        <v-card-title>Supprimer ?</v-card-title>
-        <v-card-text>
+      <div class="recipe-detail__confirm">
+        <header class="recipe-detail__confirm-title">
+          Supprimer ?
+        </header>
+        <p class="recipe-detail__confirm-text">
           Supprimer « {{ recipe?.name }} » ? Cette action est définitive.
-        </v-card-text>
-        <v-card-actions class="recipe-detail__confirm-actions">
+        </p>
+        <div class="recipe-detail__confirm-actions">
           <v-btn
             variant="text"
             @click="confirmOpen = false"
@@ -284,9 +286,9 @@
           >
             Supprimer
           </v-btn>
-        </v-card-actions>
-      </v-card>
-    </v-dialog>
+        </div>
+      </div>
+    </AppSheet>
   </div>
 </template>
 
@@ -613,9 +615,24 @@ const onDelete = async () => {
     color: rgb(var(--v-theme-on-surface-variant));
   }
 
+  &__confirm-title {
+    padding: 0.25rem 1.25rem 0.5rem;
+    font-size: 1.2rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  &__confirm-text {
+    padding: 0 1.25rem;
+    color: rgb(var(--v-theme-on-surface-variant));
+  }
+
   &__confirm-actions {
+    display: flex;
+    align-items: center;
     justify-content: flex-end;
-    padding: 0.5rem 1rem 1rem;
+    gap: 0.5rem;
+    padding: 1rem 1.25rem 1.4rem;
   }
 }
 </style>

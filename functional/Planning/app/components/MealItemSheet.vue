@@ -1,10 +1,10 @@
 <template>
-  <v-bottom-sheet
+  <AppSheet
     :model-value="modelValue"
-    max-width="640"
+    :max-width="640"
     @update:model-value="emit('update:modelValue', $event)"
   >
-    <v-card
+    <div
       v-if="item"
       class="meal-sheet"
     >
@@ -27,14 +27,6 @@
             color="on-surface-variant"
           />
         </div>
-        <v-btn
-          icon="mdi-close"
-          variant="flat"
-          size="small"
-          class="meal-sheet__close"
-          aria-label="Fermer"
-          @click="emit('update:modelValue', false)"
-        />
       </div>
 
       <div class="meal-sheet__body">
@@ -125,8 +117,8 @@
           </v-btn>
         </div>
       </div>
-    </v-card>
-  </v-bottom-sheet>
+    </div>
+  </AppSheet>
 </template>
 
 <script setup lang="ts">
@@ -166,8 +158,6 @@ const step = (delta: number) => {
 
 <style scoped lang="scss">
 .meal-sheet {
-  overflow: hidden;
-
   &__hero {
     position: relative;
   }
@@ -182,13 +172,6 @@ const step = (delta: number) => {
       aspect-ratio: 16 / 9;
       background: rgba(var(--v-border-color), var(--v-border-opacity));
     }
-  }
-
-  &__close {
-    position: absolute;
-    top: 0.6rem;
-    right: 0.6rem;
-    background: rgba(var(--v-theme-surface), 0.9);
   }
 
   &__body {
