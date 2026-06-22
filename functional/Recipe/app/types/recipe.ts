@@ -44,6 +44,7 @@ export interface RecipePayload {
   name: string
   description?: string
   steps?: string
+  img?: string
   servings: number
   prepTimeMin?: number
   cookTimeMin?: number

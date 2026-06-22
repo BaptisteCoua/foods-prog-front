@@ -42,6 +42,16 @@
     </v-card>
 
     <template v-else>
+      <v-img
+        v-if="recipe.img"
+        :src="recipe.img"
+        :alt="recipe.name"
+        class="recipe-detail__image"
+        cover
+        rounded="xl"
+        :aspect-ratio="16 / 9"
+      />
+
       <header class="recipe-detail__head">
         <div>
           <h1 class="recipe-detail__title">
@@ -297,6 +307,12 @@ const onDelete = async () => {
     &:hover {
       color: rgb(var(--v-theme-primary));
     }
+  }
+
+  &__image {
+    width: 100%;
+    max-height: 280px;
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   }
 
   &__head {

@@ -30,6 +30,34 @@
             :rules="[rules.required]"
           />
 
+          <div class="recipe-dialog__image">
+            <v-avatar
+              class="recipe-dialog__image-preview"
+              size="56"
+              rounded="lg"
+            >
+              <v-img
+                v-if="form.img.trim()"
+                :src="form.img.trim()"
+                cover
+                alt="Aperçu du plat"
+              />
+              <v-icon
+                v-else
+                icon="mdi-image-outline"
+                color="on-surface-variant"
+              />
+            </v-avatar>
+            <v-text-field
+              v-model="form.img"
+              label="Image du plat (URL, optionnel)"
+              prepend-inner-icon="mdi-link-variant"
+              placeholder="https://…"
+              hide-details
+              class="recipe-dialog__image-field"
+            />
+          </div>
+
           <div class="recipe-dialog__grid">
             <v-text-field
               v-model.number="form.servings"
@@ -212,6 +240,21 @@ defineExpose({ openCreate, openEdit })
     flex-direction: column;
     gap: 1rem;
     padding-top: 0.5rem;
+  }
+
+  &__image {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__image-preview {
+    flex: 0 0 auto;
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+
+  &__image-field {
+    flex: 1 1 auto;
   }
 
   &__grid {

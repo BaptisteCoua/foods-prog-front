@@ -14,6 +14,7 @@ interface RecipeFormState {
   cookTimeMin: number | null
   description: string
   steps: string
+  img: string
   mealTypeIds: number[]
   lines: IngredientLine[]
 }
@@ -25,6 +26,7 @@ const createForm = (): RecipeFormState => ({
   cookTimeMin: null,
   description: '',
   steps: '',
+  img: '',
   mealTypeIds: [],
   lines: [{ ingredientId: null, quantity: null }],
 })
@@ -71,6 +73,7 @@ export const useRecipeForm = () => {
       cookTimeMin: recipe.cookTimeMin,
       description: recipe.description ?? '',
       steps: recipe.steps ?? '',
+      img: recipe.img ?? '',
       mealTypeIds: recipe.mealTypes.map(type => type.id),
       lines: recipe.recipeIngredients.length
         ? recipe.recipeIngredients.map(line => ({
@@ -102,6 +105,7 @@ export const useRecipeForm = () => {
     }
     if (form.description.trim()) payload.description = form.description.trim()
     if (form.steps.trim()) payload.steps = form.steps.trim()
+    if (form.img.trim()) payload.img = form.img.trim()
     if (form.prepTimeMin !== null) payload.prepTimeMin = Number(form.prepTimeMin)
     if (form.cookTimeMin !== null) payload.cookTimeMin = Number(form.cookTimeMin)
     return payload
