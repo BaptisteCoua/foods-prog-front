@@ -113,18 +113,24 @@ const emit = defineEmits<{
 const items = computed(() => props.row.items)
 
 const sheetOpen = ref(false)
-const selectedItem = ref<MealItem | null>(null)
+const selectedRecipeId = ref<number | null>(null)
+
+// Identify the open item by its recipe (stable), NOT its id: editing portions
+// does a PUT /meals/:id that replaces the meal's items with fresh rows (new ids),
+// so an id-based lookup would lose the selection and collapse the sheet. Reading
+// from `items` keeps the sheet bound to the live, recomputed total after refetch.
+const selectedItem = computed<MealItem | null>(() =>
+  items.value.find(item => item.recipe.id === selectedRecipeId.value) ?? null,
+)
 
 const openItem = (item: MealItem) => {
-  selectedItem.value = item
+  selectedRecipeId.value = item.recipe.id
   sheetOpen.value = true
 }
 
-// Keep the open sheet in sync after a portions change (the row reference is
-// replaced when the planning refetches).
-watch(items, (rows) => {
-  if (!selectedItem.value) return
-  selectedItem.value = rows.find(row => row.id === selectedItem.value?.id) ?? null
+// If the selected item is gone (removed), close the sheet.
+watch(selectedItem, (item) => {
+  if (!item) sheetOpen.value = false
 })
 
 // First meal-type tag, shown as a faint course label when present.
