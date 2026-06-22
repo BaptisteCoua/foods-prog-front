@@ -22,59 +22,15 @@
       v-if="items.length"
       class="meal-card__items"
     >
-      <li
+      <PlanningMealItem
         v-for="item in items"
         :key="item.id"
-        class="meal-card__item"
-      >
-        <button
-          type="button"
-          class="meal-card__item-btn"
-          @click="openItem(item)"
-        >
-          <v-avatar
-            class="meal-card__item-thumb"
-            size="36"
-            rounded="lg"
-          >
-            <v-img
-              v-if="item.recipe.img"
-              :src="item.recipe.img"
-              cover
-              :alt="item.recipe.name"
-            />
-            <v-icon
-              v-else
-              :icon="row.meta.icon"
-              size="18"
-              color="on-surface-variant"
-            />
-          </v-avatar>
-
-          <div class="meal-card__item-main">
-            <span class="meal-card__item-name">{{ item.recipe.name }}</span>
-            <span
-              v-if="courseName(item) || item.portions !== 1"
-              class="meal-card__item-meta"
-            >
-              <span
-                v-if="courseName(item)"
-                class="meal-card__course"
-              >{{ courseName(item) }}</span>
-              <span
-                v-if="item.portions !== 1"
-                class="meal-card__item-kcal"
-              >×{{ formatPortionValue(item.portions) }} portions</span>
-            </span>
-          </div>
-
-          <v-icon
-            icon="mdi-chevron-right"
-            size="18"
-            class="meal-card__item-chevron"
-          />
-        </button>
-      </li>
+        :item="item"
+        :icon="row.meta.icon"
+        :course-name="courseName(item)"
+        @open="openItem(item)"
+        @remove="emit('remove', item.id)"
+      />
     </ul>
 
     <button
@@ -134,9 +90,6 @@ watch(selectedItem, (item) => {
 
 // First meal-type tag, shown as a faint course label when present.
 const courseName = (item: MealItem) => item.recipe.mealTypes?.[0]?.name ?? ''
-
-const formatPortionValue = (portions: number) =>
-  Number.isInteger(portions) ? String(portions) : portions.toFixed(1)
 </script>
 
 <style scoped lang="scss">
@@ -181,66 +134,6 @@ const formatPortionValue = (portions: number) =>
     display: flex;
     flex-direction: column;
     gap: 0.4rem;
-  }
-
-  &__item-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    width: 100%;
-    padding: 0.5rem 0.55rem;
-    text-align: left;
-    cursor: pointer;
-    border-radius: 12px;
-    background: rgb(var(--v-theme-surface-variant));
-    border: 1px solid rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.6));
-    transition: background 0.15s var(--app-ease, ease), border-color 0.15s var(--app-ease, ease);
-
-    &:hover {
-      border-color: rgba(var(--v-border-color), var(--v-border-opacity));
-    }
-  }
-
-  &__item-chevron {
-    flex: 0 0 auto;
-    color: rgb(var(--v-theme-on-surface-variant));
-  }
-
-  &__item-thumb {
-    flex: 0 0 auto;
-    border: 1px solid rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.8));
-  }
-
-  &__item-main {
-    display: flex;
-    flex: 1 1 auto;
-    flex-direction: column;
-    min-width: 0;
-    gap: 0.1rem;
-  }
-
-  &__item-name {
-    font-size: 0.9rem;
-    font-weight: 500;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  &__item-meta {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: 0.74rem;
-    color: rgb(var(--v-theme-on-surface-variant));
-    font-variant-numeric: tabular-nums;
-  }
-
-  &__course {
-    text-transform: uppercase;
-    letter-spacing: 0.03em;
-    font-weight: 600;
-    color: rgb(var(--v-theme-primary));
   }
 
   &__add {
