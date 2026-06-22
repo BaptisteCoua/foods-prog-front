@@ -19,6 +19,14 @@ export const formatMacro = (grams: number): string =>
 export const quantityUnit = (unitType: UnitType): string =>
   unitType === 'VOLUME' ? 'ml' : 'g'
 
+// Scaled quantities can be fractional; keep one decimal only when needed.
+export const formatQuantity = (quantity: number): string => {
+  const rounded = Math.round(quantity * 10) / 10
+  return Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toLocaleString('fr-FR', { maximumFractionDigits: 1 })
+}
+
 // "25 min" / "1 h 10" / "—" — sums prep + cook time.
 export const formatTotalTime = (
   prepTimeMin: number | null,

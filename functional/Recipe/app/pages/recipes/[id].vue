@@ -105,6 +105,41 @@
         </v-chip>
       </div>
 
+      <!-- Portion simulator (client-side, not persisted) -->
+      <div class="recipe-detail__portions">
+        <div class="recipe-detail__portions-label">
+          <span class="recipe-detail__portions-title">Portions</span>
+          <button
+            v-if="isScaled"
+            type="button"
+            class="recipe-detail__portions-reset"
+            @click="reset"
+          >
+            Réinitialiser (1)
+          </button>
+        </div>
+        <div class="recipe-detail__stepper">
+          <v-btn
+            icon="mdi-minus"
+            variant="tonal"
+            size="small"
+            density="comfortable"
+            aria-label="Moins de portions"
+            :disabled="portions <= 1"
+            @click="decrement"
+          />
+          <span class="recipe-detail__stepper-value">{{ portions }}</span>
+          <v-btn
+            icon="mdi-plus"
+            variant="tonal"
+            size="small"
+            density="comfortable"
+            aria-label="Plus de portions"
+            @click="increment"
+          />
+        </div>
+      </div>
+
       <!-- Per-serving nutrition -->
       <AppReveal>
         <v-card
@@ -149,8 +184,12 @@
             </div>
           </div>
 
-          <p class="recipe-detail__total">
-            Recette entière : {{ formatKcal(recipe.total.calories) }} · {{ formatCost(recipe.total.costCents) }}
+          <p
+            v-if="scaledTotal"
+            class="recipe-detail__total"
+          >
+            {{ isScaled ? `Pour ${portions} portions` : 'Recette entière' }} :
+            {{ formatKcal(scaledTotal.calories) }} · {{ formatCost(scaledTotal.costCents) }}
           </p>
         </v-card>
       </AppReveal>
@@ -171,13 +210,13 @@
           class="recipe-detail__lines"
         >
           <li
-            v-for="line in recipe.recipeIngredients"
+            v-for="line in scaledIngredients"
             :key="line.id"
             class="recipe-detail__line"
           >
-            <span>{{ line.ingredient.name }}</span>
+            <span>{{ line.name }}</span>
             <span class="recipe-detail__qty">
-              {{ line.quantity }} {{ quantityUnit(line.ingredient.unitType) }}
+              {{ formatQuantity(line.quantity) }} {{ quantityUnit(line.unitType) }}
             </span>
           </li>
         </ul>
@@ -254,6 +293,9 @@ const id = computed(() => Number(route.params.id))
 
 const { recipe, pending, error, refresh } = useRecipeDetail(id)
 const { remove } = useRecipes()
+
+const { portions, isScaled, scaledTotal, scaledIngredients, increment, decrement, reset }
+  = useRecipePortions(recipe)
 
 const formDialog = useTemplateRef('formDialog')
 const confirmOpen = ref(false)
@@ -355,6 +397,57 @@ const onDelete = async () => {
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem;
+  }
+
+  &__portions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.85rem 1rem;
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-radius: 14px;
+  }
+
+  &__portions-label {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  &__portions-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgb(var(--v-theme-on-surface-variant));
+  }
+
+  &__portions-reset {
+    align-self: flex-start;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: rgb(var(--v-theme-primary));
+    transition: opacity 0.18s var(--app-ease);
+
+    &:hover {
+      opacity: 0.75;
+    }
+  }
+
+  &__stepper {
+    display: flex;
+    align-items: center;
+    gap: 0.85rem;
+  }
+
+  &__stepper-value {
+    min-width: 1.5ch;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    font-variant-numeric: tabular-nums;
   }
 
   &__nutrition {

@@ -15,6 +15,12 @@ export const useRecipeList = () => {
   const confirmTarget = ref<Recipe | null>(null)
   const isDeleting = ref(false)
 
+  // Progressive rendering: keep the whole (already-fetched + filtered) list in
+  // memory but only mount a growing window of cards, +15 each time the bottom
+  // sentinel scrolls into view.
+  const PAGE_SIZE = 15
+  const visibleCount = ref(PAGE_SIZE)
+
   // A recipe matches the search by name and each active filter (meal-type and
   // dietary-regime) when it carries at least one of the selected tags (an empty
   // selection means that filter is inactive).
@@ -32,6 +38,22 @@ export const useRecipeList = () => {
       return matchesSearch && matchesType && matchesRegime
     })
   })
+
+  // The slice actually rendered, and whether more remain to reveal.
+  const visibleItems = computed(() => filteredItems.value.slice(0, visibleCount.value))
+  const hasMore = computed(() => visibleCount.value < filteredItems.value.length)
+
+  // Any change to the result set (search, filters, refetch) rewinds the window.
+  watch(() => filteredItems.value.length, () => {
+    visibleCount.value = PAGE_SIZE
+  })
+
+  // Called by the bottom sentinel's v-intersect when it enters the viewport.
+  const loadMore = (isIntersecting: boolean) => {
+    if (isIntersecting && hasMore.value) {
+      visibleCount.value += PAGE_SIZE
+    }
+  }
 
   const askDelete = (recipe: Recipe) => {
     confirmTarget.value = recipe
@@ -60,6 +82,9 @@ export const useRecipeList = () => {
   return {
     items,
     filteredItems,
+    visibleItems,
+    hasMore,
+    loadMore,
     mealTypes,
     selectedMealTypeIds,
     dietaryRegimes,

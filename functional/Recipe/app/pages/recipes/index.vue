@@ -133,9 +133,9 @@
       class="recipes__list"
     >
       <AppReveal
-        v-for="(recipe, index) in filteredItems"
+        v-for="(recipe, index) in visibleItems"
         :key="recipe.id"
-        :delay="Math.min(index * 40, 240)"
+        :delay="Math.min((index % 15) * 40, 240)"
       >
         <RecipeCard
           :recipe
@@ -144,6 +144,20 @@
           @delete="askDelete"
         />
       </AppReveal>
+
+      <!-- Reveals the next 15 cards when scrolled near. -->
+      <div
+        v-if="hasMore"
+        v-intersect="{ handler: loadMore, options: { rootMargin: '300px' } }"
+        class="recipes__sentinel"
+      >
+        <v-progress-circular
+          indeterminate
+          size="24"
+          width="2"
+          color="primary"
+        />
+      </div>
     </div>
 
     <RecipeFormDialog ref="formDialog" />
@@ -189,6 +203,9 @@ const formDialog = useTemplateRef('formDialog')
 const {
   items,
   filteredItems,
+  visibleItems,
+  hasMore,
+  loadMore,
   mealTypes,
   selectedMealTypeIds,
   dietaryRegimes,
@@ -248,6 +265,12 @@ const goToRecipe = (recipe: Recipe) => navigateTo(`/recipes/${recipe.id}`)
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+  }
+
+  &__sentinel {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0 0.5rem;
   }
 
   &__skeleton {

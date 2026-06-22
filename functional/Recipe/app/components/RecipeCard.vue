@@ -4,19 +4,47 @@
     elevation="0"
     @click="emit('open', recipe)"
   >
-    <div class="recipe-card__head">
-      <div class="recipe-card__title">
-        <span class="recipe-card__name">{{ recipe.name }}</span>
-        <span class="recipe-card__meta">
-          {{ recipe.servings }} portion{{ recipe.servings > 1 ? 's' : '' }} · {{ totalTime }} · {{ ingredientCount }}
-        </span>
+    <div class="recipe-card__media">
+      <v-img
+        v-if="recipe.img"
+        :src="recipe.img"
+        :alt="recipe.name"
+        class="recipe-card__img"
+        cover
+        height="100%"
+        :lazy-src="placeholderSrc"
+        loading="lazy"
+      >
+        <template #placeholder>
+          <div class="recipe-card__img-loading">
+            <v-progress-circular
+              indeterminate
+              size="22"
+              width="2"
+              color="primary"
+            />
+          </div>
+        </template>
+      </v-img>
+      <div
+        v-else
+        class="recipe-card__img recipe-card__img--empty"
+      >
+        <v-icon
+          icon="mdi-silverware-fork-knife"
+          size="30"
+        />
       </div>
+
+      <div class="recipe-card__scrim" />
+
       <v-btn
         icon
-        variant="text"
+        variant="flat"
         size="small"
         density="comfortable"
         aria-label="Actions"
+        class="recipe-card__actions"
         @click.stop
       >
         <v-icon icon="mdi-dots-vertical" />
@@ -39,6 +67,13 @@
           </v-list>
         </v-menu>
       </v-btn>
+
+      <div class="recipe-card__overlay">
+        <span class="recipe-card__name">{{ recipe.name }}</span>
+        <span class="recipe-card__meta">
+          {{ recipe.servings }} portion{{ recipe.servings > 1 ? 's' : '' }} · {{ totalTime }} · {{ ingredientCount }}
+        </span>
+      </div>
     </div>
 
     <div class="recipe-card__stats">
@@ -67,7 +102,7 @@
       <v-chip
         v-for="type in recipe.mealTypes"
         :key="`meal-${type.id}`"
-        size="x-small"
+        size="small"
         variant="tonal"
       >
         {{ type.name }}
@@ -75,7 +110,7 @@
       <v-chip
         v-for="regime in recipe.dietaryRegimes"
         :key="`regime-${regime.id}`"
-        size="x-small"
+        size="small"
         variant="tonal"
         color="primary"
         prepend-icon="mdi-leaf"
@@ -92,6 +127,10 @@ import type { Recipe } from '../types/recipe'
 const props = defineProps<{ recipe: Recipe }>()
 const emit = defineEmits<{ open: [Recipe], edit: [Recipe], delete: [Recipe] }>()
 
+// Tiny inline blur placeholder shown while the real image lazy-loads.
+const placeholderSrc = 'data:image/svg+xml;utf8,'
+  + '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="9"><rect width="16" height="9" fill="%2310B981" opacity="0.12"/></svg>'
+
 const totalTime = computed(() => formatTotalTime(props.recipe.prepTimeMin, props.recipe.cookTimeMin))
 const ingredientCount = computed(() => {
   const count = props.recipe.recipeIngredients.length
@@ -101,23 +140,80 @@ const ingredientCount = computed(() => {
 
 <style scoped lang="scss">
 .recipe-card {
-  padding: 1rem 1.1rem;
+  overflow: hidden;
+  // Bottom padding lives on the card (not a `:last-child` child) so it survives
+  // Vuetify appending its overlay node last — otherwise the bottom row's chips
+  // fall flush against the rounded corner and get clipped.
+  padding-bottom: 1.15rem;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   cursor: pointer;
-  transition: border-color 0.18s var(--app-ease);
+  transition: border-color 0.18s var(--app-ease), transform 0.18s var(--app-ease);
 
   &:hover {
     border-color: rgba(var(--v-theme-primary), 0.4);
+    transform: translateY(-2px);
   }
 
-  &__head {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.5rem;
+  &:hover .recipe-card__img {
+    transform: scale(1.04);
   }
 
-  &__title {
+  &__media {
+    position: relative;
+    isolation: isolate;
+    height: clamp(150px, 30vw, 190px);
+  }
+
+  &__img {
+    width: 100%;
+    height: 100%;
+    transition: transform 0.5s var(--app-ease);
+  }
+
+  &__img--empty {
+    height: 100%;
+    display: grid;
+    place-items: center;
+    color: rgba(var(--v-theme-primary), 0.55);
+    background: linear-gradient(
+      135deg,
+      rgba(var(--v-theme-primary), 0.16),
+      rgba(var(--v-theme-primary), 0.04)
+    );
+  }
+
+  &__img-loading {
+    height: 100%;
+    display: grid;
+    place-items: center;
+  }
+
+  &__scrim {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      to top,
+      rgba(0, 0, 0, 0.62) 0%,
+      rgba(0, 0, 0, 0.18) 38%,
+      rgba(0, 0, 0, 0) 62%
+    );
+    pointer-events: none;
+  }
+
+  &__actions {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    color: #fff;
+    background: rgba(0, 0, 0, 0.32);
+    backdrop-filter: blur(6px);
+  }
+
+  &__overlay {
+    position: absolute;
+    left: 1.1rem;
+    right: 1.1rem;
+    bottom: 0.7rem;
     display: flex;
     flex-direction: column;
     min-width: 0;
@@ -125,21 +221,24 @@ const ingredientCount = computed(() => {
 
   &__name {
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 1.05rem;
     letter-spacing: -0.01em;
+    color: #fff;
+    text-shadow: 0 1px 8px rgba(0, 0, 0, 0.4);
   }
 
   &__meta {
-    font-size: 0.8rem;
-    color: rgb(var(--v-theme-on-surface-variant));
+    font-size: 0.78rem;
     margin-top: 0.1rem;
+    color: rgba(255, 255, 255, 0.82);
+    text-shadow: 0 1px 6px rgba(0, 0, 0, 0.4);
   }
 
   &__stats {
     display: flex;
     align-items: center;
     gap: 0.9rem;
-    margin-top: 0.85rem;
+    padding: 0.85rem 1.1rem 0;
     flex-wrap: wrap;
   }
 
@@ -196,7 +295,11 @@ const ingredientCount = computed(() => {
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem;
-    margin-top: 0.75rem;
+    padding: 0.75rem 1.1rem 0;
+  }
+
+  &__media + &__stats {
+    padding-top: 0.85rem;
   }
 }
 </style>
