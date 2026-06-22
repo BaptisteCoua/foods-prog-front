@@ -16,6 +16,7 @@ interface RecipeFormState {
   steps: string
   img: string
   mealTypeIds: number[]
+  dietaryRegimeIds: number[]
   lines: IngredientLine[]
 }
 
@@ -28,6 +29,7 @@ const createForm = (): RecipeFormState => ({
   steps: '',
   img: '',
   mealTypeIds: [],
+  dietaryRegimeIds: [],
   lines: [{ ingredientId: null, quantity: null }],
 })
 
@@ -75,6 +77,7 @@ export const useRecipeForm = () => {
       steps: recipe.steps ?? '',
       img: recipe.img ?? '',
       mealTypeIds: recipe.mealTypes.map(type => type.id),
+      dietaryRegimeIds: recipe.dietaryRegimes.map(regime => regime.id),
       lines: recipe.recipeIngredients.length
         ? recipe.recipeIngredients.map(line => ({
             ingredientId: line.ingredient.id,
@@ -102,6 +105,7 @@ export const useRecipeForm = () => {
       servings: Number(form.servings),
       recipeIngredients: lines,
       mealTypes: form.mealTypeIds.map(id => ({ id })),
+      dietaryRegimes: form.dietaryRegimeIds.map(id => ({ id })),
     }
     if (form.description.trim()) payload.description = form.description.trim()
     if (form.steps.trim()) payload.steps = form.steps.trim()

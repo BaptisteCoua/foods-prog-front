@@ -113,18 +113,17 @@ const emit = defineEmits<{
 const items = computed(() => props.row.items)
 
 const sheetOpen = ref(false)
-const selectedRecipeId = ref<number | null>(null)
+const selectedItemId = ref<number | null>(null)
 
-// Identify the open item by its recipe (stable), NOT its id: editing portions
-// does a PUT /meals/:id that replaces the meal's items with fresh rows (new ids),
-// so an id-based lookup would lose the selection and collapse the sheet. Reading
-// from `items` keeps the sheet bound to the live, recomputed total after refetch.
+// Track the open line by its (now stable) item id and read it back from the live
+// `items` list, so the sheet shows the recomputed total after a portions change
+// and unambiguously targets the right line even if a recipe appears twice.
 const selectedItem = computed<MealItem | null>(() =>
-  items.value.find(item => item.recipe.id === selectedRecipeId.value) ?? null,
+  items.value.find(item => item.id === selectedItemId.value) ?? null,
 )
 
 const openItem = (item: MealItem) => {
-  selectedRecipeId.value = item.recipe.id
+  selectedItemId.value = item.id
   sheetOpen.value = true
 }
 

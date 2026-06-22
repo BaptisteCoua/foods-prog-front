@@ -82,16 +82,26 @@
       </header>
 
       <div
-        v-if="recipe.mealTypes.length"
+        v-if="recipe.mealTypes.length || recipe.dietaryRegimes.length"
         class="recipe-detail__tags"
       >
         <v-chip
           v-for="type in recipe.mealTypes"
-          :key="type.id"
+          :key="`meal-${type.id}`"
           size="small"
           variant="tonal"
         >
           {{ type.name }}
+        </v-chip>
+        <v-chip
+          v-for="regime in recipe.dietaryRegimes"
+          :key="`regime-${regime.id}`"
+          size="small"
+          variant="tonal"
+          color="primary"
+          prepend-icon="mdi-leaf"
+        >
+          {{ regime.name }}
         </v-chip>
       </div>
 

@@ -9,6 +9,12 @@ export interface MealType {
   name: string
 }
 
+// A dietary regime tag (/dietary-regimes): vegetarian, vegan, gluten-free…
+export interface DietaryRegime {
+  id: number
+  name: string
+}
+
 // Aggregated macros + cost (cost in cents, unrounded).
 export interface RecipeNutrition {
   calories: number
@@ -36,6 +42,7 @@ export interface Recipe {
   cookTimeMin: number | null
   recipeIngredients: RecipeIngredientLine[]
   mealTypes: MealType[]
+  dietaryRegimes: DietaryRegime[]
   total: RecipeNutrition
   perServing: RecipeNutrition
 }
@@ -49,6 +56,7 @@ export interface RecipePayload {
   prepTimeMin?: number
   cookTimeMin?: number
   mealTypes?: { id: number }[]
+  dietaryRegimes?: { id: number }[]
   recipeIngredients?: { quantity: number, ingredient: { id: number } }[]
 }
 

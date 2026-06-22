@@ -149,6 +149,18 @@
             hide-details
           />
 
+          <v-select
+            v-model="form.dietaryRegimeIds"
+            :items="dietaryRegimes"
+            item-title="name"
+            item-value="id"
+            label="Régime alimentaire (optionnel)"
+            prepend-inner-icon="mdi-leaf"
+            multiple
+            chips
+            hide-details
+          />
+
           <v-textarea
             v-model="form.description"
             label="Description (optionnel)"
@@ -196,6 +208,7 @@ const emit = defineEmits<{ saved: [Recipe] }>()
 const { mobile } = useDisplay()
 const { items: ingredients } = useIngredients()
 const { mealTypes } = useMealTypes()
+const { dietaryRegimes } = useDietaryRegimes()
 const {
   dialogOpen,
   isSaving,

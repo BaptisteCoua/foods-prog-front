@@ -1,4 +1,4 @@
-import type { CreateMealPayload, MealItemPayload, MealWithTotal, PlanningResult } from '../types/planning'
+import type { CreateMealPayload, MealWithTotal, PlanningResult } from '../types/planning'
 
 // Loads one week of planning (GET /meals?from&to) and exposes the mutations.
 // Keyed by the week start so navigating weeks refetches; every mutation refreshes
@@ -57,14 +57,12 @@ export const usePlanningWeek = (
     await refresh()
   }
 
-  // Change an item's portions. There's no PUT on meal-items, so we replace the
-  // meal's item list via PUT /meals/:id (server recomputes the total).
-  const setPortions = async (meal: MealWithTotal, itemId: number, portions: number) => {
-    const mealItems: MealItemPayload[] = meal.mealItems.map(item => ({
-      portions: item.id === itemId ? portions : item.portions,
-      recipe: { id: item.recipe.id },
-    }))
-    await api(`/meals/${meal.id}`, { method: 'PUT', body: { mealItems } })
+  // Change one item's portions in place via PUT /meal-items/:id. Updating the
+  // single row (rather than replacing the meal's whole item list) keeps item ids
+  // stable, so the open detail sheet stays bound to the same line. Server
+  // recomputes the totals; we refresh to pull them.
+  const setPortions = async (_meal: MealWithTotal, itemId: number, portions: number) => {
+    await api(`/meal-items/${itemId}`, { method: 'PUT', body: { portions } })
     await refresh()
   }
 

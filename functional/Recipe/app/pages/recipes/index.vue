@@ -29,6 +29,46 @@
       class="recipes__search"
     />
 
+    <v-chip-group
+      v-if="mealTypes.length"
+      v-model="selectedMealTypeIds"
+      multiple
+      column
+      class="recipes__filters"
+    >
+      <v-chip
+        v-for="type in mealTypes"
+        :key="type.id"
+        :value="type.id"
+        size="small"
+        filter
+        variant="outlined"
+      >
+        {{ type.name }}
+      </v-chip>
+    </v-chip-group>
+
+    <v-chip-group
+      v-if="dietaryRegimes.length"
+      v-model="selectedDietaryRegimeIds"
+      multiple
+      column
+      class="recipes__filters"
+    >
+      <v-chip
+        v-for="regime in dietaryRegimes"
+        :key="regime.id"
+        :value="regime.id"
+        size="small"
+        filter
+        variant="outlined"
+        color="primary"
+        prepend-icon="mdi-leaf"
+      >
+        {{ regime.name }}
+      </v-chip>
+    </v-chip-group>
+
     <!-- Loading -->
     <div
       v-if="pending"
@@ -75,9 +115,9 @@
           size="26"
         />
       </span>
-      <p>{{ search ? 'Aucune recette ne correspond.' : 'Aucune recette pour l\'instant.' }}</p>
+      <p>{{ hasActiveFilter ? 'Aucune recette ne correspond.' : 'Aucune recette pour l\'instant.' }}</p>
       <v-btn
-        v-if="!search"
+        v-if="!hasActiveFilter"
         color="primary"
         flat
         prepend-icon="mdi-plus"
@@ -149,6 +189,10 @@ const formDialog = useTemplateRef('formDialog')
 const {
   items,
   filteredItems,
+  mealTypes,
+  selectedMealTypeIds,
+  dietaryRegimes,
+  selectedDietaryRegimeIds,
   pending,
   error,
   refresh,
@@ -159,6 +203,11 @@ const {
   cancelDelete,
   confirmDelete,
 } = useRecipeList()
+
+const hasActiveFilter = computed(() =>
+  Boolean(search.value)
+  || selectedMealTypeIds.value.length > 0
+  || selectedDietaryRegimeIds.value.length > 0)
 
 const openCreate = () => formDialog.value?.openCreate()
 const openEdit = (recipe: Recipe) => formDialog.value?.openEdit(recipe)
@@ -189,6 +238,10 @@ const goToRecipe = (recipe: Recipe) => navigateTo(`/recipes/${recipe.id}`)
     font-size: 0.82rem;
     color: rgb(var(--v-theme-on-surface-variant));
     margin-top: 0.2rem;
+  }
+
+  &__filters {
+    margin-top: -0.25rem;
   }
 
   &__list {
