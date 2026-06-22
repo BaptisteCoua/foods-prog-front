@@ -46,7 +46,8 @@ const { logout } = authStore
 
   &__container {
     max-width: 560px;
-    padding: 12px 16px 24px;
+    // Laisse respirer la bottom nav flottante (pilule + safe-area).
+    padding: 12px 16px calc(104px + env(safe-area-inset-bottom));
   }
 }
 </style>
