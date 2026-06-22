@@ -1,0 +1,254 @@
+<template>
+  <div class="ingredients">
+    <header class="ingredients__head">
+      <div>
+        <h1 class="ingredients__title">
+          Ingrédients
+        </h1>
+        <p class="ingredients__count">
+          {{ items.length }} ingrédient{{ items.length > 1 ? 's' : '' }}
+        </p>
+      </div>
+      <v-btn
+        color="primary"
+        flat
+        prepend-icon="mdi-plus"
+        @click="openCreate"
+      >
+        Ajouter
+      </v-btn>
+    </header>
+
+    <v-text-field
+      v-model="search"
+      placeholder="Rechercher un ingrédient"
+      prepend-inner-icon="mdi-magnify"
+      density="comfortable"
+      hide-details
+      clearable
+      class="ingredients__search"
+    />
+
+    <v-chip-group
+      v-if="foodTypes.length"
+      v-model="selectedFoodTypeIds"
+      multiple
+      column
+      class="ingredients__filters"
+    >
+      <v-chip
+        v-for="type in foodTypes"
+        :key="type.id"
+        :value="type.id"
+        filter
+        size="small"
+        variant="tonal"
+      >
+        {{ type.types }}
+      </v-chip>
+    </v-chip-group>
+
+    <!-- Loading -->
+    <div
+      v-if="pending"
+      class="ingredients__list"
+    >
+      <v-skeleton-loader
+        v-for="n in 4"
+        :key="n"
+        type="list-item-two-line"
+        class="ingredients__skeleton"
+      />
+    </div>
+
+    <!-- Error -->
+    <v-card
+      v-else-if="error"
+      class="ingredients__state"
+      elevation="0"
+    >
+      <v-icon
+        icon="mdi-wifi-off"
+        size="26"
+        color="error"
+      />
+      <p>Impossible de charger tes ingrédients.</p>
+      <v-btn
+        variant="tonal"
+        prepend-icon="mdi-refresh"
+        @click="refresh"
+      >
+        Réessayer
+      </v-btn>
+    </v-card>
+
+    <!-- Empty -->
+    <v-card
+      v-else-if="!filteredItems.length"
+      class="ingredients__state"
+      elevation="0"
+    >
+      <span class="ingredients__state-icon">
+        <v-icon
+          icon="mdi-basket-outline"
+          size="26"
+        />
+      </span>
+      <p>{{ hasActiveFilter ? 'Aucun ingrédient ne correspond.' : 'Ta bibliothèque est vide.' }}</p>
+      <v-btn
+        v-if="!hasActiveFilter"
+        color="primary"
+        flat
+        prepend-icon="mdi-plus"
+        @click="openCreate"
+      >
+        Ajouter mon premier ingrédient
+      </v-btn>
+    </v-card>
+
+    <!-- List -->
+    <div
+      v-else
+      class="ingredients__list"
+    >
+      <AppReveal
+        v-for="(ingredient, index) in filteredItems"
+        :key="ingredient.id"
+        :delay="Math.min(index * 40, 240)"
+      >
+        <IngredientCard
+          :ingredient
+          @edit="openEdit"
+          @delete="askDelete"
+        />
+      </AppReveal>
+    </div>
+
+    <IngredientFormDialog ref="formDialog" />
+
+    <v-dialog
+      :model-value="confirmTarget !== null"
+      max-width="400"
+      @update:model-value="cancelDelete"
+    >
+      <v-card class="ingredients__confirm">
+        <v-card-title>Supprimer ?</v-card-title>
+        <v-card-text>
+          Supprimer « {{ confirmTarget?.name }} » de ta bibliothèque ? Cette action est définitive.
+        </v-card-text>
+        <v-card-actions class="ingredients__confirm-actions">
+          <v-btn
+            variant="text"
+            @click="cancelDelete"
+          >
+            Annuler
+          </v-btn>
+          <v-btn
+            color="error"
+            flat
+            :loading="isDeleting"
+            @click="confirmDelete"
+          >
+            Supprimer
+          </v-btn>
+        </v-card-actions>
+      </v-card>
+    </v-dialog>
+  </div>
+</template>
+
+<script setup lang="ts">
+useHead({ title: 'Ingrédients' })
+
+const formDialog = useTemplateRef('formDialog')
+
+const { foodTypes } = useFoodTypes()
+const {
+  items,
+  filteredItems,
+  pending,
+  error,
+  refresh,
+  search,
+  selectedFoodTypeIds,
+  confirmTarget,
+  isDeleting,
+  askDelete,
+  cancelDelete,
+  confirmDelete,
+} = useIngredientList()
+
+const hasActiveFilter = computed(() => Boolean(search.value) || selectedFoodTypeIds.value.length > 0)
+
+const openCreate = () => formDialog.value?.openCreate()
+const openEdit = (ingredient: typeof filteredItems.value[number]) => formDialog.value?.openEdit(ingredient)
+</script>
+
+<style scoped lang="scss">
+.ingredients {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  &__head {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 0.25rem 0;
+  }
+
+  &__title {
+    font-size: 1.7rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+  }
+
+  &__count {
+    font-size: 0.82rem;
+    color: rgb(var(--v-theme-on-surface-variant));
+    margin-top: 0.2rem;
+  }
+
+  &__filters {
+    margin-top: -0.25rem;
+  }
+
+  &__list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+
+  &__skeleton {
+    border-radius: 18px;
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+
+  &__state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 0.7rem;
+    padding: 2.5rem 1.5rem;
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    color: rgb(var(--v-theme-on-surface-variant));
+  }
+
+  &__state-icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 16px;
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.12);
+  }
+
+  &__confirm-actions {
+    justify-content: flex-end;
+    padding: 0.5rem 1rem 1rem;
+  }
+}
+</style>
