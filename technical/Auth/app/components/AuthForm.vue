@@ -47,6 +47,16 @@
         </v-btn>
       </v-form>
 
+      <template v-if="isGoogleEnabled">
+        <div class="auth-form__divider">
+          <span class="auth-form__divider-text">ou</span>
+        </div>
+        <div
+          ref="googleButtonRef"
+          class="auth-form__google"
+        />
+      </template>
+
       <p class="auth-form__switch">
         {{ isRegister ? 'Déjà un compte ?' : 'Pas encore de compte ?' }}
         <NuxtLink
@@ -67,6 +77,9 @@ const props = defineProps<{ mode: AuthMode }>()
 
 const { required, email: emailRule, minLength } = useValidationRules()
 const { formRef, email, password, isSubmitting, submit } = useAuthForm(props.mode)
+
+const googleButtonRef = ref<HTMLElement | null>(null)
+const { isEnabled: isGoogleEnabled } = useGoogleSignIn(googleButtonRef)
 
 const isRegister = computed(() => props.mode === 'register')
 const passwordRules = computed(() => (isRegister.value ? [required, minLength(8)] : [required]))
@@ -102,6 +115,28 @@ const passwordRules = computed(() => (isRegister.value ? [required, minLength(8)
   &__submit {
     margin-top: 0.5rem;
     font-weight: 700;
+  }
+
+  &__divider {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin: 1.25rem 0;
+    color: rgb(var(--v-theme-on-surface-variant));
+    font-size: 0.85rem;
+
+    &::before,
+    &::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: rgba(var(--v-border-color), var(--v-border-opacity));
+    }
+  }
+
+  &__google {
+    display: flex;
+    justify-content: center;
   }
 
   &__switch {

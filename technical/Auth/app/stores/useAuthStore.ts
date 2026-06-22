@@ -36,6 +36,10 @@ export const useAuthStore = defineStore('auth', () => {
     setTokens(await postAuth('/auth/register', credentials))
   }
 
+  const loginWithGoogle = async (idToken: string) => {
+    setTokens(await postAuth('/auth/google', { idToken }))
+  }
+
   const refreshTokens = async () => {
     if (!refreshToken.value) return false
     try {
@@ -59,6 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
     isLoggedIn,
     login,
     register,
+    loginWithGoogle,
     refreshTokens,
     logout,
     clear,
