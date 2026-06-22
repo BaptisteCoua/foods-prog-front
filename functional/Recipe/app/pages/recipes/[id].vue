@@ -147,8 +147,8 @@
           elevation="0"
         >
           <div class="recipe-detail__nutrition-head">
-            <span class="recipe-detail__kcal">{{ formatKcal(recipe.perServing.calories) }}</span>
-            <span class="recipe-detail__per">par portion · {{ formatCost(recipe.perServing.costCents) }}</span>
+            <span class="recipe-detail__kcal">{{ formatKcal(shownNutrition.calories) }}</span>
+            <span class="recipe-detail__per">{{ nutritionLabel }} · {{ formatCost(shownNutrition.costCents) }}</span>
           </div>
 
           <div class="recipe-detail__bar">
@@ -169,27 +169,27 @@
           <div class="recipe-detail__macros">
             <div class="recipe-detail__macro">
               <span class="recipe-detail__dot recipe-detail__dot--protein" />
-              <b>{{ formatMacro(recipe.perServing.proteinG) }}</b>
+              <b>{{ formatMacro(shownNutrition.proteinG) }}</b>
               <small>Protéines</small>
             </div>
             <div class="recipe-detail__macro">
               <span class="recipe-detail__dot recipe-detail__dot--carb" />
-              <b>{{ formatMacro(recipe.perServing.carbG) }}</b>
+              <b>{{ formatMacro(shownNutrition.carbG) }}</b>
               <small>Glucides</small>
             </div>
             <div class="recipe-detail__macro">
               <span class="recipe-detail__dot recipe-detail__dot--fat" />
-              <b>{{ formatMacro(recipe.perServing.fatG) }}</b>
+              <b>{{ formatMacro(shownNutrition.fatG) }}</b>
               <small>Lipides</small>
             </div>
           </div>
 
           <p
-            v-if="scaledTotal"
+            v-if="recipe.servings > 1 || isScaled"
             class="recipe-detail__total"
           >
-            {{ isScaled ? `Pour ${portions} portions` : 'Recette entière' }} :
-            {{ formatKcal(scaledTotal.calories) }} · {{ formatCost(scaledTotal.costCents) }}
+            Recette entière ({{ recipe.servings }} portion{{ recipe.servings > 1 ? 's' : '' }}) :
+            {{ formatKcal(recipe.total.calories) }} · {{ formatCost(recipe.total.costCents) }}
           </p>
         </v-card>
       </AppReveal>
@@ -309,13 +309,22 @@ const isDeleting = ref(false)
 
 useHead(() => ({ title: recipe.value?.name ?? 'Recette' }))
 
+const EMPTY_NUTRITION = { calories: 0, proteinG: 0, carbG: 0, fatG: 0, costCents: 0 }
+
+// Nutrition shown in the headline card, scaled to the selected portions.
+// `scaledTotal` is perServing × portions (the nutrition for `portions` servings);
+// at 1 portion it equals the canonical per-serving values.
+const shownNutrition = computed(() => scaledTotal.value ?? recipe.value?.perServing ?? EMPTY_NUTRITION)
+
+const nutritionLabel = computed(() =>
+  isScaled.value ? `pour ${portions.value} portions` : 'par portion')
+
 // Calorie contribution split for the macro bar (protein/carb 4 kcal/g, fat 9).
 const macroSplit = computed(() => {
-  const serving = recipe.value?.perServing
-  if (!serving) return { protein: 0, carb: 0, fat: 0 }
-  const p = serving.proteinG * 4
-  const c = serving.carbG * 4
-  const f = serving.fatG * 9
+  const n = shownNutrition.value
+  const p = n.proteinG * 4
+  const c = n.carbG * 4
+  const f = n.fatG * 9
   const sum = p + c + f
   if (!sum) return { protein: 0, carb: 0, fat: 0 }
   return {
