@@ -27,6 +27,7 @@ export const usePlanningBoard = () => {
       date: nav.selectedDate.value,
       meals: [],
       total: { ...EMPTY_NUTRITION },
+      consumed: { ...EMPTY_NUTRITION },
       target: null,
       gap: null,
     }

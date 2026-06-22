@@ -22,6 +22,25 @@
         hide-details
       />
     </v-expand-transition>
+
+    <OnboardingExplainer title="Comment ça fixe ma cible ?">
+      <p>
+        On part de ton <strong>TDEE</strong> (les calories pour rester stable) et
+        on l'ajuste selon ton objectif :
+      </p>
+      <span class="explainer__formula">
+        Perte : −déficit · Maintien : =TDEE · Prise : +surplus
+      </span>
+      <p>
+        Ces calories sont ensuite réparties en <strong>macros</strong> : protéines
+        (indigo) pour préserver le muscle, glucides (ambre) pour l'énergie, et
+        lipides (rose) pour l'équilibre hormonal.
+      </p>
+      <p>
+        Résultat : ta <strong>cible quotidienne</strong> en calories + P/G/L,
+        visible sur ton tableau de bord.
+      </p>
+    </OnboardingExplainer>
   </div>
 </template>
 

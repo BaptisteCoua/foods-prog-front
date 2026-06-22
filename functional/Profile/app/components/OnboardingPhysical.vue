@@ -37,6 +37,25 @@
         prepend-inner-icon="mdi-scale-bathroom"
       />
     </div>
+
+    <OnboardingExplainer title="Pourquoi ces infos ?">
+      <p>
+        On commence par ton <strong>métabolisme de base</strong> (BMR) : l'énergie
+        que ton corps dépense au repos, juste pour vivre (respirer, digérer,
+        maintenir ta température…).
+      </p>
+      <p>
+        Il est estimé avec la formule de <strong>Mifflin-St Jeor</strong>, qui
+        s'appuie sur ces quatre données :
+      </p>
+      <span class="explainer__formula">
+        BMR = 10 × poids + 6,25 × taille − 5 × âge + correctif (sexe)
+      </span>
+      <p>
+        C'est la base de tout le calcul : on l'ajustera ensuite selon ton
+        activité, ton sport et ton objectif.
+      </p>
+    </OnboardingExplainer>
   </div>
 </template>
 

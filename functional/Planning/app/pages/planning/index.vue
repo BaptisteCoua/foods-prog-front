@@ -4,6 +4,14 @@
       <h1 class="planning__title">
         Planning
       </h1>
+      <v-btn
+        class="planning__shopping"
+        icon="mdi-cart-outline"
+        variant="text"
+        size="small"
+        aria-label="Liste de courses de la semaine"
+        @click="goToShoppingList"
+      />
       <div class="planning__week-nav">
         <v-btn
           icon="mdi-chevron-left"
@@ -163,12 +171,21 @@
 </template>
 
 <script setup lang="ts">
-import { formatLongDate, parseISODate } from '../../utils/planningDate'
+import { addDays, formatLongDate, parseISODate } from '../../utils/planningDate'
 import { MEAL_SLOTS } from '../../utils/planningMeta'
 
 useHead({ title: 'Planning' })
 
 const board = usePlanningBoard()
+
+// Open the shopping list pre-filled on the week currently shown.
+const goToShoppingList = () => {
+  const from = board.weekStart.value
+  navigateTo({
+    path: '/shopping-list',
+    query: { preset: 'week', from, to: addDays(from, 6) },
+  })
+}
 
 const isToday = computed(() => board.selectedDate.value === board.today)
 
@@ -219,6 +236,10 @@ const barWidth = computed(() => {
     font-size: 1.7rem;
     font-weight: 800;
     letter-spacing: -0.03em;
+  }
+
+  &__shopping {
+    margin-left: auto;
   }
 
   &__week-nav {

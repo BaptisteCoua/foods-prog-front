@@ -43,6 +43,23 @@
         </div>
       </div>
     </v-expand-transition>
+
+    <OnboardingExplainer title="Comment le sport est compté ?">
+      <p>
+        Tes séances ajoutent une <strong>dépense d'entraînement</strong> à ta
+        dépense quotidienne. On l'estime à partir du nombre de séances par
+        semaine, de leur durée et du type d'effort, puis on la lisse sur la
+        semaine.
+      </p>
+      <span class="explainer__formula">
+        TDEE = dépense quotidienne + dépense d'entraînement
+      </span>
+      <p>
+        Ce <strong>TDEE</strong> (dépense énergétique totale) est le nombre de
+        calories pour rester stable. Sans séance renseignée, seul ton niveau
+        d'activité compte.
+      </p>
+    </OnboardingExplainer>
   </div>
 </template>
 

@@ -26,11 +26,13 @@ export interface TargetMacros {
 
 // One recipe placed in a meal, with how many portions of it are served.
 // `total` is the line's nutrition (per-portion × portions), computed API-side.
+// `eaten` is the user's tick that the dish was actually consumed (vs planned).
 export interface MealItem {
   id: number
   portions: number
   recipe: Recipe
   total: MealNutrition
+  eaten: boolean
 }
 
 // A meal (one slot on one date) with its computed nutrition total.
@@ -47,7 +49,10 @@ export interface MealWithTotal {
 export interface DayPlan {
   date: string
   meals: MealWithTotal[]
+  // Planned total of the day (sum of every meal).
   total: MealNutrition
+  // Consumed total: sum of the lines ticked as eaten only.
+  consumed: MealNutrition
   target: TargetMacros | null
   gap: TargetMacros | null
 }

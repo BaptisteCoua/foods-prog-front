@@ -64,7 +64,14 @@
         />
       </AppReveal>
 
-      <AppReveal :delay="180">
+      <AppReveal
+        v-if="hasProfile"
+        :delay="180"
+      >
+        <ProfileDetailsCard @edit="openProfileEdit" />
+      </AppReveal>
+
+      <AppReveal :delay="270">
         <ProfileAccountCard @logout="onLogout" />
       </AppReveal>
     </template>
@@ -75,6 +82,8 @@
       :saving="saving"
       @submit="onSaveTarget"
     />
+
+    <ProfileEditDialog ref="profileDialog" />
   </div>
 </template>
 
@@ -84,6 +93,11 @@ import type { NutritionTargetPayload } from '../types/target'
 useHead({ title: 'Profil' })
 
 const authStore = useAuthStore()
+const profileStore = useProfileStore()
+const { hasProfile } = storeToRefs(profileStore)
+
+// SSR safety: the onboarding gate loads this client-side, but the recap reads it directly.
+void profileStore.ensureLoaded()
 
 const { me, pending: mePending, error: meError, savingName, updateDisplayName } = useMe()
 const {
@@ -98,6 +112,7 @@ const {
 } = useNutritionTarget()
 
 const targetDialog = useTemplateRef('targetDialog')
+const profileDialog = useTemplateRef('profileDialog')
 
 const pending = computed(() => mePending.value || targetPending.value)
 const hasError = computed(() => Boolean(meError.value))
@@ -112,6 +127,10 @@ const onSaveName = (name: string) => {
 
 const openTargetEdit = () => {
   targetDialog.value?.open()
+}
+
+const openProfileEdit = () => {
+  profileDialog.value?.open()
 }
 
 const onSaveTarget = async (payload: NutritionTargetPayload) => {

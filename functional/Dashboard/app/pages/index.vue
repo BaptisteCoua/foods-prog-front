@@ -92,8 +92,10 @@
         <DashboardHero
           :remaining="calorieRemaining"
           :consumed="calorieConsumed"
+          :calorie-planned="caloriePlanned"
           :target="calorieTarget"
           :progress="calorieProgress"
+          :planned-progress="plannedProgress"
         />
       </AppReveal>
 
@@ -117,9 +119,14 @@
         <section>
           <div class="dashboard__section-head">
             <h2 class="dashboard__section-title">
-              Repas du jour
+              Plats du jour
             </h2>
+            <span
+              v-if="hasPlannedMeals"
+              class="dashboard__count"
+            >{{ eatenCount }}/{{ dishes.length }} mangés</span>
             <NuxtLink
+              v-else
               to="/planning"
               class="dashboard__link"
             >Planifier →</NuxtLink>
@@ -130,10 +137,11 @@
             elevation="0"
           >
             <template v-if="hasPlannedMeals">
-              <MealItem
-                v-for="meal in meals"
-                :key="meal.id"
-                :meal
+              <DashboardDishItem
+                v-for="dish in dishes"
+                :key="dish.id"
+                :dish
+                @toggle="toggleDish"
               />
             </template>
             <div
@@ -174,11 +182,15 @@ const {
   dateLabel,
   calorieTarget,
   calorieConsumed,
+  caloriePlanned,
   calorieRemaining,
   calorieProgress,
+  plannedProgress,
   macros,
-  meals,
+  dishes,
   hasPlannedMeals,
+  eatenCount,
+  toggleDish,
 } = useDailySummary()
 </script>
 
@@ -285,6 +297,13 @@ const {
     color: rgb(var(--v-theme-primary));
     font-weight: 700;
     text-decoration: none;
+  }
+
+  &__count {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgb(var(--v-theme-primary));
+    font-variant-numeric: tabular-nums;
   }
 
   &__empty {

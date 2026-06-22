@@ -13,6 +13,7 @@ export const useMainNav = () => {
     { value: 'home', to: '/', icon: 'mdi-home-variant-outline', label: 'Accueil' },
     { value: 'planning', to: '/planning', icon: 'mdi-calendar-blank-outline', label: 'Planning' },
     { value: 'recipes', to: '/recipes', icon: 'mdi-book-open-outline', label: 'Recettes' },
+    { value: 'shopping', to: '/shopping-list', icon: 'mdi-cart-outline', label: 'Courses' },
     { value: 'ingredients', to: '/ingredients', icon: 'mdi-food-apple-outline', label: 'Ingrédients' },
     { value: 'profile', to: '/profile', icon: 'mdi-account-outline', label: 'Profil' },
   ]
