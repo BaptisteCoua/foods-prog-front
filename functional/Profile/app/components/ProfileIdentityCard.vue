@@ -3,8 +3,21 @@
     class="identity"
     elevation="0"
   >
-    <div class="identity__avatar">
-      {{ initials }}
+    <div
+      class="identity__avatar"
+      :class="{ 'identity__avatar--photo': showPhoto }"
+    >
+      <img
+        v-if="showPhoto"
+        :src="me!.picture!"
+        :alt="nameLabel"
+        class="identity__photo"
+        referrerpolicy="no-referrer"
+        @error="photoFailed = true"
+      >
+      <template v-else>
+        {{ initials }}
+      </template>
     </div>
 
     <div class="identity__body">
@@ -76,8 +89,12 @@ const emit = defineEmits<{ saveName: [name: string] }>()
 
 const editing = ref(false)
 const draft = ref('')
+// Si l'URL de la photo (Google) échoue à charger, on retombe sur les initiales.
+const photoFailed = ref(false)
 
 const nameLabel = computed(() => props.me?.displayName || 'Ajouter un pseudo')
+
+const showPhoto = computed(() => Boolean(props.me?.picture) && !photoFailed.value)
 
 const initials = computed(() => {
   const source = props.me?.displayName?.trim() || props.me?.email || '?'
@@ -131,6 +148,17 @@ watch(() => props.saving, (now, before) => {
     letter-spacing: -0.02em;
     color: rgb(var(--v-theme-primary));
     background: rgba(var(--v-theme-primary), 0.12);
+    overflow: hidden;
+
+    &--photo {
+      background: none;
+    }
+  }
+
+  &__photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 
   &__body {
