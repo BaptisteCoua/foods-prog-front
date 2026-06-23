@@ -106,17 +106,11 @@
               :key="index"
               class="recipe-dialog__line"
             >
-              <v-autocomplete
+              <RecipeIngredientSelect
                 v-model="line.ingredientId"
-                :items="ingredients"
-                item-title="name"
-                item-value="id"
-                label="Ingrédient"
-                density="comfortable"
-                hide-details
-                auto-select-first
-                no-data-text="Aucun ingrédient trouvé"
+                :selected="resolveIngredient(line.ingredientId)"
                 class="recipe-dialog__line-select"
+                @select="registerIngredient"
               />
               <v-text-field
                 v-model.number="line.quantity"
@@ -226,6 +220,8 @@ const {
   title,
   nutritionPreview,
   rules,
+  resolveIngredient,
+  registerIngredient,
   addLine,
   removeLine,
   openCreate,
@@ -235,7 +231,7 @@ const {
 } = useRecipeForm()
 
 const lineUnit = (ingredientId: number | null): string => {
-  const ingredient = ingredients.value.find(item => item.id === ingredientId)
+  const ingredient = resolveIngredient(ingredientId)
   if (!ingredient) return ''
   return quantityUnit(ingredient.unitType)
 }

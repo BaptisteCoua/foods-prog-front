@@ -1,5 +1,6 @@
 import { toast } from 'vue3-toastify'
 import type { VForm } from 'vuetify/components'
+import type { Ingredient } from '../../../Ingredient/app/types/ingredient'
 import type { Recipe, RecipePayload } from '../types/recipe'
 
 interface IngredientLine {
@@ -47,6 +48,23 @@ export const useRecipeForm = () => {
   const formRef = ref<VForm | null>(null)
   const form = reactive<RecipeFormState>(createForm())
 
+  // Full ingredient objects for the ids picked across the lines. The picker now
+  // searches server-side, so a selected ingredient may not be in the shared 100
+  // item library cache — we keep it here so the unit suffix and nutrition
+  // preview resolve correctly whatever the catalog size.
+  const selectedIngredients = ref<Record<number, Ingredient>>({})
+
+  const registerIngredient = (ingredient: Ingredient | null) => {
+    if (ingredient) selectedIngredients.value[ingredient.id] = ingredient
+  }
+
+  const resolveIngredient = (ingredientId: number | null): Ingredient | null => {
+    if (ingredientId === null) return null
+    return selectedIngredients.value[ingredientId]
+      ?? ingredientLibrary.value.find(item => item.id === ingredientId)
+      ?? null
+  }
+
   const isEditing = computed(() => editingId.value !== null)
   const title = computed(() => (isEditing.value ? 'Modifier la recette' : 'Nouvelle recette'))
 
@@ -61,7 +79,7 @@ export const useRecipeForm = () => {
     for (const line of form.lines) {
       const quantity = Number(line.quantity)
       if (line.ingredientId === null || !(quantity > 0)) continue
-      const ingredient = ingredientLibrary.value.find(item => item.id === line.ingredientId)
+      const ingredient = resolveIngredient(line.ingredientId)
       if (!ingredient) continue
       const factor = quantity / 100
       total.calories += ingredient.calories * factor
@@ -79,7 +97,10 @@ export const useRecipeForm = () => {
     return { total, perServing, hasData: total.calories > 0 }
   })
 
-  const reset = () => Object.assign(form, createForm())
+  const reset = () => {
+    Object.assign(form, createForm())
+    selectedIngredients.value = {}
+  }
 
   const addLine = () => form.lines.push({ ingredientId: null, quantity: null })
   const removeLine = (index: number) => {
@@ -95,6 +116,10 @@ export const useRecipeForm = () => {
 
   const openEdit = (recipe: Recipe) => {
     editingId.value = recipe.id
+    // Seed the selected ingredients from the recipe so labels render and the
+    // preview is correct even if these ingredients aren't in the library cache.
+    selectedIngredients.value = {}
+    recipe.recipeIngredients.forEach(line => registerIngredient(line.ingredient))
     Object.assign(form, {
       name: recipe.name,
       servings: recipe.servings,
@@ -173,6 +198,8 @@ export const useRecipeForm = () => {
     title,
     nutritionPreview,
     rules: { required, positive },
+    resolveIngredient,
+    registerIngredient,
     addLine,
     removeLine,
     openCreate,
