@@ -17,6 +17,29 @@
           icon
           variant="text"
           density="comfortable"
+          aria-label="Filtrer"
+          @click="filterSheetOpen = true"
+        >
+          <v-badge
+            :model-value="activeFilterCount > 0"
+            :content="activeFilterCount"
+            color="primary"
+            offset-x="-2"
+            offset-y="-2"
+          >
+            <v-icon icon="mdi-filter-variant" />
+          </v-badge>
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            Filtrer
+          </v-tooltip>
+        </v-btn>
+        <v-btn
+          icon
+          variant="text"
+          density="comfortable"
           aria-label="Trier"
           @click="sortSheetOpen = true"
         >
@@ -72,24 +95,10 @@
       class="ingredients__search"
     />
 
-    <v-chip-group
-      v-if="foodTypes.length"
-      v-model="selectedFoodTypeIds"
-      multiple
-      column
-      class="ingredients__filters"
-    >
-      <v-chip
-        v-for="type in foodTypes"
-        :key="type.id"
-        :value="type.id"
-        filter
-        size="small"
-        variant="tonal"
-      >
-        {{ type.types }}
-      </v-chip>
-    </v-chip-group>
+    <AppActiveFilters
+      :groups="filterGroups"
+      @remove="onFilterRemove"
+    />
 
     <!-- Loading -->
     <div
@@ -182,6 +191,12 @@
       </div>
     </div>
 
+    <AppFilterSheet
+      v-model="filterSheetOpen"
+      :groups="filterGroups"
+      @update:group="onFilterChange"
+    />
+
     <AppSortSheet
       v-model="sortSheetOpen"
       v-model:sorts="sorts"
@@ -236,6 +251,7 @@ defineProps<{
 
 const formDialog = useTemplateRef('formDialog')
 const sortSheetOpen = ref(false)
+const filterSheetOpen = ref(false)
 
 const { foodTypes } = useFoodTypes()
 const {
@@ -260,6 +276,30 @@ const {
   cancelDelete,
   confirmDelete,
 } = useIngredientList()
+
+// Food-type facet lives in AppFilterSheet; only active ones surface inline via
+// AppActiveFilters, keeping the list visible above the fold.
+const filterGroups = computed<FilterGroup[]>(() => [
+  {
+    key: 'foodTypes',
+    label: 'Types d\'aliment',
+    selected: selectedFoodTypeIds.value,
+    options: foodTypes.value.map(type => ({ value: type.id, label: type.types })),
+    variant: 'tonal',
+  },
+].filter(group => group.options.length))
+
+const activeFilterCount = computed(() => countActiveFilters(filterGroups.value))
+
+const onFilterChange = (key: string, ids: number[]) => {
+  if (key === 'foodTypes') selectedFoodTypeIds.value = ids
+}
+
+const onFilterRemove = (key: string, value: number) => {
+  if (key === 'foodTypes') {
+    selectedFoodTypeIds.value = selectedFoodTypeIds.value.filter(id => id !== value)
+  }
+}
 
 const openCreate = () => formDialog.value?.openCreate()
 const openEdit = (ingredient: typeof items.value[number]) => formDialog.value?.openEdit(ingredient)
@@ -299,10 +339,6 @@ const openEdit = (ingredient: typeof items.value[number]) => formDialog.value?.o
     font-size: 0.82rem;
     color: rgb(var(--v-theme-on-surface-variant));
     margin-top: 0.2rem;
-  }
-
-  &__filters {
-    margin-top: -0.25rem;
   }
 
   &__list {

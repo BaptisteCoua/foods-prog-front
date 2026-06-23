@@ -14,6 +14,29 @@
           icon
           variant="text"
           density="comfortable"
+          aria-label="Filtrer"
+          @click="filterSheetOpen = true"
+        >
+          <v-badge
+            :model-value="activeFilterCount > 0"
+            :content="activeFilterCount"
+            color="primary"
+            offset-x="-2"
+            offset-y="-2"
+          >
+            <v-icon icon="mdi-filter-variant" />
+          </v-badge>
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            Filtrer
+          </v-tooltip>
+        </v-btn>
+        <v-btn
+          icon
+          variant="text"
+          density="comfortable"
           aria-label="Trier"
           @click="sortSheetOpen = true"
         >
@@ -105,45 +128,10 @@
       class="recipes__search"
     />
 
-    <v-chip-group
-      v-if="mealTypes.length"
-      v-model="selectedMealTypeIds"
-      multiple
-      column
-      class="recipes__filters"
-    >
-      <v-chip
-        v-for="type in mealTypes"
-        :key="type.id"
-        :value="type.id"
-        size="small"
-        filter
-        variant="outlined"
-      >
-        {{ type.name }}
-      </v-chip>
-    </v-chip-group>
-
-    <v-chip-group
-      v-if="dietaryRegimes.length"
-      v-model="selectedDietaryRegimeIds"
-      multiple
-      column
-      class="recipes__filters"
-    >
-      <v-chip
-        v-for="regime in dietaryRegimes"
-        :key="regime.id"
-        :value="regime.id"
-        size="small"
-        filter
-        variant="outlined"
-        color="primary"
-        prepend-icon="mdi-leaf"
-      >
-        {{ regime.name }}
-      </v-chip>
-    </v-chip-group>
+    <AppActiveFilters
+      :groups="filterGroups"
+      @remove="onFilterRemove"
+    />
 
     <!-- Loading -->
     <div
@@ -247,6 +235,12 @@
       </div>
     </div>
 
+    <AppFilterSheet
+      v-model="filterSheetOpen"
+      :groups="filterGroups"
+      @update:group="onFilterChange"
+    />
+
     <AppSortSheet
       v-model="sortSheetOpen"
       v-model:sorts="sorts"
@@ -299,6 +293,7 @@ useHead({ title: 'Recettes' })
 
 const formDialog = useTemplateRef('formDialog')
 const sortSheetOpen = ref(false)
+const filterSheetOpen = ref(false)
 
 // Segmented view: my recipes (+ global catalog) vs the community's shared ones.
 const scope = ref<RecipeScope>('mine')
@@ -330,6 +325,41 @@ const {
   isCloning,
   cloneToMine,
 } = useRecipeList(scope)
+
+// Facet filters (meal types + dietary regimes) live in AppFilterSheet; only the
+// active ones surface inline via AppActiveFilters. Empty groups are dropped.
+const filterGroups = computed<FilterGroup[]>(() => [
+  {
+    key: 'mealTypes',
+    label: 'Types de repas',
+    selected: selectedMealTypeIds.value,
+    options: mealTypes.value.map(type => ({ value: type.id, label: type.name })),
+  },
+  {
+    key: 'regimes',
+    label: 'Régimes',
+    selected: selectedDietaryRegimeIds.value,
+    options: dietaryRegimes.value.map(regime => ({ value: regime.id, label: regime.name })),
+    color: 'primary',
+    icon: 'mdi-leaf',
+  },
+].filter(group => group.options.length))
+
+const activeFilterCount = computed(() => countActiveFilters(filterGroups.value))
+
+const onFilterChange = (key: string, ids: number[]) => {
+  if (key === 'mealTypes') selectedMealTypeIds.value = ids
+  else if (key === 'regimes') selectedDietaryRegimeIds.value = ids
+}
+
+const onFilterRemove = (key: string, value: number) => {
+  if (key === 'mealTypes') {
+    selectedMealTypeIds.value = selectedMealTypeIds.value.filter(id => id !== value)
+  }
+  else if (key === 'regimes') {
+    selectedDietaryRegimeIds.value = selectedDietaryRegimeIds.value.filter(id => id !== value)
+  }
+}
 
 const emptyIcon = computed(() => {
   if (scope.value === 'shared') return 'mdi-share-variant-outline'
@@ -406,10 +436,6 @@ const goToRecipe = (recipe: Recipe) => navigateTo(`/recipes/${recipe.id}`)
       background: rgb(var(--v-theme-surface));
       box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
     }
-  }
-
-  &__filters {
-    margin-top: -0.25rem;
   }
 
   &__list {
