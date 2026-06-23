@@ -72,26 +72,34 @@
         class="picker__list"
         density="comfortable"
       >
-        <v-list-item
-          v-for="recipe in results"
-          :key="recipe.id"
-          :disabled="busy"
-          class="picker__item"
-          @click="emit('pick', recipe)"
+        <template
+          v-for="group in groups"
+          :key="group.key"
         >
-          <template #title>
-            <span class="picker__item-name">{{ recipe.name }}</span>
-          </template>
-          <template #subtitle>
-            {{ formatKcal(recipe.perServing.calories) }} / portion
-          </template>
-          <template #append>
-            <v-icon
-              icon="mdi-plus-circle-outline"
-              color="primary"
-            />
-          </template>
-        </v-list-item>
+          <v-list-subheader class="picker__group-header">
+            {{ group.label }}
+          </v-list-subheader>
+          <v-list-item
+            v-for="recipe in group.recipes"
+            :key="`${group.key}-${recipe.id}`"
+            :disabled="busy"
+            class="picker__item"
+            @click="emit('pick', recipe)"
+          >
+            <template #title>
+              <span class="picker__item-name">{{ recipe.name }}</span>
+            </template>
+            <template #subtitle>
+              {{ formatKcal(recipe.perServing.calories) }} / portion
+            </template>
+            <template #append>
+              <v-icon
+                icon="mdi-plus-circle-outline"
+                color="primary"
+              />
+            </template>
+          </v-list-item>
+        </template>
       </v-list>
     </div>
   </AppSheet>
@@ -112,7 +120,7 @@ const emit = defineEmits<{
   'pick': [Recipe]
 }>()
 
-const { results, pending, search, reset } = useRecipePicker()
+const { results, groups, pending, search, reset } = useRecipePicker()
 
 // Clear the query each time the sheet closes so it reopens fresh.
 watch(() => props.modelValue, (open) => {
@@ -176,6 +184,15 @@ watch(() => props.modelValue, (open) => {
   &__list {
     overflow-y: auto;
     background: transparent;
+  }
+
+  &__group-header {
+    font-size: 0.72rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: rgb(var(--v-theme-primary));
+    opacity: 1;
   }
 
   &__item-name {

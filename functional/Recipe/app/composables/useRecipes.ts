@@ -1,13 +1,15 @@
 import type { Paginated, Recipe, RecipePayload, RecipeVisibility } from '../types/recipe'
 
-// Loads the recipe library and exposes CRUD. Keyed shared state ('recipes') so
-// the list, form and detail page stay in sync; every mutation refreshes it.
+// Loads the user's OWN recipe library (scope MINE — excludes the global
+// catalog) and exposes CRUD. Keyed shared state ('recipes') so the list, form
+// and detail page stay in sync; every mutation refreshes it. This is also the
+// source for the planning recipe picker, which must offer only my recipes.
 // The backend returns each recipe with computed `total` / `perServing`.
 export const useRecipes = () => {
   const api = useApi()
 
   const { data, pending, error, refresh } = useAsyncData('recipes', () =>
-    api<Paginated<Recipe>>('/recipes', { query: { limit: 100 } }),
+    api<Paginated<Recipe>>('/recipes', { query: { limit: 100, scope: 'MINE' } }),
   )
 
   const items = computed(() => data.value?.items ?? [])

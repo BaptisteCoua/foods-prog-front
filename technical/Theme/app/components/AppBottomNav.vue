@@ -16,7 +16,7 @@
         <span class="app-bottom-nav__halo" />
         <v-icon
           :icon="item.icon"
-          size="24"
+          size="22"
           class="app-bottom-nav__icon"
         />
       </NuxtLink>
@@ -46,7 +46,7 @@ const { items, active } = useMainNav()
     display: flex;
     align-items: center;
     gap: 4px;
-    padding: 8px;
+    padding: 6px;
     border-radius: 999px;
     // Verre liquide quasi transparent : on laisse passer le fond,
     // léger dégradé de réfraction (plus lumineux en haut) + fort flou.
@@ -71,8 +71,8 @@ const { items, active } = useMainNav()
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 52px;
-    height: 52px;
+    width: 46px;
+    height: 46px;
     border-radius: 999px;
     color: rgba(var(--v-theme-on-surface), 0.55);
     text-decoration: none;
