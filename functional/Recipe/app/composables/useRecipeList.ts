@@ -1,18 +1,30 @@
 import { toast } from 'vue3-toastify'
 import type { Paginated, Recipe } from '../types/recipe'
 
+// Browsing scope of the recipe list:
+// - 'mine'    → GET /recipes?scope=MINE     (only my own recipes)
+// - 'catalog' → GET /recipes?scope=CATALOG  (global reference library)
+// - 'shared'  → GET /recipes/shared         (other users' PUBLIC recipes)
+export type RecipeScope = 'mine' | 'catalog' | 'shared'
+
 // Page-level logic for the recipe list. The list is fetched server-side, 15
 // items at a time (lazy-loading / infinite scroll), with search + meal-type +
 // dietary-regime filters pushed to the API so they stay correct over the full
 // dataset — not just the rows already loaded. Filterable categories come from
-// useMealTypes / useDietaryRegimes.
+// useMealTypes / useDietaryRegimes. The same search/filters drive both scopes.
 const PAGE_SIZE = 15
 const SEARCH_DEBOUNCE_MS = 300
 
-export const useRecipeList = () => {
+export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')) => {
   const api = useApi()
   const { mealTypes } = useMealTypes()
   const { dietaryRegimes } = useDietaryRegimes()
+  const { clone: cloneRecipe } = useRecipes()
+
+  const endpoint = computed(() => (scope.value === 'shared' ? '/recipes/shared' : '/recipes'))
+  // Scope sent to GET /recipes (ignored by /recipes/shared).
+  const scopeParam = computed(() =>
+    scope.value === 'catalog' ? 'CATALOG' : scope.value === 'mine' ? 'MINE' : undefined)
 
   const items = ref<Recipe[]>([])
   const total = ref(0)
@@ -53,6 +65,7 @@ export const useRecipeList = () => {
 
   const buildQuery = (targetPage: number) => {
     const query: Record<string, unknown> = { page: targetPage, limit: PAGE_SIZE }
+    if (scopeParam.value) query.scope = scopeParam.value
     const term = search.value?.trim()
     if (term) query.search = term
     if (selectedMealTypeIds.value.length) query.mealTypeIds = selectedMealTypeIds.value
@@ -62,7 +75,7 @@ export const useRecipeList = () => {
   }
 
   const fetchPage = (targetPage: number) =>
-    api<Paginated<Recipe>>('/recipes', { query: buildQuery(targetPage) })
+    api<Paginated<Recipe>>(endpoint.value, { query: buildQuery(targetPage) })
 
   // (Re)load the first page — on mount and on every search/filter change.
   const load = async () => {
@@ -114,6 +127,29 @@ export const useRecipeList = () => {
   })
   watch([selectedMealTypeIds, selectedDietaryRegimeIds], () => load(), { deep: true })
   watch(sorts, () => load(), { deep: true })
+  // Switching tab (mine ↔ shared) reloads from the matching endpoint.
+  watch(scope, () => load())
+
+  // Clone a recipe (global catalog or another user's public one) into the
+  // user's own collection; refreshes the shared library cache used elsewhere.
+  const isCloning = ref<number | null>(null)
+  const cloneToMine = async (recipe: Recipe) => {
+    if (isCloning.value) return
+    isCloning.value = recipe.id
+    try {
+      await cloneRecipe(recipe.id)
+      // Flag the source as saved so the card flips to "Déjà enregistré".
+      const item = items.value.find(r => r.id === recipe.id)
+      if (item) item.alreadySaved = true
+      toast.success('Recette ajoutée à tes recettes.')
+    }
+    catch {
+      toast.error('Impossible d\'enregistrer cette recette.')
+    }
+    finally {
+      isCloning.value = null
+    }
+  }
 
   // Delete-with-confirmation flow.
   const confirmTarget = ref<Recipe | null>(null)
@@ -152,6 +188,7 @@ export const useRecipeList = () => {
   onMounted(load)
 
   return {
+    scope,
     items,
     total,
     pending,
@@ -162,6 +199,8 @@ export const useRecipeList = () => {
     loadMore,
     refresh,
     reload: refresh,
+    isCloning,
+    cloneToMine,
     mealTypes,
     selectedMealTypeIds,
     dietaryRegimes,

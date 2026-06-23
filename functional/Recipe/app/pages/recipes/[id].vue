@@ -63,21 +63,43 @@
           </p>
         </div>
         <div class="recipe-detail__head-actions">
-          <v-btn
-            icon="mdi-pencil"
+          <template v-if="isMine">
+            <v-btn
+              icon="mdi-pencil"
+              variant="tonal"
+              size="small"
+              aria-label="Modifier"
+              @click="openEdit(recipe)"
+            />
+            <v-btn
+              icon="mdi-delete-outline"
+              variant="tonal"
+              size="small"
+              color="error"
+              aria-label="Supprimer"
+              @click="confirmOpen = true"
+            />
+          </template>
+          <v-chip
+            v-else-if="recipe.alreadySaved"
+            color="primary"
             variant="tonal"
             size="small"
-            aria-label="Modifier"
-            @click="openEdit(recipe)"
-          />
+            prepend-icon="mdi-bookmark-check"
+          >
+            Déjà enregistrée
+          </v-chip>
           <v-btn
-            icon="mdi-delete-outline"
+            v-else
+            color="primary"
             variant="tonal"
             size="small"
-            color="error"
-            aria-label="Supprimer"
-            @click="confirmOpen = true"
-          />
+            prepend-icon="mdi-bookmark-plus-outline"
+            :loading="isCloning"
+            @click="onClone"
+          >
+            Enregistrer
+          </v-btn>
         </div>
       </header>
 
@@ -103,6 +125,27 @@
         >
           {{ regime.name }}
         </v-chip>
+      </div>
+
+      <!-- Publish toggle (owner only) -->
+      <div
+        v-if="isMine"
+        class="recipe-detail__share"
+      >
+        <div class="recipe-detail__share-text">
+          <span class="recipe-detail__share-title">Partager publiquement</span>
+          <span class="recipe-detail__share-sub">
+            {{ isPublic ? 'Visible par toute la communauté.' : 'Visible par toi seul·e.' }}
+          </span>
+        </div>
+        <v-switch
+          v-model="isPublic"
+          color="primary"
+          density="comfortable"
+          hide-details
+          :loading="isPublishing"
+          aria-label="Partager publiquement"
+        />
       </div>
 
       <!-- Portion simulator (client-side, not persisted) -->
@@ -300,7 +343,8 @@ const route = useRoute()
 const id = computed(() => Number(route.params.id))
 
 const { recipe, pending, error, refresh } = useRecipeDetail(id)
-const { remove } = useRecipes()
+const { remove, setVisibility, clone } = useRecipes()
+const profileStore = useProfileStore()
 
 const { portions, isScaled, scaledTotal, scaledIngredients, increment, decrement, reset }
   = useRecipePortions(recipe)
@@ -308,6 +352,53 @@ const { portions, isScaled, scaledTotal, scaledIngredients, increment, decrement
 const formDialog = useTemplateRef('formDialog')
 const confirmOpen = ref(false)
 const isDeleting = ref(false)
+
+// Only the owner edits/deletes/publishes. A recipe that isn't mine (global
+// catalog or another user's public recipe) can be cloned into my collection.
+const isMine = computed(() =>
+  recipe.value?.userId != null && recipe.value.userId === profileStore.profile?.userId)
+
+// Publish toggle (PUBLIC ↔ PRIVATE), bound to the switch.
+const isPublishing = ref(false)
+const isPublic = computed({
+  get: () => recipe.value?.visibility === 'PUBLIC',
+  set: (value) => {
+    void togglePublish(value)
+  },
+})
+
+const togglePublish = async (value: boolean) => {
+  if (!recipe.value || isPublishing.value) return
+  isPublishing.value = true
+  try {
+    await setVisibility(recipe.value.id, value ? 'PUBLIC' : 'PRIVATE')
+    await refresh()
+    toast.success(value ? 'Recette partagée avec la communauté.' : 'Recette repassée en privé.')
+  }
+  catch {
+    toast.error('Impossible de mettre à jour le partage.')
+  }
+  finally {
+    isPublishing.value = false
+  }
+}
+
+const isCloning = ref(false)
+const onClone = async () => {
+  if (!recipe.value || isCloning.value) return
+  isCloning.value = true
+  try {
+    const created = await clone(recipe.value.id)
+    toast.success('Recette ajoutée à tes recettes.')
+    navigateTo(`/recipes/${created.id}`)
+  }
+  catch {
+    toast.error('Impossible d\'enregistrer cette recette.')
+  }
+  finally {
+    isCloning.value = false
+  }
+}
 
 useHead(() => ({ title: recipe.value?.name ?? 'Recette' }))
 
@@ -414,6 +505,33 @@ const onDelete = async () => {
     display: flex;
     flex-wrap: wrap;
     gap: 0.35rem;
+  }
+
+  &__share {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    padding: 0.5rem 1rem;
+    border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+    border-radius: 14px;
+  }
+
+  &__share-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.1rem;
+  }
+
+  &__share-title {
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+  }
+
+  &__share-sub {
+    font-size: 0.78rem;
+    color: rgb(var(--v-theme-on-surface-variant));
   }
 
   &__portions {

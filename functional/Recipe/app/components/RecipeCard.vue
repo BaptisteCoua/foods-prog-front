@@ -27,8 +27,21 @@
     </div>
 
     <div class="recipe-card__compact-body">
-      <span class="recipe-card__compact-name">{{ recipe.name }}</span>
+      <span class="recipe-card__compact-name">
+        {{ recipe.name }}
+        <span
+          v-if="isMine && isPublic"
+          class="recipe-card__badge"
+        >
+          <v-icon
+            icon="mdi-share-variant"
+            size="11"
+          />
+          Partagée
+        </span>
+      </span>
       <span class="recipe-card__compact-meta">
+        <template v-if="recipe.author">par {{ authorName }} · </template>
         {{ recipe.servings }} portion{{ recipe.servings > 1 ? 's' : '' }} · {{ totalTime }} · {{ ingredientCount }}
       </span>
     </div>
@@ -38,6 +51,7 @@
     </span>
 
     <v-btn
+      v-if="isMine"
       icon
       variant="text"
       size="small"
@@ -65,6 +79,31 @@
         </v-list>
       </v-menu>
     </v-btn>
+    <v-icon
+      v-else-if="recipe.alreadySaved"
+      icon="mdi-bookmark-check"
+      color="primary"
+      class="recipe-card__saved-icon"
+      aria-label="Déjà enregistrée"
+    >
+      <v-tooltip
+        activator="parent"
+        location="bottom"
+      >
+        Déjà enregistrée
+      </v-tooltip>
+    </v-icon>
+    <v-btn
+      v-else
+      icon="mdi-bookmark-plus-outline"
+      variant="text"
+      color="primary"
+      size="small"
+      density="comfortable"
+      :loading="cloning"
+      aria-label="Enregistrer dans mes recettes"
+      @click.stop="emit('clone', recipe)"
+    />
   </v-card>
 
   <v-card
@@ -108,6 +147,7 @@
       <div class="recipe-card__scrim" />
 
       <v-btn
+        v-if="isMine"
         icon
         variant="flat"
         size="small"
@@ -136,6 +176,17 @@
           </v-list>
         </v-menu>
       </v-btn>
+
+      <span
+        v-if="isMine && isPublic"
+        class="recipe-card__badge recipe-card__badge--overlay"
+      >
+        <v-icon
+          icon="mdi-share-variant"
+          size="11"
+        />
+        Partagée
+      </span>
 
       <div class="recipe-card__overlay">
         <span class="recipe-card__name">{{ recipe.name }}</span>
@@ -187,6 +238,53 @@
         {{ regime.name }}
       </v-chip>
     </div>
+
+    <div
+      v-if="!isMine"
+      class="recipe-card__share-footer"
+    >
+      <span
+        v-if="recipe.author"
+        class="recipe-card__author"
+      >
+        <v-avatar
+          size="22"
+          color="surface-variant"
+        >
+          <v-img
+            v-if="recipe.author.picture"
+            :src="recipe.author.picture"
+            :alt="authorName"
+          />
+          <span
+            v-else
+            class="recipe-card__author-initial"
+          >{{ authorName.charAt(0).toUpperCase() }}</span>
+        </v-avatar>
+        <span class="recipe-card__author-name">par {{ authorName }}</span>
+      </span>
+      <v-spacer />
+      <v-chip
+        v-if="recipe.alreadySaved"
+        color="primary"
+        variant="tonal"
+        size="small"
+        prepend-icon="mdi-bookmark-check"
+      >
+        Déjà enregistrée
+      </v-chip>
+      <v-btn
+        v-else
+        color="primary"
+        variant="tonal"
+        size="small"
+        prepend-icon="mdi-bookmark-plus-outline"
+        :loading="cloning"
+        @click.stop="emit('clone', recipe)"
+      >
+        Enregistrer
+      </v-btn>
+    </div>
   </v-card>
 </template>
 
@@ -194,10 +292,18 @@
 import type { Recipe } from '../types/recipe'
 
 const props = withDefaults(
-  defineProps<{ recipe: Recipe, detailed?: boolean }>(),
-  { detailed: true },
+  defineProps<{ recipe: Recipe, detailed?: boolean, cloning?: boolean }>(),
+  { detailed: true, cloning: false },
 )
-const emit = defineEmits<{ open: [Recipe], edit: [Recipe], delete: [Recipe] }>()
+const emit = defineEmits<{ open: [Recipe], edit: [Recipe], delete: [Recipe], clone: [Recipe] }>()
+
+// Ownership drives the actions: only the owner edits/deletes. Recipes that
+// aren't mine (global catalog or another user's public recipe) can be cloned.
+const profileStore = useProfileStore()
+const isMine = computed(() =>
+  props.recipe.userId != null && props.recipe.userId === profileStore.profile?.userId)
+const isPublic = computed(() => props.recipe.visibility === 'PUBLIC')
+const authorName = computed(() => props.recipe.author?.displayName?.trim() || 'Anonyme')
 
 // Tiny inline blur placeholder shown while the real image lazy-loads.
 const placeholderSrc = 'data:image/svg+xml;utf8,'
@@ -443,6 +549,63 @@ const ingredientCount = computed(() => {
 
   &__media + &__stats {
     padding-top: 0.85rem;
+  }
+
+  &__badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.18rem;
+    padding: 0.08rem 0.42rem;
+    border-radius: 999px;
+    font-size: 0.66rem;
+    font-weight: 700;
+    letter-spacing: 0.01em;
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.14);
+    vertical-align: middle;
+  }
+
+  &__badge--overlay {
+    position: absolute;
+    top: 0.5rem;
+    left: 0.6rem;
+    color: #fff;
+    background: rgba(var(--v-theme-primary), 0.85);
+    backdrop-filter: blur(6px);
+  }
+
+  &__share-footer {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-top: 0.85rem;
+    padding: 0.75rem 1.1rem 0;
+    border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+
+  &__author {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-width: 0;
+  }
+
+  &__author-initial {
+    font-size: 0.72rem;
+    font-weight: 700;
+  }
+
+  &__author-name {
+    font-size: 0.82rem;
+    color: rgb(var(--v-theme-on-surface-variant));
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  &__saved-icon {
+    flex: 0 0 auto;
+    margin: 0 0.5rem;
   }
 }
 </style>

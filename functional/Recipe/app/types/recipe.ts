@@ -31,8 +31,25 @@ export interface RecipeIngredientLine {
   ingredient: Ingredient
 }
 
+// Sharing scope of a personal recipe. FRIENDS is reserved (friends feature not
+// implemented yet). The global reference catalog (userId null) is independent.
+export type RecipeVisibility = 'PRIVATE' | 'PUBLIC' | 'FRIENDS'
+
+// Reduced author info, only present on shared recipes (GET /recipes/shared).
+export interface RecipeAuthor {
+  displayName: string | null
+  picture?: string | null
+}
+
 export interface Recipe {
   id: number
+  // null = global reference catalog; otherwise the owner's id.
+  userId: number | null
+  visibility: RecipeVisibility
+  // Set on clones: id of the source recipe (catalog or another user's public).
+  sourceRecipeId?: number | null
+  // On clonable recipes (catalog / shared): true if I already saved a copy.
+  alreadySaved?: boolean
   name: string
   description: string | null
   steps: string | null
@@ -45,6 +62,7 @@ export interface Recipe {
   dietaryRegimes: DietaryRegime[]
   total: RecipeNutrition
   perServing: RecipeNutrition
+  author?: RecipeAuthor
 }
 
 export interface RecipePayload {

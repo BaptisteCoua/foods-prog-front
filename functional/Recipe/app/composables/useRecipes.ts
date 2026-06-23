@@ -1,4 +1,4 @@
-import type { Paginated, Recipe, RecipePayload } from '../types/recipe'
+import type { Paginated, Recipe, RecipePayload, RecipeVisibility } from '../types/recipe'
 
 // Loads the recipe library and exposes CRUD. Keyed shared state ('recipes') so
 // the list, form and detail page stay in sync; every mutation refreshes it.
@@ -29,5 +29,20 @@ export const useRecipes = () => {
     await refresh()
   }
 
-  return { items, pending, error, refresh, create, update, remove }
+  // Clone a visible recipe (global catalog or another user's public one) into
+  // the current user's own collection as an editable PRIVATE copy.
+  const clone = async (id: number) => {
+    const recipe = await api<Recipe>(`/recipes/${id}/clone`, { method: 'POST' })
+    await refresh()
+    return recipe
+  }
+
+  // Publish / unpublish one of the user's own recipes (PUBLIC ↔ PRIVATE).
+  const setVisibility = async (id: number, visibility: RecipeVisibility) => {
+    const recipe = await api<Recipe>(`/recipes/${id}`, { method: 'PUT', body: { visibility } })
+    await refresh()
+    return recipe
+  }
+
+  return { items, pending, error, refresh, create, update, remove, clone, setVisibility }
 }

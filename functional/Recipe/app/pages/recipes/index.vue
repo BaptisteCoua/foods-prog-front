@@ -59,6 +59,42 @@
       </div>
     </header>
 
+    <div
+      class="recipes__segments"
+      role="tablist"
+    >
+      <button
+        type="button"
+        role="tab"
+        :aria-selected="scope === 'mine'"
+        class="recipes__segment"
+        :class="{ 'recipes__segment--active': scope === 'mine' }"
+        @click="scope = 'mine'"
+      >
+        Mes recettes
+      </button>
+      <button
+        type="button"
+        role="tab"
+        :aria-selected="scope === 'catalog'"
+        class="recipes__segment"
+        :class="{ 'recipes__segment--active': scope === 'catalog' }"
+        @click="scope = 'catalog'"
+      >
+        Bibliothèque
+      </button>
+      <button
+        type="button"
+        role="tab"
+        :aria-selected="scope === 'shared'"
+        class="recipes__segment"
+        :class="{ 'recipes__segment--active': scope === 'shared' }"
+        @click="scope = 'shared'"
+      >
+        Partagées
+      </button>
+    </div>
+
     <v-text-field
       v-model="search"
       placeholder="Rechercher une recette"
@@ -151,13 +187,21 @@
     >
       <span class="recipes__state-icon">
         <v-icon
-          icon="mdi-book-open-outline"
+          :icon="emptyIcon"
           size="26"
         />
       </span>
-      <p>{{ hasActiveFilter ? 'Aucune recette ne correspond.' : 'Aucune recette pour l\'instant.' }}</p>
+      <p v-if="scope === 'shared'">
+        {{ hasActiveFilter ? 'Aucune recette partagée ne correspond.' : 'Aucune recette partagée pour l\'instant.' }}
+      </p>
+      <p v-else-if="scope === 'catalog'">
+        {{ hasActiveFilter ? 'Aucune recette de la bibliothèque ne correspond.' : 'La bibliothèque est vide pour l\'instant.' }}
+      </p>
+      <p v-else>
+        {{ hasActiveFilter ? 'Aucune recette ne correspond.' : 'Aucune recette pour l\'instant.' }}
+      </p>
       <v-btn
-        v-if="!hasActiveFilter"
+        v-if="scope === 'mine' && !hasActiveFilter"
         color="primary"
         flat
         prepend-icon="mdi-plus"
@@ -180,9 +224,11 @@
         <RecipeCard
           :recipe
           :detailed
+          :cloning="isCloning === recipe.id"
           @open="goToRecipe"
           @edit="openEdit"
           @delete="askDelete"
+          @clone="cloneToMine"
         />
       </AppReveal>
 
@@ -247,11 +293,15 @@
 
 <script setup lang="ts">
 import type { Recipe } from '../../types/recipe'
+import type { RecipeScope } from '../../composables/useRecipeList'
 
 useHead({ title: 'Recettes' })
 
 const formDialog = useTemplateRef('formDialog')
 const sortSheetOpen = ref(false)
+
+// Segmented view: my recipes (+ global catalog) vs the community's shared ones.
+const scope = ref<RecipeScope>('mine')
 
 const {
   items,
@@ -277,7 +327,15 @@ const {
   askDelete,
   cancelDelete,
   confirmDelete,
-} = useRecipeList()
+  isCloning,
+  cloneToMine,
+} = useRecipeList(scope)
+
+const emptyIcon = computed(() => {
+  if (scope.value === 'shared') return 'mdi-share-variant-outline'
+  if (scope.value === 'catalog') return 'mdi-bookshelf'
+  return 'mdi-book-open-outline'
+})
 
 const openCreate = () => formDialog.value?.openCreate()
 const openEdit = (recipe: Recipe) => formDialog.value?.openEdit(recipe)
@@ -314,6 +372,40 @@ const goToRecipe = (recipe: Recipe) => navigateTo(`/recipes/${recipe.id}`)
     font-size: 0.82rem;
     color: rgb(var(--v-theme-on-surface-variant));
     margin-top: 0.2rem;
+  }
+
+  &__segments {
+    display: inline-flex;
+    align-self: flex-start;
+    max-width: 100%;
+    gap: 0.2rem;
+    padding: 0.2rem;
+    border-radius: 999px;
+    background: rgba(var(--v-border-color), 0.1);
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__segment {
+    flex: 0 0 auto;
+    padding: 0.4rem 0.95rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    color: rgb(var(--v-theme-on-surface-variant));
+    transition: color 0.2s var(--app-ease), background 0.2s var(--app-ease);
+
+    &--active {
+      color: rgb(var(--v-theme-on-surface));
+      background: rgb(var(--v-theme-surface));
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
   }
 
   &__filters {
