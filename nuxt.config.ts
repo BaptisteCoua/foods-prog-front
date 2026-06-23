@@ -9,6 +9,10 @@ export default defineOSDDNuxtConfig({
     '@pinia/nuxt',
     'pinia-plugin-persistedstate/nuxt',
   ],
+  // SPA statique : l'app est une SPA bearer-auth, le SSR n'apporte rien et
+  // permet un déploiement gratuit sur Cloudflare Pages (0 cold start).
+  // Repasser à `true` (+ choisir un host SSR) suffit pour réactiver le SSR.
+  ssr: false,
   components: [{ path: '~/components', pathPrefix: false }],
   devtools: { enabled: true },
   compatibilityDate: '2025-07-15',

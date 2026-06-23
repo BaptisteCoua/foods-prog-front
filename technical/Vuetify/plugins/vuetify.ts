@@ -4,7 +4,7 @@ import { createVuetify } from 'vuetify'
 // are provided by the Theme layer and auto-imported across layers.
 export default defineNuxtPlugin((nuxtApp) => {
   const vuetify = createVuetify({
-    ssr: true,
+    ssr: false,
     theme: {
       defaultTheme: DEFAULT_THEME,
       themes: appThemes,
