@@ -14,6 +14,29 @@
           icon
           variant="text"
           density="comfortable"
+          aria-label="Trier"
+          @click="sortSheetOpen = true"
+        >
+          <v-badge
+            :model-value="sorts.length > 0"
+            :content="sorts.length"
+            color="primary"
+            offset-x="-2"
+            offset-y="-2"
+          >
+            <v-icon icon="mdi-sort" />
+          </v-badge>
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            Trier
+          </v-tooltip>
+        </v-btn>
+        <v-btn
+          icon
+          variant="text"
+          density="comfortable"
           :aria-label="detailed ? 'Affichage compact' : 'Affichage détaillé'"
           @click="toggleView"
         >
@@ -178,6 +201,12 @@
       </div>
     </div>
 
+    <AppSortSheet
+      v-model="sortSheetOpen"
+      v-model:sorts="sorts"
+      :options="sortOptions"
+    />
+
     <RecipeFormDialog
       ref="formDialog"
       @saved="reload"
@@ -222,6 +251,7 @@ import type { Recipe } from '../../types/recipe'
 useHead({ title: 'Recettes' })
 
 const formDialog = useTemplateRef('formDialog')
+const sortSheetOpen = ref(false)
 
 const {
   items,
@@ -240,6 +270,8 @@ const {
   search,
   detailed,
   toggleView,
+  sorts,
+  sortOptions,
   confirmTarget,
   isDeleting,
   askDelete,

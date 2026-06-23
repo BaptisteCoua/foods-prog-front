@@ -29,6 +29,21 @@ export const useRecipeList = () => {
   const detailed = computed(() => listView.isDetailed('recipes'))
   const toggleView = () => listView.toggle('recipes')
 
+  // Multi-criteria sort on the PER-SERVING values shown on the card, pushed to
+  // the API so it holds over the full dataset (not just lazy-loaded rows).
+  const sortStore = useListSortStore()
+  const sortOptions: SortOption[] = [
+    { value: 'calories', label: 'Calories' },
+    { value: 'protein', label: 'Protéines' },
+    { value: 'carb', label: 'Glucides' },
+    { value: 'fat', label: 'Lipides' },
+    { value: 'price', label: 'Prix' },
+  ]
+  const sorts = computed<SortClause[]>({
+    get: () => sortStore.get('recipes'),
+    set: value => sortStore.set('recipes', value),
+  })
+
   const hasMore = computed(() => items.value.length < total.value)
   const hasActiveFilter = computed(
     () => Boolean(search.value?.trim())
@@ -42,6 +57,7 @@ export const useRecipeList = () => {
     if (term) query.search = term
     if (selectedMealTypeIds.value.length) query.mealTypeIds = selectedMealTypeIds.value
     if (selectedDietaryRegimeIds.value.length) query.dietaryRegimeIds = selectedDietaryRegimeIds.value
+    if (sorts.value.length) query.sort = serializeSorts(sorts.value)
     return query
   }
 
@@ -97,6 +113,7 @@ export const useRecipeList = () => {
     searchTimer = setTimeout(() => load(), SEARCH_DEBOUNCE_MS)
   })
   watch([selectedMealTypeIds, selectedDietaryRegimeIds], () => load(), { deep: true })
+  watch(sorts, () => load(), { deep: true })
 
   // Delete-with-confirmation flow.
   const confirmTarget = ref<Recipe | null>(null)
@@ -152,6 +169,8 @@ export const useRecipeList = () => {
     search,
     detailed,
     toggleView,
+    sorts,
+    sortOptions,
     confirmTarget,
     isDeleting,
     askDelete,

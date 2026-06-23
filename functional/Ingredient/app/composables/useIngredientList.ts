@@ -25,6 +25,21 @@ export const useIngredientList = () => {
   const detailed = computed(() => listView.isDetailed('ingredients'))
   const toggleView = () => listView.toggle('ingredients')
 
+  // Multi-criteria sort, pushed to the API so it holds over the full dataset
+  // (not just the rows already lazy-loaded). Persisted per list.
+  const sortStore = useListSortStore()
+  const sortOptions: SortOption[] = [
+    { value: 'calories', label: 'Calories' },
+    { value: 'protein', label: 'Protéines' },
+    { value: 'carb', label: 'Glucides' },
+    { value: 'fat', label: 'Lipides' },
+    { value: 'price', label: 'Prix' },
+  ]
+  const sorts = computed<SortClause[]>({
+    get: () => sortStore.get('ingredients'),
+    set: value => sortStore.set('ingredients', value),
+  })
+
   const hasMore = computed(() => items.value.length < total.value)
   const hasActiveFilter = computed(
     () => Boolean(search.value?.trim()) || selectedFoodTypeIds.value.length > 0,
@@ -35,6 +50,7 @@ export const useIngredientList = () => {
     const term = search.value?.trim()
     if (term) query.search = term
     if (selectedFoodTypeIds.value.length) query.foodTypeIds = selectedFoodTypeIds.value
+    if (sorts.value.length) query.sort = serializeSorts(sorts.value)
     return query
   }
 
@@ -90,6 +106,7 @@ export const useIngredientList = () => {
     searchTimer = setTimeout(() => load(), SEARCH_DEBOUNCE_MS)
   })
   watch(selectedFoodTypeIds, () => load(), { deep: true })
+  watch(sorts, () => load(), { deep: true })
 
   // Delete-with-confirmation flow.
   const confirmTarget = ref<Ingredient | null>(null)
@@ -139,6 +156,8 @@ export const useIngredientList = () => {
     selectedFoodTypeIds,
     detailed,
     toggleView,
+    sorts,
+    sortOptions,
     loadMore,
     refresh,
     reload: refresh,
