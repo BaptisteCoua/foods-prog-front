@@ -105,7 +105,13 @@ const {
   isSubmitting,
   progress,
 } = storeToRefs(onboarding)
-const { next, previous, skip } = onboarding
+const { next, previous, skip, prefillFromGoogle } = onboarding
+
+// La page n'est atteignable que sans profil existant (cf. middleware) : si le
+// compte vient d'être créé via Google, on pré-remplit sexe + date de naissance.
+onMounted(() => {
+  void prefillFromGoogle()
+})
 </script>
 
 <style scoped lang="scss">
