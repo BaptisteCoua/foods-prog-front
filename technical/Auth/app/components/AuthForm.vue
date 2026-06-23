@@ -51,10 +51,17 @@
         <div class="auth-form__divider">
           <span class="auth-form__divider-text">ou</span>
         </div>
-        <div
-          ref="googleButtonRef"
+        <v-btn
+          variant="outlined"
+          size="large"
+          block
+          prepend-icon="mdi-google"
+          :loading="isGoogleLoading"
           class="auth-form__google"
-        />
+          @click="signInWithGoogle"
+        >
+          Continuer avec Google
+        </v-btn>
       </template>
 
       <p class="auth-form__switch">
@@ -78,8 +85,11 @@ const props = defineProps<{ mode: AuthMode }>()
 const { required, email: emailRule, minLength } = useValidationRules()
 const { formRef, email, password, isSubmitting, submit } = useAuthForm(props.mode)
 
-const googleButtonRef = ref<HTMLElement | null>(null)
-const { isEnabled: isGoogleEnabled } = useGoogleSignIn(googleButtonRef)
+const {
+  isEnabled: isGoogleEnabled,
+  isLoading: isGoogleLoading,
+  signIn: signInWithGoogle,
+} = useGoogleSignIn()
 
 const isRegister = computed(() => props.mode === 'register')
 const passwordRules = computed(() => (isRegister.value ? [required, minLength(8)] : [required]))
@@ -135,8 +145,7 @@ const passwordRules = computed(() => (isRegister.value ? [required, minLength(8)
   }
 
   &__google {
-    display: flex;
-    justify-content: center;
+    font-weight: 700;
   }
 
   &__switch {

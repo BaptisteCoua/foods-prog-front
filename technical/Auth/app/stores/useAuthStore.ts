@@ -36,8 +36,8 @@ export const useAuthStore = defineStore('auth', () => {
     setTokens(await postAuth('/auth/register', credentials))
   }
 
-  const loginWithGoogle = async (idToken: string) => {
-    setTokens(await postAuth('/auth/google', { idToken }))
+  const loginWithGoogle = async (code: string) => {
+    setTokens(await postAuth('/auth/google', { code }))
   }
 
   const refreshTokens = async () => {
