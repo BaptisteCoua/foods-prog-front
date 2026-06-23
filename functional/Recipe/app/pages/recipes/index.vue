@@ -6,7 +6,7 @@
           Recettes
         </h1>
         <p class="recipes__count">
-          {{ items.length }} recette{{ items.length > 1 ? 's' : '' }}
+          {{ total }} recette{{ total > 1 ? 's' : '' }}
         </p>
       </div>
       <div class="recipes__head-actions">
@@ -122,7 +122,7 @@
 
     <!-- Empty -->
     <v-card
-      v-else-if="!filteredItems.length"
+      v-else-if="!items.length"
       class="recipes__state"
       elevation="0"
     >
@@ -150,7 +150,7 @@
       class="recipes__list"
     >
       <AppReveal
-        v-for="(recipe, index) in visibleItems"
+        v-for="(recipe, index) in items"
         :key="recipe.id"
         :delay="Math.min((index % 15) * 40, 240)"
       >
@@ -178,7 +178,10 @@
       </div>
     </div>
 
-    <RecipeFormDialog ref="formDialog" />
+    <RecipeFormDialog
+      ref="formDialog"
+      @saved="reload"
+    />
 
     <AppSheet
       :model-value="confirmTarget !== null"
@@ -222,9 +225,9 @@ const formDialog = useTemplateRef('formDialog')
 
 const {
   items,
-  filteredItems,
-  visibleItems,
+  total,
   hasMore,
+  hasActiveFilter,
   loadMore,
   mealTypes,
   selectedMealTypeIds,
@@ -233,6 +236,7 @@ const {
   pending,
   error,
   refresh,
+  reload,
   search,
   detailed,
   toggleView,
@@ -242,11 +246,6 @@ const {
   cancelDelete,
   confirmDelete,
 } = useRecipeList()
-
-const hasActiveFilter = computed(() =>
-  Boolean(search.value)
-  || selectedMealTypeIds.value.length > 0
-  || selectedDietaryRegimeIds.value.length > 0)
 
 const openCreate = () => formDialog.value?.openCreate()
 const openEdit = (recipe: Recipe) => formDialog.value?.openEdit(recipe)

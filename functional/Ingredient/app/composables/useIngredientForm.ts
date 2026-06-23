@@ -96,9 +96,11 @@ export const useIngredientForm = () => {
       else await create(payload)
       toast.success(isEditing.value ? 'Ingrédient mis à jour.' : 'Ingrédient ajouté.')
       close()
+      return true
     }
     catch {
       toast.error('Échec de l\'enregistrement.')
+      return false
     }
     finally {
       isSaving.value = false

@@ -13,6 +13,14 @@ import type {
   SpiceLevel,
   TrainingType,
 } from '../types/profile'
+import type { Me } from '../types/me'
+
+// Le genre Google ('male' | 'female' | 'other' | …) → notre enum Sex. Les
+// valeurs non binaires restent sans mapping : l'utilisateur choisira lui-même.
+const GOOGLE_GENDER_TO_SEX: Record<string, Sex> = {
+  male: 'MALE',
+  female: 'FEMALE',
+}
 
 interface OnboardingForm {
   sex: Sex | null
@@ -82,6 +90,7 @@ export const useOnboardingStore = defineStore('onboarding', () => {
   const form = reactive<OnboardingForm>(createForm())
   const currentIndex = ref(0)
   const isSubmitting = ref(false)
+  const prefilled = ref(false)
 
   const steps: OnboardingStep[] = [
     {
@@ -156,6 +165,28 @@ export const useOnboardingStore = defineStore('onboarding', () => {
   const isLastStep = computed(() => currentIndex.value === steps.length - 1)
   const isCurrentValid = computed(() => currentStep.value.isValid())
   const progress = computed(() => (currentIndex.value + 1) / steps.length)
+
+  // Compte fraîchement créé via Google : pré-remplit sexe + date de naissance
+  // depuis le profil Google (GET /me). On ne touche qu'aux champs encore vides
+  // (jamais d'écrasement d'une saisie), et une seule fois par session.
+  const prefillFromGoogle = async () => {
+    if (prefilled.value) return
+    prefilled.value = true
+    let me: Me
+    try {
+      me = await useApi()<Me>('/me')
+    }
+    catch {
+      return
+    }
+    if (!form.sex && me.gender) {
+      const mapped = GOOGLE_GENDER_TO_SEX[me.gender.toLowerCase()]
+      if (mapped) form.sex = mapped
+    }
+    if (!form.birthDate && me.birthDate) {
+      form.birthDate = me.birthDate
+    }
+  }
 
   const buildPayload = (): BodyProfilePayload => {
     const optionalNumber = (value: number | null) =>
@@ -235,6 +266,7 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     isCurrentValid,
     isSubmitting,
     progress,
+    prefillFromGoogle,
     next,
     previous,
     skip,

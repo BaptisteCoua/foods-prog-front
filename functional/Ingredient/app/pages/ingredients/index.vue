@@ -6,7 +6,7 @@
           Ingrédients
         </h1>
         <p class="ingredients__count">
-          {{ items.length }} ingrédient{{ items.length > 1 ? 's' : '' }}
+          {{ total }} ingrédient{{ total > 1 ? 's' : '' }}
         </p>
       </div>
       <div class="ingredients__head-actions">
@@ -101,7 +101,7 @@
 
     <!-- Empty -->
     <v-card
-      v-else-if="!filteredItems.length"
+      v-else-if="!items.length"
       class="ingredients__state"
       elevation="0"
     >
@@ -129,9 +129,9 @@
       class="ingredients__list"
     >
       <AppReveal
-        v-for="(ingredient, index) in filteredItems"
+        v-for="(ingredient, index) in items"
         :key="ingredient.id"
-        :delay="Math.min(index * 40, 240)"
+        :delay="Math.min((index % 15) * 40, 240)"
       >
         <IngredientCard
           :ingredient
@@ -140,9 +140,26 @@
           @delete="askDelete"
         />
       </AppReveal>
+
+      <!-- Loads the next 15 ingredients from the API when scrolled near. -->
+      <div
+        v-if="hasMore"
+        v-intersect="{ handler: loadMore, options: { rootMargin: '300px' } }"
+        class="ingredients__sentinel"
+      >
+        <v-progress-circular
+          indeterminate
+          size="24"
+          width="2"
+          color="primary"
+        />
+      </div>
     </div>
 
-    <IngredientFormDialog ref="formDialog" />
+    <IngredientFormDialog
+      ref="formDialog"
+      @saved="reload"
+    />
 
     <AppSheet
       :model-value="confirmTarget !== null"
@@ -185,10 +202,14 @@ const formDialog = useTemplateRef('formDialog')
 const { foodTypes } = useFoodTypes()
 const {
   items,
-  filteredItems,
+  total,
   pending,
   error,
+  hasMore,
+  hasActiveFilter,
+  loadMore,
   refresh,
+  reload,
   search,
   selectedFoodTypeIds,
   detailed,
@@ -200,10 +221,8 @@ const {
   confirmDelete,
 } = useIngredientList()
 
-const hasActiveFilter = computed(() => Boolean(search.value) || selectedFoodTypeIds.value.length > 0)
-
 const openCreate = () => formDialog.value?.openCreate()
-const openEdit = (ingredient: typeof filteredItems.value[number]) => formDialog.value?.openEdit(ingredient)
+const openEdit = (ingredient: typeof items.value[number]) => formDialog.value?.openEdit(ingredient)
 </script>
 
 <style scoped lang="scss">
@@ -246,6 +265,12 @@ const openEdit = (ingredient: typeof filteredItems.value[number]) => formDialog.
     display: flex;
     flex-direction: column;
     gap: 0.6rem;
+  }
+
+  &__sentinel {
+    display: flex;
+    justify-content: center;
+    padding: 1rem 0 0.5rem;
   }
 
   &__skeleton {

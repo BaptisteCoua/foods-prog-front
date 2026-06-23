@@ -1,63 +1,106 @@
 import { toast } from 'vue3-toastify'
-import type { Recipe } from '../types/recipe'
+import type { Paginated, Recipe } from '../types/recipe'
 
-// Page-level logic for the recipe list: client-side search + meal-type
-// filtering + delete-with-confirmation. Data + mutations come from useRecipes,
-// the filterable meal categories from useMealTypes.
+// Page-level logic for the recipe list. The list is fetched server-side, 15
+// items at a time (lazy-loading / infinite scroll), with search + meal-type +
+// dietary-regime filters pushed to the API so they stay correct over the full
+// dataset — not just the rows already loaded. Filterable categories come from
+// useMealTypes / useDietaryRegimes.
+const PAGE_SIZE = 15
+const SEARCH_DEBOUNCE_MS = 300
+
 export const useRecipeList = () => {
-  const { items, pending, error, refresh, remove } = useRecipes()
+  const api = useApi()
   const { mealTypes } = useMealTypes()
   const { dietaryRegimes } = useDietaryRegimes()
+
+  const items = ref<Recipe[]>([])
+  const total = ref(0)
+  const page = ref(1)
+  const pending = ref(true)
+  const loadingMore = ref(false)
+  const error = ref(false)
 
   const search = ref('')
   const selectedMealTypeIds = ref<number[]>([])
   const selectedDietaryRegimeIds = ref<number[]>([])
-  const confirmTarget = ref<Recipe | null>(null)
-  const isDeleting = ref(false)
 
   const listView = useListViewStore()
   const detailed = computed(() => listView.isDetailed('recipes'))
   const toggleView = () => listView.toggle('recipes')
 
-  // Progressive rendering: keep the whole (already-fetched + filtered) list in
-  // memory but only mount a growing window of cards, +15 each time the bottom
-  // sentinel scrolls into view.
-  const PAGE_SIZE = 15
-  const visibleCount = ref(PAGE_SIZE)
+  const hasMore = computed(() => items.value.length < total.value)
+  const hasActiveFilter = computed(
+    () => Boolean(search.value?.trim())
+      || selectedMealTypeIds.value.length > 0
+      || selectedDietaryRegimeIds.value.length > 0,
+  )
 
-  // A recipe matches the search by name and each active filter (meal-type and
-  // dietary-regime) when it carries at least one of the selected tags (an empty
-  // selection means that filter is inactive).
-  const filteredItems = computed(() => {
-    const query = search.value.trim().toLowerCase()
-    const typeIds = selectedMealTypeIds.value
-    const regimeIds = selectedDietaryRegimeIds.value
+  const buildQuery = (targetPage: number) => {
+    const query: Record<string, unknown> = { page: targetPage, limit: PAGE_SIZE }
+    const term = search.value?.trim()
+    if (term) query.search = term
+    if (selectedMealTypeIds.value.length) query.mealTypeIds = selectedMealTypeIds.value
+    if (selectedDietaryRegimeIds.value.length) query.dietaryRegimeIds = selectedDietaryRegimeIds.value
+    return query
+  }
 
-    return items.value.filter((item) => {
-      const matchesSearch = !query || item.name.toLowerCase().includes(query)
-      const matchesType = !typeIds.length
-        || item.mealTypes.some(type => typeIds.includes(type.id))
-      const matchesRegime = !regimeIds.length
-        || item.dietaryRegimes.some(regime => regimeIds.includes(regime.id))
-      return matchesSearch && matchesType && matchesRegime
-    })
-  })
+  const fetchPage = (targetPage: number) =>
+    api<Paginated<Recipe>>('/recipes', { query: buildQuery(targetPage) })
 
-  // The slice actually rendered, and whether more remain to reveal.
-  const visibleItems = computed(() => filteredItems.value.slice(0, visibleCount.value))
-  const hasMore = computed(() => visibleCount.value < filteredItems.value.length)
-
-  // Any change to the result set (search, filters, refetch) rewinds the window.
-  watch(() => filteredItems.value.length, () => {
-    visibleCount.value = PAGE_SIZE
-  })
-
-  // Called by the bottom sentinel's v-intersect when it enters the viewport.
-  const loadMore = (isIntersecting: boolean) => {
-    if (isIntersecting && hasMore.value) {
-      visibleCount.value += PAGE_SIZE
+  // (Re)load the first page — on mount and on every search/filter change.
+  const load = async () => {
+    pending.value = true
+    error.value = false
+    try {
+      const result = await fetchPage(1)
+      items.value = result.items
+      total.value = result.total
+      page.value = 1
+    }
+    catch {
+      error.value = true
+      items.value = []
+      total.value = 0
+    }
+    finally {
+      pending.value = false
     }
   }
+
+  // Append the next page. Called by the bottom sentinel's v-intersect.
+  const loadMore = async (isIntersecting = true) => {
+    if (!isIntersecting || !hasMore.value || loadingMore.value || pending.value) return
+    loadingMore.value = true
+    try {
+      const next = page.value + 1
+      const result = await fetchPage(next)
+      items.value = [...items.value, ...result.items]
+      total.value = result.total
+      page.value = next
+    }
+    catch {
+      // Keep what we have; the sentinel retries on the next intersection.
+    }
+    finally {
+      loadingMore.value = false
+    }
+  }
+
+  const refresh = () => load()
+
+  // Any search/filter change rewinds to page 1. Search is debounced so we don't
+  // hit the API on every keystroke.
+  let searchTimer: ReturnType<typeof setTimeout> | null = null
+  watch(search, () => {
+    if (searchTimer) clearTimeout(searchTimer)
+    searchTimer = setTimeout(() => load(), SEARCH_DEBOUNCE_MS)
+  })
+  watch([selectedMealTypeIds, selectedDietaryRegimeIds], () => load(), { deep: true })
+
+  // Delete-with-confirmation flow.
+  const confirmTarget = ref<Recipe | null>(null)
+  const isDeleting = ref(false)
 
   const askDelete = (recipe: Recipe) => {
     confirmTarget.value = recipe
@@ -68,10 +111,16 @@ export const useRecipeList = () => {
   }
 
   const confirmDelete = async () => {
-    if (!confirmTarget.value) return
+    const target = confirmTarget.value
+    if (!target) return
     isDeleting.value = true
     try {
-      await remove(confirmTarget.value.id)
+      await api(`/recipes/${target.id}`, { method: 'DELETE' })
+      // Drop locally to avoid a scroll jump, keep the count honest, and refresh
+      // the shared library cache used by the planning's recipe picker.
+      items.value = items.value.filter(item => item.id !== target.id)
+      total.value = Math.max(0, total.value - 1)
+      await refreshNuxtData('recipes')
       toast.success('Recette supprimée.')
       confirmTarget.value = null
     }
@@ -83,19 +132,23 @@ export const useRecipeList = () => {
     }
   }
 
+  onMounted(load)
+
   return {
     items,
-    filteredItems,
-    visibleItems,
+    total,
+    pending,
+    loadingMore,
+    error,
     hasMore,
+    hasActiveFilter,
     loadMore,
+    refresh,
+    reload: refresh,
     mealTypes,
     selectedMealTypeIds,
     dietaryRegimes,
     selectedDietaryRegimeIds,
-    pending,
-    error,
-    refresh,
     search,
     detailed,
     toggleView,

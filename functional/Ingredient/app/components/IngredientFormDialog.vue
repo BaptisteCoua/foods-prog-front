@@ -12,7 +12,7 @@
         <v-form
           ref="formRef"
           class="ingredient-dialog__form"
-          @submit.prevent="submit"
+          @submit.prevent="onSubmit"
         >
           <v-text-field
             v-model="form.name"
@@ -118,7 +118,7 @@
           color="primary"
           flat
           :loading="isSaving"
-          @click="submit"
+          @click="onSubmit"
         >
           Enregistrer
         </v-btn>
@@ -129,6 +129,8 @@
 
 <script setup lang="ts">
 import { UNIT_OPTIONS } from '../types/ingredient'
+
+const emit = defineEmits<{ saved: [] }>()
 
 const { foodTypes } = useFoodTypes()
 const {
@@ -146,6 +148,10 @@ const {
 
 const baseLabel = computed(() => baseQuantityLabel(form.unitType))
 const priceSuffix = computed(() => priceUnitLabel(form.unitType))
+
+const onSubmit = async () => {
+  if (await submit()) emit('saved')
+}
 
 defineExpose({ openCreate, openEdit })
 </script>
