@@ -14,11 +14,10 @@
       </div>
     </div>
 
-    <v-text-field
+    <AppDateField
       v-model="form.birthDate"
       label="Date de naissance"
-      type="date"
-      prepend-inner-icon="mdi-calendar"
+      :max="todayIso"
     />
 
     <div class="step__row">
@@ -63,6 +62,9 @@
 import { SEX_OPTIONS } from '../types/profile'
 
 const { form } = useOnboardingStore()
+
+// No future birth dates.
+const todayIso = new Date().toISOString().slice(0, 10)
 </script>
 
 <style scoped lang="scss">

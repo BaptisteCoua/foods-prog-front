@@ -42,11 +42,10 @@
                 />
               </div>
             </div>
-            <v-text-field
+            <AppDateField
               v-model="form.birthDate"
               label="Date de naissance"
-              type="date"
-              prepend-inner-icon="mdi-calendar"
+              :max="todayIso"
               hide-details
             />
             <div class="step__row">
@@ -405,6 +404,9 @@ const {
 } = useProfileEditor()
 
 const open = ref(false)
+
+// No future birth dates.
+const todayIso = new Date().toISOString().slice(0, 10)
 
 const litersLabel = computed(() =>
   form.waterTargetMl ? `${(form.waterTargetMl / 1000).toLocaleString('fr-FR')} L` : '—',

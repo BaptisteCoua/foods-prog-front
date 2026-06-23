@@ -1,12 +1,14 @@
+import type { PeriodSeed } from './useShoppingPeriod'
 import { useShoppingList } from './useShoppingList'
 import { useShoppingPeriod } from './useShoppingPeriod'
 
 // Orchestrates the shopping page: resolves the period, fetches its list, sorts
 // the lines and tracks which items have been picked up. The check-off state is
 // local and intentionally non-persisted (it covers a single shopping session and
-// resets whenever the period changes).
-export const useShoppingBoard = () => {
-  const periodApi = useShoppingPeriod()
+// resets whenever the period changes). `seed` lets a caller (the Planning popup)
+// open the board on a given period rather than the route query / current week.
+export const useShoppingBoard = (seed?: PeriodSeed) => {
+  const periodApi = useShoppingPeriod(seed)
   const period = periodApi.period
 
   const { list, pending, error, refresh } = useShoppingList(

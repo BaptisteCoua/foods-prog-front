@@ -4,14 +4,6 @@
       <h1 class="planning__title">
         Planning
       </h1>
-      <v-btn
-        class="planning__shopping"
-        icon="mdi-cart-outline"
-        variant="text"
-        size="small"
-        aria-label="Liste de courses de la semaine"
-        @click="goToShoppingList"
-      />
       <div class="planning__week-nav">
         <v-btn
           icon="mdi-chevron-left"
@@ -30,6 +22,44 @@
         />
       </div>
     </header>
+
+    <!-- [EXPERIMENT nav] Accès mis en évidence vers Courses + Ingrédients,
+         déplacés ici depuis le menu du bas (voir useMainNav.ts). -->
+    <div class="planning__quick">
+      <button
+        type="button"
+        class="planning__quick-tile"
+        @click="shoppingOpen = true"
+      >
+        <span class="planning__quick-badge">
+          <v-icon
+            icon="mdi-cart-outline"
+            size="24"
+          />
+        </span>
+        <span class="planning__quick-text">
+          <span class="planning__quick-label">Liste de courses</span>
+          <span class="planning__quick-sub">Cette semaine</span>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="planning__quick-tile"
+        @click="ingredientsOpen = true"
+      >
+        <span class="planning__quick-badge">
+          <v-icon
+            icon="mdi-food-apple-outline"
+            size="24"
+          />
+        </span>
+        <span class="planning__quick-text">
+          <span class="planning__quick-label">Ingrédients</span>
+          <span class="planning__quick-sub">Mon catalogue</span>
+        </span>
+      </button>
+    </div>
 
     <PlanningWeekStrip
       :days="board.daySummaries.value"
@@ -167,6 +197,25 @@
       :busy="board.busy.value"
       @confirm="board.confirmDuplicate"
     />
+
+    <!-- [EXPERIMENT nav] Courses + Ingrédients en popup plutôt qu'en page. -->
+    <AppSheet
+      v-model="shoppingOpen"
+      :max-width="640"
+    >
+      <ShoppingListPanel
+        :key="shoppingSeed.from"
+        :seed="shoppingSeed"
+        padded
+      />
+    </AppSheet>
+
+    <AppSheet
+      v-model="ingredientsOpen"
+      :max-width="720"
+    >
+      <IngredientListPanel padded />
+    </AppSheet>
   </div>
 </template>
 
@@ -178,14 +227,16 @@ useHead({ title: 'Planning' })
 
 const board = usePlanningBoard()
 
-// Open the shopping list pre-filled on the week currently shown.
-const goToShoppingList = () => {
-  const from = board.weekStart.value
-  navigateTo({
-    path: '/shopping-list',
-    query: { preset: 'week', from, to: addDays(from, 6) },
-  })
-}
+// [EXPERIMENT nav] Courses + Ingrédients ouverts en popup depuis le Planning.
+const shoppingOpen = ref(false)
+const ingredientsOpen = ref(false)
+
+// Pré-remplit la liste de courses sur la semaine actuellement affichée.
+const shoppingSeed = computed(() => ({
+  preset: 'week' as const,
+  from: board.weekStart.value,
+  to: addDays(board.weekStart.value, 6),
+}))
 
 const isToday = computed(() => board.selectedDate.value === board.today)
 
@@ -238,8 +289,78 @@ const barWidth = computed(() => {
     letter-spacing: -0.03em;
   }
 
-  &__shopping {
-    margin-left: auto;
+  &__quick {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.6rem;
+  }
+
+  &__quick-tile {
+    // Les deux raccourcis partagent le même design (accent émeraude).
+    --tile-accent: var(--v-theme-primary);
+
+    display: flex;
+    align-items: center;
+    gap: 0.65rem;
+    padding: 0.8rem 0.85rem;
+    border-radius: 16px;
+    border: 1px solid rgba(var(--tile-accent), 0.3);
+    background: rgba(var(--tile-accent), 0.08);
+    color: rgb(var(--v-theme-on-surface));
+    text-align: left;
+    cursor: pointer;
+    transition:
+      transform 0.25s var(--app-ease),
+      box-shadow 0.25s var(--app-ease);
+
+    &:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(var(--tile-accent), 0.2);
+    }
+
+    &:active {
+      transform: translateY(0);
+    }
+  }
+
+  &__quick-badge {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    color: rgb(var(--tile-accent));
+    background: rgba(var(--tile-accent), 0.16);
+  }
+
+  &__quick-text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+    flex: 1 1 auto;
+  }
+
+  &__quick-label {
+    font-size: 0.92rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+  }
+
+  &__quick-sub {
+    font-size: 0.72rem;
+    color: rgb(var(--v-theme-on-surface-variant));
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .planning__quick-tile {
+      transition: none;
+
+      &:hover {
+        transform: none;
+      }
+    }
   }
 
   &__week-nav {

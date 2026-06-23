@@ -10,16 +10,25 @@ import {
   todayISO,
 } from '../utils/shoppingDate'
 
+// Optional initial period, e.g. when opened as a popup from the Planning page
+// (which passes the week being shown) instead of via a deep link.
+export interface PeriodSeed {
+  preset?: PresetKey
+  from?: string
+  to?: string
+}
+
 // Owns the selected period: a preset (day/week/month/custom) plus an anchor date,
 // resolved into the { from, to } range the API expects. `prev()` / `next()` step
-// the anchor by the preset's granularity. Optionally seeded from the route query
-// (?preset&from&to) so the Planning shortcut can open us on a given week.
-export const useShoppingPeriod = () => {
+// the anchor by the preset's granularity. Seeded either from an explicit `seed`
+// (the Planning popup) or, failing that, from the route query (?preset&from&to)
+// so a deep link still opens us on a given week.
+export const useShoppingPeriod = (seed?: PeriodSeed) => {
   const route = useRoute()
 
-  const queryPreset = route.query.preset as PresetKey | undefined
-  const queryFrom = route.query.from as string | undefined
-  const queryTo = route.query.to as string | undefined
+  const queryPreset = seed?.preset ?? (route.query.preset as PresetKey | undefined)
+  const queryFrom = seed?.from ?? (route.query.from as string | undefined)
+  const queryTo = seed?.to ?? (route.query.to as string | undefined)
 
   const preset = ref<PresetKey>(queryPreset ?? 'week')
   const anchor = ref<string>(queryFrom ?? todayISO())

@@ -48,20 +48,16 @@
       v-else
       class="period__custom"
     >
-      <v-text-field
+      <AppDateField
         v-model="customFrom"
-        type="date"
         label="Du"
-        density="compact"
-        variant="outlined"
+        :max="customTo"
         hide-details
       />
-      <v-text-field
+      <AppDateField
         v-model="customTo"
-        type="date"
         label="Au"
-        density="compact"
-        variant="outlined"
+        :min="customFrom"
         hide-details
       />
     </div>
@@ -161,6 +157,7 @@ const thumbStyle = computed(() => ({
 
 .period__custom {
   display: flex;
+  flex-direction: column;
   gap: 0.6rem;
 }
 
