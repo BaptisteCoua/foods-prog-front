@@ -76,11 +76,27 @@
         </v-btn>
         <v-btn
           color="primary"
-          flat
-          prepend-icon="mdi-plus"
+          :icon="mobile"
+          :variant="mobile ? 'text' : 'flat'"
+          :density="mobile ? 'comfortable' : 'default'"
+          :prepend-icon="mobile ? undefined : 'mdi-plus'"
+          :aria-label="mobile ? 'Ajouter' : undefined"
           @click="openCreate"
         >
-          Ajouter
+          <v-icon
+            v-if="mobile"
+            icon="mdi-plus"
+          />
+          <template v-else>
+            Ajouter
+          </template>
+          <v-tooltip
+            v-if="mobile"
+            activator="parent"
+            location="bottom"
+          >
+            Ajouter
+          </v-tooltip>
         </v-btn>
       </div>
     </header>
@@ -242,12 +258,18 @@
 </template>
 
 <script setup lang="ts">
+import { useDisplay } from 'vuetify'
+
 // Body of the ingredients screen, reusable both as the standalone page and as a
 // popup (see Planning). `padded` adds the inset the page layout normally provides
 // but a bottom-sheet does not.
 defineProps<{
   padded?: boolean
 }>()
+
+// `mobile` collapses the "Ajouter" button to an icon-only round button so the
+// header action group never overflows on narrow viewports.
+const { mobile } = useDisplay()
 
 const formDialog = useTemplateRef('formDialog')
 const sortSheetOpen = ref(false)
