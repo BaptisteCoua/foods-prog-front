@@ -17,6 +17,15 @@ html {
   scroll-behavior: smooth;
 }
 
+// Aucun débordement latéral ne doit révéler de scroll horizontal, quel que
+// soit le layout (drag inter-pages, transitions slide, élément trop large).
+// `clip` plutôt que `hidden` : ne crée pas de conteneur de scroll, donc
+// ne casse ni le `position: sticky` de l'app-bar ni le scroll vertical.
+html,
+body {
+  overflow-x: clip;
+}
+
 // Tighter, more "premium" headings.
 h1, h2, h3 {
   letter-spacing: -0.02em;
