@@ -13,6 +13,15 @@ export default defineOSDDNuxtConfig({
   // permet un déploiement gratuit sur Cloudflare Pages (0 cold start).
   // Repasser à `true` (+ choisir un host SSR) suffit pour réactiver le SSR.
   ssr: false,
+  // Favicon = le logo feuille du header (AppLogo), pas l'icône Nuxt par défaut.
+  app: {
+    head: {
+      link: [
+        { rel: 'icon', type: 'image/svg+xml', href: '/favicon.svg' },
+        { rel: 'alternate icon', href: '/favicon.ico' },
+      ],
+    },
+  },
   components: [{ path: '~/components', pathPrefix: false }],
   devtools: { enabled: true },
   compatibilityDate: '2025-07-15',
