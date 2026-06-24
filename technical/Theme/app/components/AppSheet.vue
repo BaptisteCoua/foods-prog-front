@@ -7,7 +7,7 @@
   >
     <section
       class="app-sheet"
-      :class="{ 'app-sheet--dragging': dragging }"
+      :class="{ 'app-sheet--dragging': dragging, 'app-sheet--full-height': fullHeight }"
       :style="containerStyle"
       data-swipe-nav-ignore
       @transitionend="onTransitionEnd"
@@ -44,9 +44,13 @@ const props = withDefaults(defineProps<{
   modelValue: boolean
   maxWidth?: string | number
   scrim?: boolean
+  // Lock the panel to its max height so its size never reflows as the content changes
+  // (avoids the flicker when, e.g., the shopping list filters down to fewer items).
+  fullHeight?: boolean
 }>(), {
   maxWidth: 640,
   scrim: true,
+  fullHeight: false,
 })
 
 const emit = defineEmits<{ 'update:modelValue': [boolean] }>()
@@ -87,6 +91,10 @@ watch(() => props.modelValue, (open) => {
   border-top-left-radius: 24px;
   border-top-right-radius: 24px;
   will-change: transform;
+
+  &--full-height {
+    height: 92vh;
+  }
 
   &--dragging {
     cursor: grabbing;

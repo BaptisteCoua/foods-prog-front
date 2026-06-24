@@ -202,6 +202,7 @@
     <AppSheet
       v-model="shoppingOpen"
       :max-width="640"
+      full-height
     >
       <ShoppingListPanel
         :key="shoppingSeed.from"
@@ -213,6 +214,7 @@
     <AppSheet
       v-model="ingredientsOpen"
       :max-width="720"
+      full-height
     >
       <IngredientListPanel padded />
     </AppSheet>

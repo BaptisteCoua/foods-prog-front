@@ -37,7 +37,7 @@ const { items, active } = useMainNav()
   z-index: 1006;
   display: flex;
   justify-content: center;
-  padding: 0 16px calc(16px + env(safe-area-inset-bottom));
+  padding: 0 16px calc(21px + env(safe-area-inset-bottom));
   pointer-events: none;
 
   &__pill {
@@ -45,7 +45,10 @@ const { items, active } = useMainNav()
     position: relative;
     display: flex;
     align-items: center;
+    justify-content: space-around;
     gap: 4px;
+    width: 100%;
+    max-width: 280px;
     padding: 6px;
     border-radius: 999px;
     // Verre liquide quasi transparent : on laisse passer le fond,
@@ -71,7 +74,7 @@ const { items, active } = useMainNav()
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 46px;
+    width: 66px;
     height: 46px;
     border-radius: 999px;
     color: rgba(var(--v-theme-on-surface), 0.55);

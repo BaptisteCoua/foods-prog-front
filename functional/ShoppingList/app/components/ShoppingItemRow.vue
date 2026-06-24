@@ -12,8 +12,8 @@
       size="22"
     />
     <span class="item__name">{{ line.name }}</span>
-    <span class="item__quantity">{{ formatQuantity(line.quantity, line.unitType) }}</span>
     <span class="item__cost">{{ formatTotalPrice(line.costCents) }}</span>
+    <span class="item__quantity">{{ formatQuantity(line.quantity, line.unitType) }}</span>
   </button>
 </template>
 
@@ -55,18 +55,18 @@ const emit = defineEmits<{ toggle: [] }>()
     white-space: nowrap;
   }
 
-  &__quantity {
+  &__cost {
     flex: 0 0 auto;
     font-size: 0.85rem;
     color: rgb(var(--v-theme-on-surface-variant));
     font-variant-numeric: tabular-nums;
   }
 
-  &__cost {
+  &__quantity {
     flex: 0 0 auto;
     min-width: 4.2rem;
     text-align: right;
-    font-size: 0.85rem;
+    font-size: 0.95rem;
     font-weight: 700;
     font-variant-numeric: tabular-nums;
   }
