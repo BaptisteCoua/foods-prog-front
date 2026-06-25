@@ -96,6 +96,7 @@
           :target="calorieTarget"
           :progress="calorieProgress"
           :planned-progress="plannedProgress"
+          :hors-plan="horsPlanConsumed"
         />
       </AppReveal>
 
@@ -121,15 +122,23 @@
             <h2 class="dashboard__section-title">
               Plats du jour
             </h2>
-            <span
-              v-if="hasPlannedMeals"
-              class="dashboard__count"
-            >{{ eatenCount }}/{{ dishes.length }} mangés</span>
-            <NuxtLink
-              v-else
-              to="/planning"
-              class="dashboard__link"
-            >Planifier →</NuxtLink>
+            <div class="dashboard__head-actions">
+              <span
+                v-if="hasPlannedMeals"
+                class="dashboard__count"
+              >{{ eatenCount }}/{{ dishes.length }} mangés</span>
+              <button
+                type="button"
+                class="dashboard__add-inline"
+                @click="openLog()"
+              >
+                <v-icon
+                  icon="mdi-plus"
+                  size="16"
+                />
+                J'ai mangé
+              </button>
+            </div>
           </div>
 
           <v-card
@@ -142,7 +151,17 @@
                 :key="dish.id"
                 :dish
                 @toggle="toggleDish"
+                @remove="removeDish"
               />
+              <button
+                v-if="showLunchNudge"
+                type="button"
+                class="dashboard__nudge"
+                @click="openLog('LUNCH')"
+              >
+                <span>Rien noté ce midi&nbsp;?</span>
+                <span class="dashboard__nudge-add">+ Ajouter</span>
+              </button>
             </template>
             <div
               v-else
@@ -155,25 +174,42 @@
                 />
               </span>
               <p class="dashboard__empty-text">
-                Aucun repas prévu aujourd'hui.
+                Rien aujourd'hui. Mange quelque chose, ou planifie ta journée.
               </p>
-              <v-btn
-                color="primary"
-                variant="tonal"
-                prepend-icon="mdi-plus"
-                to="/planning"
-              >
-                Planifier un repas
-              </v-btn>
+              <div class="dashboard__empty-actions">
+                <v-btn
+                  color="primary"
+                  flat
+                  prepend-icon="mdi-plus"
+                  @click="openLog()"
+                >
+                  J'ai mangé qqch
+                </v-btn>
+                <v-btn
+                  variant="tonal"
+                  prepend-icon="mdi-calendar-edit"
+                  to="/planning"
+                >
+                  Planifier
+                </v-btn>
+              </div>
             </div>
           </v-card>
         </section>
       </AppReveal>
     </template>
+
+    <QuickLogSheet
+      v-model="logOpen"
+      :default-slot="logSlot"
+      @logged="refresh"
+    />
   </div>
 </template>
 
 <script setup lang="ts">
+import type { MealSlot } from '../../../Planning/app/types/planning'
+
 useHead({ title: 'Accueil' })
 
 const {
@@ -186,12 +222,24 @@ const {
   calorieRemaining,
   calorieProgress,
   plannedProgress,
+  horsPlanConsumed,
   macros,
   dishes,
   hasPlannedMeals,
   eatenCount,
+  showLunchNudge,
   toggleDish,
+  removeDish,
 } = useDailySummary()
+
+// Quick-log sheet — opened by the FAB, the inline button and the lunch nudge.
+const logOpen = ref(false)
+const logSlot = ref<MealSlot | undefined>(undefined)
+
+const openLog = (slot?: MealSlot) => {
+  logSlot.value = slot
+  logOpen.value = true
+}
 </script>
 
 <style scoped lang="scss">
@@ -304,6 +352,58 @@ const {
     font-weight: 700;
     color: rgb(var(--v-theme-primary));
     font-variant-numeric: tabular-nums;
+  }
+
+  &__head-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  &__add-inline {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.1rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: rgb(var(--v-theme-primary));
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+  }
+
+  &__nudge {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    width: 100%;
+    margin-top: 0.35rem;
+    padding: 0.6rem 0.65rem;
+    border-radius: 12px;
+    border: 1px dashed rgba(var(--v-border-color), calc(var(--v-border-opacity) * 2));
+    background: transparent;
+    font-size: 0.82rem;
+    color: rgb(var(--v-theme-on-surface-variant));
+    cursor: pointer;
+    transition: border-color 0.2s var(--app-ease);
+
+    &:hover {
+      border-color: rgb(var(--v-theme-primary));
+    }
+  }
+
+  &__nudge-add {
+    font-weight: 700;
+    color: rgb(var(--v-theme-primary));
+  }
+
+  &__empty-actions {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.5rem;
   }
 
   &__empty {

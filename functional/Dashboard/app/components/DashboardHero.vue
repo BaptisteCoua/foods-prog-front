@@ -31,6 +31,11 @@
           class="hero__track-fill hero__track-fill--eaten"
           :style="{ width: `${eatenWidth}%` }"
         />
+        <span
+          v-if="horsPlanWidth > 0"
+          class="hero__track-fill hero__track-fill--horsplan"
+          :style="{ insetInlineStart: `${horsPlanLeft}%`, width: `${horsPlanWidth}%` }"
+        />
       </div>
       <div class="hero__legend">
         <span class="hero__legend-item hero__legend-item--planned">
@@ -38,6 +43,12 @@
         </span>
         <span class="hero__legend-item hero__legend-item--eaten">
           <i />Mangé <b>{{ consumed.toLocaleString('fr-FR') }}</b>
+        </span>
+        <span
+          v-if="horsPlan > 0"
+          class="hero__legend-item hero__legend-item--horsplan"
+        >
+          <i />Hors plan <b>{{ horsPlan.toLocaleString('fr-FR') }}</b>
         </span>
       </div>
     </div>
@@ -52,6 +63,8 @@ const props = defineProps<{
   target: number
   progress: number
   plannedProgress: number
+  // kcal eaten off-plan (ingredient / free logs) — hatched within the eaten bar.
+  horsPlan: number
 }>()
 
 const { formatted: remainingLabel } = useCountUp(() => props.remaining, { duration: 1400 })
@@ -60,6 +73,13 @@ const targetLabel = computed(() => props.target.toLocaleString('fr-FR'))
 
 const eatenWidth = computed(() => Math.min(props.progress, 1) * 100)
 const plannedWidth = computed(() => Math.min(props.plannedProgress, 1) * 100)
+
+// The hors-plan share sits at the trailing edge of the eaten fill, hatched.
+const horsPlanWidth = computed(() => {
+  if (props.target <= 0 || props.horsPlan <= 0) return 0
+  return Math.min((props.horsPlan / props.target) * 100, eatenWidth.value)
+})
+const horsPlanLeft = computed(() => Math.max(0, eatenWidth.value - horsPlanWidth.value))
 </script>
 
 <style scoped lang="scss">
@@ -131,6 +151,17 @@ const plannedWidth = computed(() => Math.min(props.plannedProgress, 1) * 100)
     &--eaten {
       background: rgb(var(--v-theme-primary));
     }
+
+    &--horsplan {
+      background-image: repeating-linear-gradient(
+        45deg,
+        rgb(var(--v-theme-warning)) 0 4px,
+        rgba(var(--v-theme-warning), 0.55) 4px 8px
+      );
+      transition:
+        width 0.7s var(--app-ease),
+        inset-inline-start 0.7s var(--app-ease);
+    }
   }
 
   &__legend {
@@ -164,6 +195,10 @@ const plannedWidth = computed(() => Math.min(props.plannedProgress, 1) * 100)
 
     &--eaten i {
       background: rgb(var(--v-theme-primary));
+    }
+
+    &--horsplan i {
+      background: rgb(var(--v-theme-warning));
     }
   }
 }

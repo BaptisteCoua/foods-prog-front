@@ -1,6 +1,7 @@
 import { toast } from 'vue3-toastify'
 import type { Recipe } from '../../../Recipe/app/types/recipe'
 import type { DayPlan, MealSlot, MealWithTotal } from '../types/planning'
+import { mealItemCourseTags } from '../utils/mealItemMeta'
 import { courseRank, MEAL_SLOTS } from '../utils/planningMeta'
 
 const EMPTY_NUTRITION = { calories: 0, proteinG: 0, carbG: 0, fatG: 0, costCents: 0 }
@@ -39,9 +40,7 @@ export const usePlanningBoard = () => {
       const meal = selectedDay.value.meals.find(m => m.slot === meta.value) ?? null
       const items = meal
         ? [...meal.mealItems].sort(
-            (a, b) =>
-              courseRank((a.recipe.mealTypes ?? []).map(t => t.name))
-              - courseRank((b.recipe.mealTypes ?? []).map(t => t.name)),
+            (a, b) => courseRank(mealItemCourseTags(a)) - courseRank(mealItemCourseTags(b)),
           )
         : []
       return { meta, meal, items }
@@ -70,7 +69,8 @@ export const usePlanningBoard = () => {
     for (const day of [...week.days.value].reverse()) {
       for (const meal of day.meals) {
         for (const item of meal.mealItems) {
-          if (!seen.has(item.recipe.id)) {
+          // Only recipe lines feed the fast-add shortcut.
+          if (item.recipe && !seen.has(item.recipe.id)) {
             seen.add(item.recipe.id)
             out.push(item.recipe)
           }

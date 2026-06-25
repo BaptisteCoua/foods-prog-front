@@ -36,23 +36,23 @@
           rounded="lg"
         >
           <v-img
-            v-if="item.recipe.img"
+            v-if="item.recipe && item.recipe.img"
             :src="item.recipe.img"
             cover
-            :alt="item.recipe.name"
+            :alt="item.recipe.name ?? ''"
           />
           <v-icon
             v-else
-            :icon="icon"
+            :icon="item.kind === 'INGREDIENT' ? 'mdi-food-apple-outline' : icon"
             size="18"
             color="on-surface-variant"
           />
         </v-avatar>
 
         <div class="meal-item__main">
-          <span class="meal-item__name">{{ item.recipe.name }}</span>
+          <span class="meal-item__name">{{ mealItemName(item) }}</span>
           <span
-            v-if="courseName || item.portions !== 1"
+            v-if="courseName || detail || !isRecipeItem(item)"
             class="meal-item__meta"
           >
             <span
@@ -60,9 +60,13 @@
               class="meal-item__course"
             >{{ courseName }}</span>
             <span
-              v-if="item.portions !== 1"
+              v-else-if="!isRecipeItem(item)"
+              class="meal-item__course"
+            >Hors plan</span>
+            <span
+              v-if="detail"
               class="meal-item__kcal"
-            >×{{ formatPortionValue(item.portions) }} portions</span>
+            >{{ detail }}</span>
           </span>
         </div>
 
@@ -79,8 +83,9 @@
 <script setup lang="ts">
 import type { MealItem } from '../types/planning'
 import { useSwipeToDelete } from '../composables/useSwipeToDelete'
+import { isRecipeItem, mealItemDetail, mealItemName } from '../utils/mealItemMeta'
 
-defineProps<{
+const props = defineProps<{
   item: MealItem
   icon: string
   courseName: string
@@ -89,6 +94,8 @@ const emit = defineEmits<{
   open: []
   remove: []
 }>()
+
+const detail = computed(() => mealItemDetail(props.item))
 
 const {
   offset,
@@ -108,9 +115,6 @@ const onClick = () => {
   if (moved.value) return
   emit('open')
 }
-
-const formatPortionValue = (portions: number) =>
-  Number.isInteger(portions) ? String(portions) : portions.toFixed(1)
 </script>
 
 <style scoped lang="scss">
