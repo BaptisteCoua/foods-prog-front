@@ -2,6 +2,7 @@
   <AppSheet
     :model-value="modelValue"
     :max-width="560"
+    full-height
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="log">
