@@ -74,6 +74,42 @@
           class="log__search"
         />
 
+        <div
+          class="log__segments"
+          role="tablist"
+        >
+          <button
+            type="button"
+            role="tab"
+            :aria-selected="kindFilter === 'all'"
+            class="log__segment"
+            :class="{ 'log__segment--active': kindFilter === 'all' }"
+            @click="kindFilter = 'all'"
+          >
+            Tout
+          </button>
+          <button
+            type="button"
+            role="tab"
+            :aria-selected="kindFilter === 'recipes'"
+            class="log__segment"
+            :class="{ 'log__segment--active': kindFilter === 'recipes' }"
+            @click="kindFilter = 'recipes'"
+          >
+            Recettes
+          </button>
+          <button
+            type="button"
+            role="tab"
+            :aria-selected="kindFilter === 'ingredients'"
+            class="log__segment"
+            :class="{ 'log__segment--active': kindFilter === 'ingredients' }"
+            @click="kindFilter = 'ingredients'"
+          >
+            Aliments
+          </button>
+        </div>
+
         <button
           type="button"
           class="log__free-row"
@@ -95,7 +131,7 @@
           class="log__section"
         >
           <span class="log__label">Récents</span>
-          <div class="log__chips log__chips--wrap">
+          <div class="log__chips log__chips--scroll">
             <button
               v-for="entry in recents"
               :key="entry.key"
@@ -108,7 +144,7 @@
                 :icon="entry.kind === 'RECIPE' ? 'mdi-silverware-fork-knife' : 'mdi-food-apple-outline'"
                 size="14"
               />
-              {{ entry.kind === 'RECIPE' ? entry.recipe.name : entry.ingredient.name }}
+              <span class="log__recent-name">{{ entry.kind === 'RECIPE' ? entry.recipe.name : entry.ingredient.name }}</span>
             </button>
           </div>
         </div>
@@ -126,7 +162,7 @@
 
         <template v-else>
           <div
-            v-if="recipeResults.length"
+            v-if="showRecipes && recipeResults.length"
             class="log__section"
           >
             <span class="log__label">Recettes</span>
@@ -156,7 +192,7 @@
           </div>
 
           <div
-            v-if="ingredientResults.length"
+            v-if="showIngredients && ingredientResults.length"
             class="log__section"
           >
             <span class="log__label">Aliments</span>
@@ -188,7 +224,7 @@
           </div>
 
           <p
-            v-if="!recipeResults.length && !ingredientResults.length"
+            v-if="noVisibleResults"
             class="log__state"
           >
             Aucun résultat — utilise la saisie rapide en haut.
@@ -329,6 +365,16 @@ const view = ref<View>('list')
 const slot = ref<MealSlot>('LUNCH')
 const day = ref<'today' | 'yesterday'>('today')
 const busy = ref(false)
+
+// Segmented filter over the result list: everything, recipes only, or aliments only.
+type KindFilter = 'all' | 'recipes' | 'ingredients'
+const kindFilter = ref<KindFilter>('all')
+const showRecipes = computed(() => kindFilter.value !== 'ingredients')
+const showIngredients = computed(() => kindFilter.value !== 'recipes')
+const noVisibleResults = computed(() =>
+  (!showRecipes.value || recipeResults.value.length === 0)
+  && (!showIngredients.value || ingredientResults.value.length === 0),
+)
 
 const selectedKind = ref<'RECIPE' | 'INGREDIENT' | null>(null)
 const selectedRecipe = ref<Recipe | null>(null)
@@ -496,6 +542,7 @@ const confirmFree = () => {
 watch(() => props.modelValue, (open) => {
   if (!open) return
   view.value = 'list'
+  kindFilter.value = 'all'
   slot.value = props.defaultSlot ?? defaultSlotByTime()
   day.value = 'today'
   selectedKind.value = null
@@ -558,6 +605,16 @@ watch(() => props.modelValue, (open) => {
     &--wrap {
       flex-wrap: wrap;
     }
+
+    &--scroll {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      scrollbar-width: none;
+
+      &::-webkit-scrollbar {
+        display: none;
+      }
+    }
   }
 
   &__chip {
@@ -582,6 +639,43 @@ watch(() => props.modelValue, (open) => {
     border-radius: 14px;
   }
 
+  &__segments {
+    display: inline-flex;
+    align-self: flex-start;
+    max-width: 100%;
+    gap: 0.2rem;
+    padding: 0.2rem;
+    border-radius: 999px;
+    background: rgba(var(--v-border-color), 0.1);
+    overflow-x: auto;
+    scrollbar-width: none;
+
+    &::-webkit-scrollbar {
+      display: none;
+    }
+  }
+
+  &__segment {
+    flex: 0 0 auto;
+    padding: 0.38rem 0.9rem;
+    border-radius: 999px;
+    border: none;
+    background: transparent;
+    font-size: 0.82rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+    cursor: pointer;
+    color: rgb(var(--v-theme-on-surface-variant));
+    transition: color 0.2s var(--app-ease), background 0.2s var(--app-ease);
+
+    &--active {
+      color: rgb(var(--v-theme-on-surface));
+      background: rgb(var(--v-theme-surface));
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    }
+  }
+
   &__section {
     display: flex;
     flex-direction: column;
@@ -598,6 +692,8 @@ watch(() => props.modelValue, (open) => {
   }
 
   &__recent {
+    flex: 0 0 auto;
+    width: 9rem;
     display: inline-flex;
     align-items: center;
     gap: 0.3rem;
@@ -614,6 +710,18 @@ watch(() => props.modelValue, (open) => {
       opacity: 0.5;
       cursor: default;
     }
+
+    .v-icon {
+      flex: 0 0 auto;
+    }
+  }
+
+  &__recent-name {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   &__opt {

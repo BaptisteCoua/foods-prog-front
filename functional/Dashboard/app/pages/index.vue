@@ -350,7 +350,7 @@ const openLog = (slot?: MealSlot) => {
   &__count {
     font-size: 0.8rem;
     font-weight: 700;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-on-surface-variant));
     font-variant-numeric: tabular-nums;
   }
 

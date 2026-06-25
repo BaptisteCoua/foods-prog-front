@@ -177,8 +177,9 @@ const horsPlanLeft = computed(() => Math.max(0, eatenWidth.value - horsPlanWidth
 
   &__legend {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 1.1rem;
+    gap: 0.4rem 1.1rem;
     font-size: 0.78rem;
     color: rgb(var(--v-theme-on-surface-variant));
     font-variant-numeric: tabular-nums;
@@ -188,8 +189,10 @@ const horsPlanLeft = computed(() => Math.max(0, eatenWidth.value - horsPlanWidth
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    white-space: nowrap;
 
     i {
+      flex: 0 0 auto;
       width: 9px;
       height: 9px;
       border-radius: 3px;
