@@ -57,7 +57,8 @@ export const useGoogleSignIn = () => {
     try {
       await authStore.loginWithGoogle(response.code)
       toast.success('Connecté avec Google !')
-      await navigateTo('/')
+      // Onboarding guard reroutes profile-less (new) accounts to /onboarding.
+      await navigateTo('/dashboard')
     }
     catch {
       toast.error('La connexion Google a échoué.')

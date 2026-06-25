@@ -1,6 +1,6 @@
 <template>
   <NuxtLink
-    to="/"
+    :to="target"
     class="app-logo"
   >
     <span class="app-logo__badge">
@@ -13,7 +13,12 @@
   </NuxtLink>
 </template>
 
-<script setup lang="ts"></script>
+<script setup lang="ts">
+// Logged-in users land on their dashboard; signed-out visitors on the public
+// landing. Avoids an in-app redirect bounce through `/`.
+const { isLoggedIn } = storeToRefs(useAuthStore())
+const target = computed(() => (isLoggedIn.value ? '/dashboard' : '/'))
+</script>
 
 <style scoped lang="scss">
 .app-logo {
