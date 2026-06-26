@@ -223,7 +223,7 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     try {
       await profileStore.save(buildPayload())
       toast.success('Profil enregistré, ta cible est prête !')
-      await navigateTo('/')
+      await navigateTo('/dashboard')
     }
     catch {
       toast.error('Impossible d\'enregistrer ton profil. Réessaie.')

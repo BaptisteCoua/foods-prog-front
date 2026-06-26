@@ -1,4 +1,4 @@
-const PUBLIC_ROUTES = ['/login', '/register']
+const PUBLIC_ROUTES = ['/', '/login', '/register']
 
 // After auth, force first-time users through the onboarding wizard: if they have
 // no body profile yet, every route redirects to /onboarding (and vice-versa once
@@ -16,6 +16,6 @@ export default defineNuxtRouteMiddleware(async (to) => {
   }
 
   if (profileStore.hasProfile && to.path === '/onboarding') {
-    return navigateTo('/')
+    return navigateTo('/dashboard')
   }
 })

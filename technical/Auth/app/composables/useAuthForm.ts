@@ -25,7 +25,7 @@ export const useAuthForm = (mode: AuthMode) => {
       toast.success(mode === 'register' ? 'Compte créé, bienvenue !' : 'Content de te revoir !')
       // New accounts go straight to the onboarding wizard; the gate middleware
       // also enforces this, but redirecting here avoids a flash of the dashboard.
-      await navigateTo(mode === 'register' ? '/onboarding' : '/')
+      await navigateTo(mode === 'register' ? '/onboarding' : '/dashboard')
     }
     catch {
       toast.error(
