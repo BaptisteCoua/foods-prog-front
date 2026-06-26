@@ -9,13 +9,20 @@ export interface MacroSummary {
   color: string
 }
 
-// One dish of today, with its eaten tick — the unit the user checks off.
+// One dish of today. A planned recipe is ticked off (the eaten checkbox); a
+// logged hors-plan line (ingredient / free) is already eaten by definition and
+// shows a "hors plan" badge instead.
 export interface DayDish {
   id: number
   name: string
+  slot: 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK'
   slotLabel: string
+  // Secondary label: "120 g" for an ingredient, "×2 portions" for a recipe.
+  detail: string
   kcal: number
   eaten: boolean
+  // true for an ingredient / free line — logged off the plan.
+  logged: boolean
 }
 
 type DashboardStatus = 'loading' | 'onboarding' | 'error' | 'ready'
@@ -37,8 +44,13 @@ interface MealNutrition {
 interface PlanningMealItem {
   id: number
   eaten: boolean
+  kind: 'RECIPE' | 'INGREDIENT' | 'FREE'
+  portions: number | null
+  quantity: number | null
   total: MealNutrition
   recipe: { name: string } | null
+  ingredient: { name: string, unitType: 'WEIGHT' | 'VOLUME' } | null
+  name: string | null
 }
 
 interface PlanningMeal {
@@ -155,6 +167,21 @@ export const useDailySummary = () => {
     ]
   })
 
+  const dishName = (item: PlanningMealItem): string =>
+    item.recipe?.name ?? item.ingredient?.name ?? item.name ?? 'Plat'
+
+  const dishDetail = (item: PlanningMealItem): string => {
+    if (item.kind === 'INGREDIENT' && item.ingredient && item.quantity != null) {
+      const unit = item.ingredient.unitType === 'VOLUME' ? 'ml' : 'g'
+      return `${Math.round(item.quantity)} ${unit}`
+    }
+    if (item.kind === 'RECIPE' && item.portions != null && item.portions !== 1) {
+      const value = Number.isInteger(item.portions) ? String(item.portions) : item.portions.toFixed(1)
+      return `×${value} portions`
+    }
+    return ''
+  }
+
   // Every dish of today, flattened across meals in chronological slot order
   // (petit-déjeuner → déjeuner → dîner → collation) — the rows the user ticks.
   const dishes = computed<DayDish[]>(() =>
@@ -163,16 +190,37 @@ export const useDailySummary = () => {
       .flatMap(meal =>
         meal.mealItems.map(item => ({
           id: item.id,
-          name: item.recipe?.name ?? 'Plat',
+          name: dishName(item),
+          slot: meal.slot,
           slotLabel: SLOT_LABELS[meal.slot] ?? 'Repas',
+          detail: dishDetail(item),
           kcal: Math.round(item.total.calories),
           eaten: item.eaten,
+          logged: item.kind !== 'RECIPE',
         })),
       ),
   )
 
   const hasPlannedMeals = computed(() => dishes.value.length > 0)
   const eatenCount = computed(() => dishes.value.filter(dish => dish.eaten).length)
+
+  // kcal eaten from hors-plan logs only (ingredient / free lines) — surfaced
+  // alongside the hero so the off-plan share is visible, not hidden.
+  const horsPlanConsumed = computed(() =>
+    Math.round(
+      todayItems.value
+        .filter(item => item.eaten && item.kind !== 'RECIPE')
+        .reduce((sum, item) => sum + item.total.calories, 0),
+    ),
+  )
+
+  // Gentle "rien noté ce midi ?" prompt: it's the afternoon and nothing has
+  // been eaten at lunch yet. Non-blocking — just a reminder you can still log.
+  const showLunchNudge = computed(() => {
+    if (status.value !== 'ready') return false
+    if (new Date().getHours() < 14) return false
+    return !dishes.value.some(dish => dish.slot === 'LUNCH' && dish.eaten)
+  })
 
   // Tick / untick a dish: flip the local flag for instant feedback, persist, then
   // refresh to reconcile with the server. The refresh no longer flickers (status
@@ -189,6 +237,17 @@ export const useDailySummary = () => {
     catch {
       item.eaten = previous
       toast.error('Mise à jour impossible.')
+    }
+  }
+
+  // Remove a line (used to undo a wrong hors-plan log). Server then refresh.
+  const removeDish = async (id: number) => {
+    try {
+      await api(`/meal-items/${id}`, { method: 'DELETE' })
+      await refresh()
+    }
+    catch {
+      toast.error('Suppression impossible.')
     }
   }
 
@@ -215,7 +274,10 @@ export const useDailySummary = () => {
     dishes,
     hasPlannedMeals,
     eatenCount,
+    horsPlanConsumed,
+    showLunchNudge,
     toggleDish,
+    removeDish,
   }
 }
 

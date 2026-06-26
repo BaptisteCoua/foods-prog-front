@@ -70,13 +70,18 @@ export const usePlanningWeek = (
   const duplicateDay = async (sourceMeals: MealWithTotal[], targetDates: string[]) => {
     for (const date of targetDates) {
       for (const meal of sourceMeals) {
-        if (!meal.mealItems.length) continue
+        // Only recipe lines are duplicated — logged hors-plan lines (ingredient /
+        // free) are past reality, not something to copy onto another day.
+        const recipeItems = meal.mealItems.filter(
+          item => item.kind === 'RECIPE' && item.recipe && item.portions != null,
+        )
+        if (!recipeItems.length) continue
         const body: CreateMealPayload = {
           date,
           slot: meal.slot,
-          mealItems: meal.mealItems.map(item => ({
-            portions: item.portions,
-            recipe: { id: item.recipe.id },
+          mealItems: recipeItems.map(item => ({
+            portions: item.portions as number,
+            recipe: { id: item.recipe!.id },
           })),
         }
         await api('/meals', { method: 'POST', body })

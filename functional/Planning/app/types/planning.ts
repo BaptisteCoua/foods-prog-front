@@ -2,10 +2,17 @@
 // PUT /meals/:id, POST /meal-items/:mealId, DELETE /meal-items/:id).
 // The API pre-joins everything per day and computes nutrition + cost server-side
 // — never recompute here. Cost is integer cents; calories/macros are decimals.
+import type { Ingredient } from '../../../Ingredient/app/types/ingredient'
 import type { Recipe } from '../../../Recipe/app/types/recipe'
 
 // The four time slots a meal can occupy (matches the backend MealSlot enum).
 export type MealSlot = 'BREAKFAST' | 'LUNCH' | 'DINNER' | 'SNACK'
+
+// Nature of a meal line (matches the backend MealItemKind enum):
+//  - RECIPE     : `portions` of a `recipe` (the planning board) ;
+//  - INGREDIENT : a `quantity` (g/ml) of a single `ingredient` (quick-logged) ;
+//  - FREE       : a free-text `name` with frozen macros (e.g. a meal eaten out).
+export type MealItemKind = 'RECIPE' | 'INGREDIENT' | 'FREE'
 
 // Aggregated macros + cost (cost in cents, unrounded).
 export interface MealNutrition {
@@ -24,13 +31,21 @@ export interface TargetMacros {
   fatG: number
 }
 
-// One recipe placed in a meal, with how many portions of it are served.
-// `total` is the line's nutrition (per-portion × portions), computed API-side.
-// `eaten` is the user's tick that the dish was actually consumed (vs planned).
+// One line of a meal. Polymorphic via `kind`: a recipe (portions), a single
+// ingredient (quantity in g/ml) or a free entry (name + frozen macros). Only the
+// fields relevant to the line's `kind` are set; the others are null. `total` is
+// the line's nutrition, always computed API-side. `eaten` is the user's tick.
 export interface MealItem {
   id: number
-  portions: number
-  recipe: Recipe
+  kind: MealItemKind
+  // RECIPE
+  portions: number | null
+  recipe: Recipe | null
+  // INGREDIENT
+  quantity: number | null
+  ingredient: Ingredient | null
+  // FREE
+  name: string | null
   total: MealNutrition
   eaten: boolean
 }
@@ -75,4 +90,27 @@ export interface CreateMealPayload {
   date: string
   slot: MealSlot
   mealItems?: MealItemPayload[]
+}
+
+// Body of the line in POST /meals/log — discriminated by `kind`. `eaten`
+// defaults to true server-side (a log records what was actually eaten).
+export type LogItemPayload
+  = | { kind: 'RECIPE', portions: number, recipe: { id: number }, eaten?: boolean }
+    | { kind: 'INGREDIENT', quantity: number, ingredient: { id: number }, eaten?: boolean }
+    | {
+      kind: 'FREE'
+      name: string
+      calories: number
+      proteinG?: number
+      carbG?: number
+      fatG?: number
+      eaten?: boolean
+    }
+
+// Body of POST /meals/log: drop a line on a (date, slot); the meal is created
+// for that slot if it doesn't exist yet.
+export interface LogMealPayload {
+  date: string
+  slot: MealSlot
+  item: LogItemPayload
 }

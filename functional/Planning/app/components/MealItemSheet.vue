@@ -5,14 +5,14 @@
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div
-      v-if="item"
+      v-if="item && item.recipe"
       class="meal-sheet"
     >
       <div class="meal-sheet__hero">
         <v-img
-          v-if="item.recipe.img"
+          v-if="item.recipe?.img"
           :src="item.recipe.img"
-          :alt="item.recipe.name"
+          :alt="item.recipe?.name ?? ''"
           :aspect-ratio="16 / 9"
           cover
           class="meal-sheet__img"
@@ -32,7 +32,7 @@
       <div class="meal-sheet__body">
         <div class="meal-sheet__head">
           <h2 class="meal-sheet__title">
-            {{ item.recipe.name }}
+            {{ item.recipe?.name }}
           </h2>
           <v-chip
             v-if="courseName"
@@ -45,7 +45,7 @@
         </div>
 
         <p
-          v-if="item.recipe.description"
+          v-if="item.recipe?.description"
           class="meal-sheet__desc"
         >
           {{ item.recipe.description }}
@@ -72,7 +72,7 @@
 
         <div class="meal-sheet__cost">
           <span class="meal-sheet__cost-label">
-            {{ formatPortionValue(item.portions) }} portion{{ item.portions > 1 ? 's' : '' }}
+            {{ formatPortionValue(item.portions ?? 0) }} portion{{ (item.portions ?? 0) > 1 ? 's' : '' }}
           </span>
           <span class="meal-sheet__cost-value">{{ formatCost(totals.costCents) }}</span>
         </div>
@@ -84,11 +84,11 @@
               icon="mdi-minus"
               variant="tonal"
               size="small"
-              :disabled="item.portions <= 0.5"
+              :disabled="(item.portions ?? 0) <= 0.5"
               aria-label="Moins de portions"
               @click="step(-0.5)"
             />
-            <span class="meal-sheet__stepper-value">{{ formatPortionValue(item.portions) }}</span>
+            <span class="meal-sheet__stepper-value">{{ formatPortionValue(item.portions ?? 0) }}</span>
             <v-btn
               icon="mdi-plus"
               variant="tonal"
@@ -103,7 +103,7 @@
           <v-btn
             variant="text"
             prepend-icon="mdi-book-open-variant"
-            :to="`/recipes/${item.recipe.id}`"
+            :to="`/recipes/${item.recipe?.id}`"
           >
             Voir la recette
           </v-btn>
@@ -135,7 +135,7 @@ const emit = defineEmits<{
   'remove': [number]
 }>()
 
-const courseName = computed(() => props.item?.recipe.mealTypes?.[0]?.name ?? '')
+const courseName = computed(() => props.item?.recipe?.mealTypes?.[0]?.name ?? '')
 
 // Nutrition for the served portions — computed API-side, never recomputed here.
 const totals = computed(() => props.item?.total ?? {
@@ -151,7 +151,7 @@ const formatPortionValue = (portions: number) =>
 
 const step = (delta: number) => {
   if (!props.item) return
-  const next = Math.round((props.item.portions + delta) * 2) / 2
+  const next = Math.round(((props.item.portions ?? 0) + delta) * 2) / 2
   if (next >= 0.5) emit('setPortions', props.item.id, next)
 }
 </script>

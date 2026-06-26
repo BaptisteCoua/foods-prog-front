@@ -58,6 +58,7 @@
 <script setup lang="ts">
 import type { SlotRow } from '../composables/usePlanningBoard'
 import type { MealItem } from '../types/planning'
+import { isRecipeItem, mealItemCourseTags } from '../utils/mealItemMeta'
 
 const props = defineProps<{ row: SlotRow }>()
 const emit = defineEmits<{
@@ -79,6 +80,9 @@ const selectedItem = computed<MealItem | null>(() =>
 )
 
 const openItem = (item: MealItem) => {
+  // The detail sheet edits portions of a recipe — open it only for recipe lines.
+  // Logged ingredient / free lines stay swipe-to-delete only.
+  if (!isRecipeItem(item)) return
   selectedItemId.value = item.id
   sheetOpen.value = true
 }
@@ -89,7 +93,7 @@ watch(selectedItem, (item) => {
 })
 
 // First meal-type tag, shown as a faint course label when present.
-const courseName = (item: MealItem) => item.recipe.mealTypes?.[0]?.name ?? ''
+const courseName = (item: MealItem) => mealItemCourseTags(item)[0] ?? ''
 </script>
 
 <style scoped lang="scss">

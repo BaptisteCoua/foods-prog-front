@@ -8,8 +8,11 @@
       :size="216"
       :width="13"
     >
-      <span class="hero__num">{{ remainingLabel }}</span>
-      <span class="hero__unit">kcal restantes</span>
+      <span
+        class="hero__num"
+        :class="{ 'hero__num--over': isOver }"
+      >{{ isOver ? '+' : '' }}{{ centerLabel }}</span>
+      <span class="hero__unit">{{ isOver ? 'kcal au-dessus' : 'kcal restantes' }}</span>
     </AnimatedRing>
 
     <div class="hero__caption">
@@ -31,6 +34,11 @@
           class="hero__track-fill hero__track-fill--eaten"
           :style="{ width: `${eatenWidth}%` }"
         />
+        <span
+          v-if="horsPlanWidth > 0"
+          class="hero__track-fill hero__track-fill--horsplan"
+          :style="{ insetInlineStart: `${horsPlanLeft}%`, width: `${horsPlanWidth}%` }"
+        />
       </div>
       <div class="hero__legend">
         <span class="hero__legend-item hero__legend-item--planned">
@@ -38,6 +46,12 @@
         </span>
         <span class="hero__legend-item hero__legend-item--eaten">
           <i />Mangé <b>{{ consumed.toLocaleString('fr-FR') }}</b>
+        </span>
+        <span
+          v-if="horsPlan > 0"
+          class="hero__legend-item hero__legend-item--horsplan"
+        >
+          <i />Hors plan <b>{{ horsPlan.toLocaleString('fr-FR') }}</b>
         </span>
       </div>
     </div>
@@ -52,14 +66,27 @@ const props = defineProps<{
   target: number
   progress: number
   plannedProgress: number
+  // kcal eaten off-plan (ingredient / free logs) — hatched within the eaten bar.
+  horsPlan: number
 }>()
 
-const { formatted: remainingLabel } = useCountUp(() => props.remaining, { duration: 1400 })
+// Once eaten passes the target the ring is full: switch the centre figure from
+// "kcal remaining" to the excess so the overshoot reads at a glance.
+const isOver = computed(() => props.consumed > props.target)
+const centerValue = computed(() => isOver.value ? props.consumed - props.target : props.remaining)
+const { formatted: centerLabel } = useCountUp(centerValue, { duration: 1400 })
 const { formatted: consumedLabel } = useCountUp(() => props.consumed, { duration: 1400 })
 const targetLabel = computed(() => props.target.toLocaleString('fr-FR'))
 
 const eatenWidth = computed(() => Math.min(props.progress, 1) * 100)
 const plannedWidth = computed(() => Math.min(props.plannedProgress, 1) * 100)
+
+// The hors-plan share sits at the trailing edge of the eaten fill, hatched.
+const horsPlanWidth = computed(() => {
+  if (props.target <= 0 || props.horsPlan <= 0) return 0
+  return Math.min((props.horsPlan / props.target) * 100, eatenWidth.value)
+})
+const horsPlanLeft = computed(() => Math.max(0, eatenWidth.value - horsPlanWidth.value))
 </script>
 
 <style scoped lang="scss">
@@ -76,6 +103,10 @@ const plannedWidth = computed(() => Math.min(props.plannedProgress, 1) * 100)
     letter-spacing: -0.04em;
     line-height: 1;
     font-variant-numeric: tabular-nums;
+
+    &--over {
+      color: rgb(var(--v-theme-warning));
+    }
   }
 
   &__unit {
@@ -131,12 +162,24 @@ const plannedWidth = computed(() => Math.min(props.plannedProgress, 1) * 100)
     &--eaten {
       background: rgb(var(--v-theme-primary));
     }
+
+    &--horsplan {
+      background-image: repeating-linear-gradient(
+        45deg,
+        rgb(var(--v-theme-info)) 0 4px,
+        rgba(var(--v-theme-info), 0.55) 4px 8px
+      );
+      transition:
+        width 0.7s var(--app-ease),
+        inset-inline-start 0.7s var(--app-ease);
+    }
   }
 
   &__legend {
     display: flex;
+    flex-wrap: wrap;
     justify-content: center;
-    gap: 1.1rem;
+    gap: 0.4rem 1.1rem;
     font-size: 0.78rem;
     color: rgb(var(--v-theme-on-surface-variant));
     font-variant-numeric: tabular-nums;
@@ -146,8 +189,10 @@ const plannedWidth = computed(() => Math.min(props.plannedProgress, 1) * 100)
     display: inline-flex;
     align-items: center;
     gap: 0.35rem;
+    white-space: nowrap;
 
     i {
+      flex: 0 0 auto;
       width: 9px;
       height: 9px;
       border-radius: 3px;
@@ -164,6 +209,10 @@ const plannedWidth = computed(() => Math.min(props.plannedProgress, 1) * 100)
 
     &--eaten i {
       background: rgb(var(--v-theme-primary));
+    }
+
+    &--horsplan i {
+      background: rgb(var(--v-theme-info));
     }
   }
 }

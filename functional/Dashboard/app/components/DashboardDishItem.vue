@@ -1,5 +1,7 @@
 <template>
+  <!-- Planned recipe: the whole row toggles its "eaten" tick. -->
   <button
+    v-if="!dish.logged"
     type="button"
     class="dish"
     :class="{ 'dish--eaten': dish.eaten }"
@@ -14,17 +16,56 @@
     />
     <span class="dish__main">
       <span class="dish__name">{{ dish.name }}</span>
-      <span class="dish__sub">{{ dish.slotLabel }}</span>
+      <span class="dish__sub">{{ subtitle }}</span>
     </span>
     <span class="dish__kcal">{{ dish.kcal }} kcal</span>
   </button>
+
+  <!-- Logged hors-plan line: already eaten by definition, removable. -->
+  <div
+    v-else
+    class="dish dish--logged"
+  >
+    <span class="dish__marker">
+      <v-icon
+        icon="mdi-plus"
+        size="16"
+      />
+    </span>
+    <span class="dish__main">
+      <span class="dish__name">{{ dish.name }}</span>
+      <span class="dish__sub">
+        {{ subtitle }}
+        <span class="dish__badge">hors plan</span>
+      </span>
+    </span>
+    <span class="dish__kcal">{{ dish.kcal }} kcal</span>
+    <button
+      type="button"
+      class="dish__remove"
+      :aria-label="`Retirer ${dish.name}`"
+      @click="emit('remove', dish.id)"
+    >
+      <v-icon
+        icon="mdi-close"
+        size="16"
+      />
+    </button>
+  </div>
 </template>
 
 <script setup lang="ts">
 import type { DayDish } from '../composables/useDailySummary'
 
-defineProps<{ dish: DayDish }>()
-const emit = defineEmits<{ toggle: [number, boolean] }>()
+const props = defineProps<{ dish: DayDish }>()
+const emit = defineEmits<{
+  toggle: [number, boolean]
+  remove: [number]
+}>()
+
+const subtitle = computed(() =>
+  props.dish.detail ? `${props.dish.slotLabel} · ${props.dish.detail}` : props.dish.slotLabel,
+)
 </script>
 
 <style scoped lang="scss">
@@ -50,7 +91,7 @@ const emit = defineEmits<{ toggle: [number, boolean] }>()
     margin-top: 0.2rem;
   }
 
-  &:hover:not(.dish--eaten) {
+  &:hover:not(.dish--eaten):not(.dish--logged) {
     background: rgba(var(--v-theme-on-surface), 0.04);
   }
 
@@ -72,8 +113,31 @@ const emit = defineEmits<{ toggle: [number, boolean] }>()
     background: rgba(var(--v-theme-primary), 0.1);
   }
 
+  // Logged hors-plan rows are not a toggle — leave the row static.
+  &--logged {
+    cursor: default;
+    background: rgba(var(--v-theme-primary), 0.07);
+    border-color: rgba(var(--v-theme-primary), 0.18);
+
+    &:active {
+      transform: none;
+    }
+  }
+
   &__check {
     flex: 0 0 auto;
+  }
+
+  &__marker {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    background: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-on-primary));
+    box-shadow: 0 3px 10px rgba(var(--v-theme-primary), 0.4);
   }
 
   &__main {
@@ -92,9 +156,23 @@ const emit = defineEmits<{ toggle: [number, boolean] }>()
   }
 
   &__sub {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
     font-size: 0.76rem;
     color: rgb(var(--v-theme-on-surface-variant));
     margin-top: 0.1rem;
+  }
+
+  &__badge {
+    font-size: 0.6rem;
+    font-weight: 800;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.12);
+    border-radius: 999px;
+    padding: 0.08rem 0.4rem;
   }
 
   &__kcal {
@@ -105,6 +183,30 @@ const emit = defineEmits<{ toggle: [number, boolean] }>()
     flex: none;
   }
 
+  &__remove {
+    flex: none;
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border-radius: 9px;
+    border: none;
+    background: transparent;
+    color: rgb(var(--v-theme-on-surface-variant));
+    cursor: pointer;
+    transition: background 0.2s var(--app-ease), color 0.2s var(--app-ease);
+
+    &:hover {
+      background: rgba(var(--v-theme-error), 0.12);
+      color: rgb(var(--v-theme-error));
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgb(var(--v-theme-error));
+      outline-offset: 2px;
+    }
+  }
+
   &--eaten &__name {
     color: rgb(var(--v-theme-on-surface-variant));
     text-decoration: line-through;
@@ -112,6 +214,10 @@ const emit = defineEmits<{ toggle: [number, boolean] }>()
   }
 
   &--eaten &__kcal {
+    color: rgb(var(--v-theme-primary));
+  }
+
+  &--logged &__kcal {
     color: rgb(var(--v-theme-primary));
   }
 }
