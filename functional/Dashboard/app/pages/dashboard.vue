@@ -232,10 +232,11 @@ const {
   removeDish,
 } = useDailySummary()
 
-// Pseudo affiché à côté du « Bonjour » : pseudo choisi → prénom Google.
+// Pseudo affiché à côté du « Bonjour » : prénom seul (givenName) en priorité —
+// quand prénom/nom sont renseignés on n'affiche que le prénom — sinon le pseudo.
 // `me` partage le cache useAsyncData('me') → pas de requête supplémentaire.
 const { me } = useMe()
-const firstName = computed(() => me.value?.displayName?.trim() || me.value?.givenName?.trim() || '')
+const firstName = computed(() => me.value?.givenName?.trim() || me.value?.displayName?.trim() || '')
 const greeting = computed(() => firstName.value ? `Bonjour ${firstName.value} 👋` : 'Bonjour 👋')
 
 // Quick-log sheet — opened by the FAB, the inline button and the lunch nudge.

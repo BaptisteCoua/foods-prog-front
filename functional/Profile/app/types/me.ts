@@ -1,8 +1,12 @@
 // Identité de l'utilisateur courant (GET/PATCH /me) — distincte du BodyProfile.
 // Les champs `givenName`…`nickname` viennent du compte Google (null sinon).
+// Rôle applicatif : 'ADMIN' débloque la modération du board de feedback.
+export type UserRole = 'USER' | 'ADMIN'
+
 export interface Me {
   id: number
   email: string
+  role: UserRole
   displayName: string | null
   givenName: string | null
   familyName: string | null

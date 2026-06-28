@@ -72,6 +72,10 @@
       </AppReveal>
 
       <AppReveal :delay="270">
+        <FeedbackEntryCard />
+      </AppReveal>
+
+      <AppReveal :delay="360">
         <ProfileAccountCard @logout="onLogout" />
       </AppReveal>
     </template>
