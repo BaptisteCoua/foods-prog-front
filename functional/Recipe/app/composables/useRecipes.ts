@@ -39,6 +39,13 @@ export const useRecipes = () => {
     return recipe
   }
 
+  // Remove the saved copy of a shared recipe (inverse of clone). `id` is the
+  // SOURCE recipe id; the API deletes the clone(s) pointing to it.
+  const unclone = async (id: number) => {
+    await api(`/recipes/${id}/clone`, { method: 'DELETE' })
+    await refresh()
+  }
+
   // Publish / unpublish one of the user's own recipes (PUBLIC ↔ PRIVATE).
   const setVisibility = async (id: number, visibility: RecipeVisibility) => {
     const recipe = await api<Recipe>(`/recipes/${id}`, { method: 'PUT', body: { visibility } })
@@ -46,5 +53,5 @@ export const useRecipes = () => {
     return recipe
   }
 
-  return { items, pending, error, refresh, create, update, remove, clone, setVisibility }
+  return { items, pending, error, refresh, create, update, remove, clone, unclone, setVisibility }
 }

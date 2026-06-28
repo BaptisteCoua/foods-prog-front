@@ -391,6 +391,8 @@ import {
   TRAINING_TYPE_OPTIONS,
 } from '../types/profile'
 
+const emit = defineEmits<{ saved: [] }>()
+
 const profileStore = useProfileStore()
 const {
   form,
@@ -423,7 +425,10 @@ const close = () => {
 
 const onSave = async () => {
   const ok = await save()
-  if (ok) close()
+  if (ok) {
+    close()
+    emit('saved')
+  }
 }
 
 defineExpose({ open: openDialog, close })

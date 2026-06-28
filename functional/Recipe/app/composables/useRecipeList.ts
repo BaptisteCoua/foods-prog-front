@@ -19,7 +19,7 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
   const api = useApi()
   const { mealTypes } = useMealTypes()
   const { dietaryRegimes } = useDietaryRegimes()
-  const { clone: cloneRecipe } = useRecipes()
+  const { clone: cloneRecipe, unclone: uncloneRecipe } = useRecipes()
 
   const endpoint = computed(() => (scope.value === 'shared' ? '/recipes/shared' : '/recipes'))
   // Scope sent to GET /recipes (ignored by /recipes/shared).
@@ -44,13 +44,20 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
   // Multi-criteria sort on the PER-SERVING values shown on the card, pushed to
   // the API so it holds over the full dataset (not just lazy-loaded rows).
   const sortStore = useListSortStore()
-  const sortOptions: SortOption[] = [
-    { value: 'calories', label: 'Calories' },
-    { value: 'protein', label: 'Protéines' },
-    { value: 'carb', label: 'Glucides' },
-    { value: 'fat', label: 'Lipides' },
-    { value: 'price', label: 'Prix' },
-  ]
+  // Popularité (nb de likes) n'a de sens que sur du contenu partagé : on
+  // l'expose pour la bibliothèque et les recettes partagées, pas pour « mine ».
+  const sortOptions = computed<SortOption[]>(() => {
+    const options: SortOption[] = []
+    if (scope.value !== 'mine') options.push({ value: 'likes', label: 'Popularité' })
+    options.push(
+      { value: 'calories', label: 'Calories' },
+      { value: 'protein', label: 'Protéines' },
+      { value: 'carb', label: 'Glucides' },
+      { value: 'fat', label: 'Lipides' },
+      { value: 'price', label: 'Prix' },
+    )
+    return options
+  })
   const sorts = computed<SortClause[]>({
     get: () => sortStore.get('recipes'),
     set: value => sortStore.set('recipes', value),
@@ -151,6 +158,44 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
     }
   }
 
+  // Remove the saved copy of a shared recipe (inverse of cloneToMine). Flips the
+  // source card back to "Enregistrer" and refreshes the shared library cache.
+  const uncloneFromMine = async (recipe: Recipe) => {
+    if (isCloning.value) return
+    isCloning.value = recipe.id
+    try {
+      await uncloneRecipe(recipe.id)
+      const item = items.value.find(r => r.id === recipe.id)
+      if (item) item.alreadySaved = false
+      toast.success('Recette retirée de tes recettes.')
+    }
+    catch {
+      toast.error('Impossible de retirer cette recette.')
+    }
+    finally {
+      isCloning.value = null
+    }
+  }
+
+  // Toggle a like on a shared/catalog recipe. Optimistic: flip the flag and the
+  // count locally for instant feedback, revert on failure. POST = like,
+  // DELETE = unlike (both idempotent server-side).
+  const toggleLike = async (recipe: Recipe) => {
+    const item = items.value.find(r => r.id === recipe.id)
+    if (!item) return
+    const liked = !item.liked
+    item.liked = liked
+    item.likesCount = Math.max(0, item.likesCount + (liked ? 1 : -1))
+    try {
+      await api(`/recipes/${recipe.id}/like`, { method: liked ? 'POST' : 'DELETE' })
+    }
+    catch {
+      item.liked = !liked
+      item.likesCount = Math.max(0, item.likesCount + (liked ? -1 : 1))
+      toast.error('Action impossible pour le moment.')
+    }
+  }
+
   // Delete-with-confirmation flow.
   const confirmTarget = ref<Recipe | null>(null)
   const isDeleting = ref(false)
@@ -201,6 +246,8 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
     reload: refresh,
     isCloning,
     cloneToMine,
+    uncloneFromMine,
+    toggleLike,
     mealTypes,
     selectedMealTypeIds,
     dietaryRegimes,

@@ -14,7 +14,23 @@
         :class="{ 'app-bottom-nav__item--active': item.value === active }"
       >
         <span class="app-bottom-nav__halo" />
+
+        <span
+          v-if="item.value === 'profile' && showAvatar"
+          class="app-bottom-nav__avatar app-bottom-nav__icon"
+        >
+          <img
+            v-if="showPhoto"
+            :src="me!.picture!"
+            :alt="item.label"
+            class="app-bottom-nav__avatar-photo"
+            referrerpolicy="no-referrer"
+            @error="photoFailed = true"
+          >
+          <template v-else>{{ initials }}</template>
+        </span>
         <v-icon
+          v-else
           :icon="item.icon"
           size="22"
           class="app-bottom-nav__icon"
@@ -26,6 +42,18 @@
 
 <script setup lang="ts">
 const { items, active } = useMainNav()
+
+// Avatar utilisateur sur l'entrée « Profil » : photo Google → initiales.
+// `me` partage le cache useAsyncData('me') → pas de requête supplémentaire.
+const { me } = useMe()
+const photoFailed = ref(false)
+
+const showPhoto = computed(() => Boolean(me.value?.picture) && !photoFailed.value)
+const showAvatar = computed(() => Boolean(me.value))
+const initials = computed(() => {
+  const source = me.value?.displayName?.trim() || me.value?.email || '?'
+  return source.slice(0, 2).toUpperCase()
+})
 </script>
 
 <style scoped lang="scss">
@@ -110,6 +138,33 @@ const { items, active } = useMainNav()
 
   &__item--active &__icon {
     transform: translateY(-1px) scale(1.06);
+  }
+
+  &__avatar {
+    display: grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    border-radius: 999px;
+    overflow: hidden;
+    font-size: 0.7rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    color: currentcolor;
+    background: rgba(var(--v-theme-on-surface), 0.1);
+    box-shadow: 0 0 0 1.5px rgba(255, 255, 255, 0.25);
+  }
+
+  &__item--active &__avatar {
+    color: rgb(var(--v-theme-primary));
+    background: rgba(var(--v-theme-primary), 0.16);
+    box-shadow: 0 0 0 1.5px rgba(var(--v-theme-primary), 0.45);
+  }
+
+  &__avatar-photo {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
   }
 }
 

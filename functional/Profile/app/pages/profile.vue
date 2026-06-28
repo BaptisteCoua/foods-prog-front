@@ -83,7 +83,10 @@
       @submit="onSaveTarget"
     />
 
-    <ProfileEditDialog ref="profileDialog" />
+    <ProfileEditDialog
+      ref="profileDialog"
+      @saved="onProfileSaved"
+    />
   </div>
 </template>
 
@@ -109,6 +112,7 @@ const {
   saving,
   saveTarget,
   applyProposal,
+  refresh: refreshTarget,
 } = useNutritionTarget()
 
 const targetDialog = useTemplateRef('targetDialog')
@@ -131,6 +135,12 @@ const openTargetEdit = () => {
 
 const openProfileEdit = () => {
   profileDialog.value?.open()
+}
+
+// Le profil enregistré met à jour le store (détails réactifs) ; on rafraîchit
+// en plus la cible/proposition, recalculées côté API depuis le nouveau profil.
+const onProfileSaved = () => {
+  void refreshTarget()
 }
 
 const onSaveTarget = async (payload: NutritionTargetPayload) => {

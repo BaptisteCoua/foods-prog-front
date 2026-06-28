@@ -64,6 +64,17 @@
         </div>
         <div class="recipe-detail__head-actions">
           <template v-if="isMine">
+            <!-- Owner: read-only like count (you can't like your own recipe). -->
+            <span
+              class="recipe-detail__like recipe-detail__like--static"
+              :aria-label="`${recipe.likesCount} j'aime`"
+            >
+              <v-icon
+                icon="mdi-heart"
+                size="18"
+              />
+              {{ recipe.likesCount }}
+            </span>
             <v-btn
               icon="mdi-pencil"
               variant="tonal"
@@ -80,26 +91,44 @@
               @click="confirmOpen = true"
             />
           </template>
-          <v-chip
-            v-else-if="recipe.alreadySaved"
-            color="primary"
-            variant="tonal"
-            size="small"
-            prepend-icon="mdi-bookmark-check"
-          >
-            Déjà enregistrée
-          </v-chip>
-          <v-btn
-            v-else
-            color="primary"
-            variant="tonal"
-            size="small"
-            prepend-icon="mdi-bookmark-plus-outline"
-            :loading="isCloning"
-            @click="onClone"
-          >
-            Enregistrer
-          </v-btn>
+          <template v-else>
+            <button
+              type="button"
+              class="recipe-detail__like"
+              :class="{ 'recipe-detail__like--on': recipe.liked }"
+              :aria-label="recipe.liked ? 'Retirer le like' : 'Liker'"
+              :aria-pressed="recipe.liked"
+              @click="toggleLike"
+            >
+              <v-icon
+                :icon="recipe.liked ? 'mdi-heart' : 'mdi-heart-outline'"
+                size="18"
+              />
+              {{ recipe.likesCount }}
+            </button>
+            <v-btn
+              v-if="recipe.alreadySaved"
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="mdi-bookmark-check"
+              :loading="isUncloning"
+              @click="onUnclone"
+            >
+              Enregistrée
+            </v-btn>
+            <v-btn
+              v-else
+              color="primary"
+              variant="tonal"
+              size="small"
+              prepend-icon="mdi-bookmark-plus-outline"
+              :loading="isCloning"
+              @click="onClone"
+            >
+              Enregistrer
+            </v-btn>
+          </template>
         </div>
       </header>
 
@@ -342,8 +371,9 @@ import type { Recipe } from '../../types/recipe'
 const route = useRoute()
 const id = computed(() => Number(route.params.id))
 
+const api = useApi()
 const { recipe, pending, error, refresh } = useRecipeDetail(id)
-const { remove, setVisibility, clone } = useRecipes()
+const { remove, setVisibility, clone, unclone } = useRecipes()
 const profileStore = useProfileStore()
 
 const { portions, isScaled, scaledTotal, scaledIngredients, increment, decrement, reset }
@@ -397,6 +427,43 @@ const onClone = async () => {
   }
   finally {
     isCloning.value = false
+  }
+}
+
+// Remove the saved copy of this shared recipe (inverse of onClone). Stays on
+// the source page and flips the button back to "Enregistrer".
+const isUncloning = ref(false)
+const onUnclone = async () => {
+  if (!recipe.value || isUncloning.value) return
+  isUncloning.value = true
+  try {
+    await unclone(recipe.value.id)
+    await refresh()
+    toast.success('Recette retirée de tes recettes.')
+  }
+  catch {
+    toast.error('Impossible de retirer cette recette.')
+  }
+  finally {
+    isUncloning.value = false
+  }
+}
+
+// Toggle a like on a shared/catalog recipe. Optimistic: flip flag + count
+// locally for instant feedback, revert on failure.
+const toggleLike = async () => {
+  const current = recipe.value
+  if (!current) return
+  const liked = !current.liked
+  current.liked = liked
+  current.likesCount = Math.max(0, current.likesCount + (liked ? 1 : -1))
+  try {
+    await api(`/recipes/${current.id}/like`, { method: liked ? 'POST' : 'DELETE' })
+  }
+  catch {
+    current.liked = !liked
+    current.likesCount = Math.max(0, current.likesCount + (liked ? -1 : 1))
+    toast.error('Action impossible pour le moment.')
   }
 }
 
@@ -497,8 +564,41 @@ const onDelete = async () => {
 
   &__head-actions {
     display: flex;
+    align-items: center;
     gap: 0.4rem;
     flex-shrink: 0;
+  }
+
+  &__like {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 999px;
+    font-size: 0.85rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums;
+    color: rgb(var(--v-theme-on-surface-variant));
+    transition: color 0.18s var(--app-ease), background 0.18s var(--app-ease);
+
+    &:hover {
+      background: rgba(var(--v-theme-primary), 0.1);
+      color: rgb(var(--v-theme-primary));
+    }
+
+    &--on {
+      color: rgb(var(--v-theme-primary));
+    }
+
+    // Read-only count (owner's own recipe): no interaction, no hover affordance.
+    &--static {
+      cursor: default;
+
+      &:hover {
+        background: transparent;
+        color: rgb(var(--v-theme-on-surface-variant));
+      }
+    }
   }
 
   &__tags {

@@ -217,6 +217,8 @@
           @edit="openEdit"
           @delete="askDelete"
           @clone="cloneToMine"
+          @unclone="uncloneFromMine"
+          @toggle-like="toggleLike"
         />
       </AppReveal>
 
@@ -295,8 +297,14 @@ const formDialog = useTemplateRef('formDialog')
 const sortSheetOpen = ref(false)
 const filterSheetOpen = ref(false)
 
-// Segmented view: my recipes (+ global catalog) vs the community's shared ones.
-const scope = ref<RecipeScope>('mine')
+// Segmented view: my recipes vs the global catalog vs the community's shared
+// ones. Persisted (keyed 'recipes') so leaving for a detail page and coming
+// back lands on the tab you left, instead of resetting to "Mes recettes".
+const scopeStore = useListScopeStore()
+const scope = computed<RecipeScope>({
+  get: () => (scopeStore.get('recipes') as RecipeScope | undefined) ?? 'mine',
+  set: value => scopeStore.set('recipes', value),
+})
 
 const {
   items,
@@ -324,6 +332,8 @@ const {
   confirmDelete,
   isCloning,
   cloneToMine,
+  uncloneFromMine,
+  toggleLike,
 } = useRecipeList(scope)
 
 // Facet filters (meal types + dietary regimes) live in AppFilterSheet; only the

@@ -11,7 +11,7 @@ export interface MainNavItem {
 export const mainNavItems: MainNavItem[] = [
   { value: 'home', to: '/dashboard', icon: 'mdi-home-variant-outline', label: 'Accueil' },
   { value: 'planning', to: '/planning', icon: 'mdi-calendar-blank-outline', label: 'Planning' },
-  { value: 'recipes', to: '/recipes', icon: 'mdi-book-open-outline', label: 'Recettes' },
+  { value: 'recipes', to: '/recipes', icon: 'mdi-pot-steam-outline', label: 'Recettes' },
   // [EXPERIMENT nav] Courses + Ingrédients déplacés vers les actions mises en
   // évidence de la page Planning. Décommenter ces deux lignes pour revenir à
   // l'ancien menu du bas à 6 entrées.

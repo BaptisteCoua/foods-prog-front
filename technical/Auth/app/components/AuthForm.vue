@@ -2,14 +2,24 @@
   <AppReveal class="auth-form-wrap">
     <v-card
       class="auth-form"
+      :class="{ 'auth-form--register': isRegister }"
       elevation="0"
     >
-      <div class="auth-form__head">
+      <div
+        class="auth-form__head"
+        :class="{ 'auth-form__head--accent': isRegister }"
+      >
+        <v-icon
+          v-if="isRegister"
+          class="auth-form__head-icon"
+          icon="mdi-sprout-outline"
+          size="28"
+        />
         <h1 class="auth-form__title">
-          {{ isRegister ? 'Créer un compte' : 'Bon retour' }}
+          {{ isRegister ? 'Rejoins FoodProg' : 'Bon retour' }}
         </h1>
         <p class="auth-form__subtitle">
-          {{ isRegister ? 'Quelques secondes pour démarrer.' : 'Connecte-toi pour continuer.' }}
+          {{ isRegister ? 'Crée ton compte en 30 secondes.' : 'Connecte-toi pour continuer.' }}
         </p>
       </div>
 
@@ -51,17 +61,10 @@
         <div class="auth-form__divider">
           <span class="auth-form__divider-text">ou</span>
         </div>
-        <v-btn
-          variant="outlined"
-          size="large"
-          block
-          prepend-icon="mdi-google"
+        <GoogleSignInButton
           :loading="isGoogleLoading"
-          class="auth-form__google"
           @click="signInWithGoogle"
-        >
-          Continuer avec Google
-        </v-btn>
+        />
       </template>
 
       <p class="auth-form__switch">
@@ -105,9 +108,36 @@ const passwordRules = computed(() => (isRegister.value ? [required, minLength(8)
   width: 100%;
   padding: 2rem 1.75rem;
   border: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  overflow: hidden;
+
+  &--register {
+    border-color: rgba(var(--v-theme-primary), 0.35);
+  }
 
   &__head {
     margin-bottom: 1.5rem;
+
+    &--accent {
+      margin: -2rem -1.75rem 1.75rem;
+      padding: 2rem 1.75rem 1.5rem;
+      background:
+        radial-gradient(120% 140% at 0% 0%, rgba(var(--v-theme-primary), 0.9), transparent 70%),
+        linear-gradient(135deg, rgb(var(--v-theme-primary)), rgba(var(--v-theme-primary), 0.7));
+
+      .auth-form__title,
+      .auth-form__subtitle {
+        color: #fff;
+      }
+
+      .auth-form__subtitle {
+        opacity: 0.92;
+      }
+    }
+  }
+
+  &__head-icon {
+    color: #fff;
+    margin-bottom: 0.6rem;
   }
 
   &__title {
@@ -142,10 +172,6 @@ const passwordRules = computed(() => (isRegister.value ? [required, minLength(8)
       height: 1px;
       background: rgba(var(--v-border-color), var(--v-border-opacity));
     }
-  }
-
-  &__google {
-    font-weight: 700;
   }
 
   &__switch {

@@ -6,7 +6,7 @@
           {{ dateLabel }}
         </p>
         <h1 class="dashboard__title">
-          Bonjour 👋
+          {{ greeting }}
         </h1>
       </header>
     </AppReveal>
@@ -231,6 +231,12 @@ const {
   toggleDish,
   removeDish,
 } = useDailySummary()
+
+// Pseudo affiché à côté du « Bonjour » : pseudo choisi → prénom Google.
+// `me` partage le cache useAsyncData('me') → pas de requête supplémentaire.
+const { me } = useMe()
+const firstName = computed(() => me.value?.displayName?.trim() || me.value?.givenName?.trim() || '')
+const greeting = computed(() => firstName.value ? `Bonjour ${firstName.value} 👋` : 'Bonjour 👋')
 
 // Quick-log sheet — opened by the FAB, the inline button and the lunch nudge.
 const logOpen = ref(false)
