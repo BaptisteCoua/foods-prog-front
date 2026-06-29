@@ -5,9 +5,15 @@ import type { DietaryRegime } from '../types/recipe'
 export const useDietaryRegimes = () => {
   const api = useApi()
 
-  const { data } = useAsyncData('dietary-regimes', () => api<DietaryRegime[]>('/dietary-regimes'))
+  const { data, refresh } = useAsyncData('dietary-regimes', () => api<DietaryRegime[]>('/dietary-regimes'))
 
   const dietaryRegimes = computed(() => data.value ?? [])
 
-  return { dietaryRegimes }
+  // Resolve the (deduped, cached) catalog fetch — used to apply profile-based
+  // default filters in a single list request rather than reloading once loaded.
+  const ensureLoaded = async () => {
+    if (!dietaryRegimes.value.length) await refresh()
+  }
+
+  return { dietaryRegimes, ensureLoaded }
 }

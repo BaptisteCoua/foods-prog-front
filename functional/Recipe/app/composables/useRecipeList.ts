@@ -18,8 +18,9 @@ const SEARCH_DEBOUNCE_MS = 300
 export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')) => {
   const api = useApi()
   const { mealTypes } = useMealTypes()
-  const { dietaryRegimes } = useDietaryRegimes()
+  const { dietaryRegimes, ensureLoaded: ensureRegimesLoaded } = useDietaryRegimes()
   const { clone: cloneRecipe, unclone: uncloneRecipe } = useRecipes()
+  const profileStore = useProfileStore()
 
   const endpoint = computed(() => (scope.value === 'shared' ? '/recipes/shared' : '/recipes'))
   // Scope sent to GET /recipes (ignored by /recipes/shared).
@@ -125,6 +126,19 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
 
   const refresh = () => load()
 
+  // Gate the facet watcher until the first load: applying the profile-based
+  // default below mutates selectedDietaryRegimeIds, and we don't want that
+  // programmatic change to fire a second load on top of the initial one.
+  const initialized = ref(false)
+
+  // Preselect the dietary-regime filter from the user's profile (diet type +
+  // gluten/lactose allergies) so the list defaults to what they can eat. Set
+  // once, before the first fetch; the user stays free to change it afterwards.
+  const applyProfileDefaults = () => {
+    if (selectedDietaryRegimeIds.value.length) return
+    selectedDietaryRegimeIds.value = profileRegimeDefaultIds(profileStore.profile, dietaryRegimes.value)
+  }
+
   // Any search/filter change rewinds to page 1. Search is debounced so we don't
   // hit the API on every keystroke.
   let searchTimer: ReturnType<typeof setTimeout> | null = null
@@ -132,7 +146,9 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
     if (searchTimer) clearTimeout(searchTimer)
     searchTimer = setTimeout(() => load(), SEARCH_DEBOUNCE_MS)
   })
-  watch([selectedMealTypeIds, selectedDietaryRegimeIds], () => load(), { deep: true })
+  watch([selectedMealTypeIds, selectedDietaryRegimeIds], () => {
+    if (initialized.value) load()
+  }, { deep: true })
   watch(sorts, () => load(), { deep: true })
   // Switching tab (mine ↔ shared) reloads from the matching endpoint.
   watch(scope, () => load())
@@ -235,7 +251,14 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
     }
   }
 
-  onMounted(load)
+  // Resolve the profile + regime catalog first so the default regime filter is
+  // applied within the initial request (no empty-then-filtered double load).
+  onMounted(async () => {
+    await Promise.all([profileStore.ensureLoaded(), ensureRegimesLoaded()])
+    applyProfileDefaults()
+    await load()
+    initialized.value = true
+  })
 
   return {
     scope,
