@@ -86,6 +86,25 @@
             class="picker__item"
             @click="emit('pick', recipe)"
           >
+            <template #prepend>
+              <v-avatar
+                rounded="lg"
+                size="46"
+                class="picker__thumb"
+              >
+                <v-img
+                  v-if="recipe.img"
+                  :src="recipe.img"
+                  :alt="recipe.name"
+                  cover
+                />
+                <v-icon
+                  v-else
+                  icon="mdi-silverware-fork-knife"
+                  size="22"
+                />
+              </v-avatar>
+            </template>
             <template #title>
               <span class="picker__item-name">{{ recipe.name }}</span>
             </template>
@@ -197,6 +216,11 @@ watch(() => props.modelValue, (open) => {
 
   &__item-name {
     font-weight: 600;
+  }
+
+  &__thumb {
+    background: rgb(var(--v-theme-surface-variant));
+    color: rgb(var(--v-theme-on-surface-variant));
   }
 }
 </style>
