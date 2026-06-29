@@ -167,7 +167,7 @@
           >
             <span class="log__label">Recettes</span>
             <button
-              v-for="recipe in recipeResults"
+              v-for="recipe in visibleRecipes"
               :key="`r-${recipe.id}`"
               type="button"
               class="log__opt"
@@ -188,6 +188,15 @@
                 icon="mdi-plus-circle-outline"
                 color="primary"
               />
+            </button>
+            <!-- Les recettes peuvent être nombreuses : on déplie 10 par 10. -->
+            <button
+              v-if="hasMoreRecipes"
+              type="button"
+              class="log__more"
+              @click="showMoreRecipes"
+            >
+              Voir plus
             </button>
           </div>
 
@@ -376,6 +385,21 @@ const noVisibleResults = computed(() =>
   && (!showIngredients.value || ingredientResults.value.length === 0),
 )
 
+// La liste des recettes peut être longue : on n'affiche que les premières et on
+// déplie « 10 par 10 » à la demande. Uniquement pour les recettes — les aliments
+// restent listés normalement.
+const RECIPE_PAGE = 10
+const recipeLimit = ref(RECIPE_PAGE)
+const visibleRecipes = computed(() => recipeResults.value.slice(0, recipeLimit.value))
+const hasMoreRecipes = computed(() => recipeResults.value.length > recipeLimit.value)
+const showMoreRecipes = () => {
+  recipeLimit.value += RECIPE_PAGE
+}
+// Toute nouvelle recherche réinitialise la pagination des recettes.
+watch(search, () => {
+  recipeLimit.value = RECIPE_PAGE
+})
+
 const selectedKind = ref<'RECIPE' | 'INGREDIENT' | null>(null)
 const selectedRecipe = ref<Recipe | null>(null)
 const selectedIngredient = ref<Ingredient | null>(null)
@@ -543,6 +567,7 @@ watch(() => props.modelValue, (open) => {
   if (!open) return
   view.value = 'list'
   kindFilter.value = 'all'
+  recipeLimit.value = RECIPE_PAGE
   slot.value = props.defaultSlot ?? defaultSlotByTime()
   day.value = 'today'
   selectedKind.value = null
@@ -783,6 +808,24 @@ watch(() => props.modelValue, (open) => {
     font-size: 0.75rem;
     color: rgb(var(--v-theme-on-surface-variant));
     font-variant-numeric: tabular-nums;
+  }
+
+  &__more {
+    align-self: center;
+    margin-top: 0.2rem;
+    font-size: 0.82rem;
+    font-weight: 700;
+    cursor: pointer;
+    border: none;
+    background: transparent;
+    color: rgb(var(--v-theme-primary));
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    transition: background 0.2s var(--app-ease);
+
+    &:hover {
+      background: rgba(var(--v-theme-primary), 0.08);
+    }
   }
 
   &__free-row {

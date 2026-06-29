@@ -184,10 +184,15 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
     const item = items.value.find(r => r.id === recipe.id)
     if (!item) return
     const liked = !item.liked
+    // MAJ optimiste : le cœur et le compteur changent immédiatement au clic.
     item.liked = liked
     item.likesCount = Math.max(0, item.likesCount + (liked ? 1 : -1))
     try {
-      await api(`/recipes/${recipe.id}/like`, { method: liked ? 'POST' : 'DELETE' })
+      // Le like/unlike renvoie la recette à jour : on réaligne sur la valeur
+      // autoritaire du serveur (compteur exact, aucune dérive front/back).
+      const updated = await api<Recipe>(`/recipes/${recipe.id}/like`, { method: liked ? 'POST' : 'DELETE' })
+      item.liked = updated.liked ?? liked
+      item.likesCount = updated.likesCount
     }
     catch {
       item.liked = !liked

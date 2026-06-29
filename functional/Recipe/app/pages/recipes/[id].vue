@@ -455,10 +455,15 @@ const toggleLike = async () => {
   const current = recipe.value
   if (!current) return
   const liked = !current.liked
+  // MAJ optimiste : le cœur et le compteur changent immédiatement au clic.
   current.liked = liked
   current.likesCount = Math.max(0, current.likesCount + (liked ? 1 : -1))
   try {
-    await api(`/recipes/${current.id}/like`, { method: liked ? 'POST' : 'DELETE' })
+    // Le like/unlike renvoie la recette à jour : on réaligne sur la valeur
+    // autoritaire du serveur (compteur exact, aucune dérive front/back).
+    const updated = await api<Recipe>(`/recipes/${current.id}/like`, { method: liked ? 'POST' : 'DELETE' })
+    current.liked = updated.liked ?? liked
+    current.likesCount = updated.likesCount
   }
   catch {
     current.liked = !liked

@@ -322,13 +322,17 @@
         {{ recipe.likesCount }}
       </button>
       <v-spacer />
+      <!-- État enregistré vs non : on contraste fortement les deux boutons
+           (plein = action à faire, contour discret = déjà enregistrée) pour
+           qu'on distingue d'un coup d'œil les recettes déjà dans ses recettes. -->
       <v-btn
         v-if="recipe.alreadySaved"
         color="primary"
-        variant="tonal"
+        variant="outlined"
         size="small"
         prepend-icon="mdi-bookmark-check"
         :loading="cloning"
+        class="recipe-card__save recipe-card__save--saved"
         @click.stop="emit('unclone', recipe)"
       >
         Enregistrée
@@ -336,10 +340,11 @@
       <v-btn
         v-else
         color="primary"
-        variant="tonal"
+        variant="flat"
         size="small"
         prepend-icon="mdi-bookmark-plus-outline"
         :loading="cloning"
+        class="recipe-card__save"
         @click.stop="emit('clone', recipe)"
       >
         Enregistrer
@@ -651,6 +656,17 @@ const ingredientCount = computed(() => {
     margin-top: 0.85rem;
     padding: 0.75rem 1.1rem 0;
     border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
+  }
+
+  &__save {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+
+    // « Déjà enregistrée » : pastille calme et confirmée (contour + léger fond
+    // teinté), nettement distincte du bouton plein « Enregistrer ».
+    &--saved {
+      background: rgba(var(--v-theme-primary), 0.08);
+    }
   }
 
   &__author {
