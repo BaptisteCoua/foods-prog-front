@@ -24,6 +24,22 @@
     <div class="landing-layout__content">
       <slot />
     </div>
+
+    <footer class="landing-layout__footer">
+      <span class="landing-layout__copy">© FoodProg</span>
+      <NuxtLink
+        to="/privacy"
+        class="landing-layout__link"
+      >
+        Confidentialité
+      </NuxtLink>
+      <NuxtLink
+        to="/terms"
+        class="landing-layout__link"
+      >
+        CGU
+      </NuxtLink>
+    </footer>
   </v-main>
 </template>
 
@@ -58,6 +74,30 @@
   // le CTA principal suffit (le login reste accessible depuis l'écran register).
   &__content {
     padding: 0;
+  }
+
+  &__footer {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-wrap: wrap;
+    gap: 1.2rem;
+    padding: 2rem 1.25rem calc(2rem + env(safe-area-inset-bottom));
+    font-size: 0.82rem;
+  }
+
+  &__copy {
+    color: rgb(var(--v-theme-on-surface-variant));
+  }
+
+  &__link {
+    color: rgb(var(--v-theme-on-surface-variant));
+    text-decoration: none;
+    font-weight: 600;
+
+    &:hover {
+      color: rgb(var(--v-theme-primary));
+    }
   }
 }
 

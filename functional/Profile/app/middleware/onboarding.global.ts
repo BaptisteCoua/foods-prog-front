@@ -1,4 +1,4 @@
-const PUBLIC_ROUTES = ['/', '/login', '/register']
+const PUBLIC_ROUTES = ['/', '/login', '/register', '/privacy', '/terms']
 
 // After auth, force first-time users through the onboarding wizard: if they have
 // no body profile yet, every route redirects to /onboarding (and vice-versa once
