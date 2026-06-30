@@ -1,0 +1,27 @@
+name: CI
+
+# Reproduit le build Cloudflare Pages (npm ci + lint + build) AVANT le déploiement.
+# Même version de Node que la prod via .nvmrc → attrape toute dérive de lockfile/version.
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      # Échoue ici si package.json et package-lock.json ne sont pas synchro
+      # (exactement l'erreur EUSAGE rencontrée sur Cloudflare).
+      - run: npm ci
+
+      - run: npm run lint
+
+      - run: npm run build
