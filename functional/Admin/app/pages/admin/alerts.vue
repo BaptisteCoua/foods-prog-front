@@ -94,7 +94,7 @@
 <script setup lang="ts">
 import type { AdminAlert } from '../../types/admin-alert'
 
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'moderator' })
 useHead({ title: 'Alertes · Admin' })
 
 const store = useAdminAlertsStore()

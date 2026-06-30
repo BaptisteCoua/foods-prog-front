@@ -1,12 +1,16 @@
 // Identité de l'utilisateur courant (GET/PATCH /me) — distincte du BodyProfile.
 // Les champs `givenName`…`nickname` viennent du compte Google (null sinon).
-// Rôle applicatif : 'ADMIN' débloque la modération du board de feedback.
-export type UserRole = 'USER' | 'ADMIN'
+// Deux axes orthogonaux (cf. usePermissions) :
+// - rôle (pouvoir) : 'MODERATOR' (sous-admin) modère, 'ADMIN' a tous les droits ;
+// - abonnement : 'PREMIUM' débloque les fonctionnalités payantes.
+export type UserRole = 'USER' | 'MODERATOR' | 'ADMIN'
+export type SubscriptionPlan = 'FREE' | 'PREMIUM'
 
 export interface Me {
   id: number
   email: string
   role: UserRole
+  plan: SubscriptionPlan
   displayName: string | null
   givenName: string | null
   familyName: string | null

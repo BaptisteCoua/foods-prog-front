@@ -1,15 +1,9 @@
-import type { Me } from '../../../Profile/app/types/me'
-
-// Current user's id + admin flag, read from GET /me. Shares the 'me' useAsyncData
-// cache with the Profile layer (same key) so it isn't refetched. Used to show
-// owner-only actions (edit/delete) and admin-only status moderation.
+// Identité + permissions de l'utilisateur courant pour le board de feedback.
+// Délègue à usePermissions (Profile) — source unique, cache 'me' partagé — pour
+// ne pas dupliquer la logique de rôle. Sert aux actions owner-only (edit/delete)
+// et à la modération (statut) ouverte aux modérateurs/admins.
 export const useCurrentUser = () => {
-  const api = useApi()
+  const { me, userId, isAdmin, canModerate } = usePermissions()
 
-  const { data: me } = useAsyncData<Me | null>('me', () => api<Me>('/me'))
-
-  const userId = computed(() => me.value?.id ?? null)
-  const isAdmin = computed(() => me.value?.role === 'ADMIN')
-
-  return { me, userId, isAdmin }
+  return { me, userId, isAdmin, canModerate }
 }

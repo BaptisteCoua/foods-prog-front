@@ -5,7 +5,7 @@
         icon="mdi-shield-account-outline"
         size="15"
       />
-      Statut (admin)
+      Statut (modération)
     </span>
     <div class="fb-status__chips">
       <v-chip

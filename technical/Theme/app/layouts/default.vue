@@ -10,7 +10,7 @@
       </template>
       <v-spacer />
       <v-badge
-        v-if="isAdmin"
+        v-if="canModerate"
         :model-value="unreadCount > 0"
         :content="unreadCount"
         :max="99"
@@ -25,6 +25,13 @@
           to="/admin/alerts"
         />
       </v-badge>
+      <v-btn
+        v-if="isAdmin"
+        icon="mdi-account-group-outline"
+        variant="text"
+        aria-label="Utilisateurs"
+        to="/admin/users"
+      />
       <v-btn
         v-if="isAdmin"
         icon="mdi-shield-account-outline"
@@ -59,9 +66,10 @@ const authStore = useAuthStore()
 const { isLoggedIn } = storeToRefs(authStore)
 const { logout } = authStore
 
-// Lien admin discret (le rôle vient du cache useAsyncData('me') partagé).
-const { me } = useMe()
-const isAdmin = computed(() => me.value?.role === 'ADMIN')
+// Liens staff discrets (rôle/abonnement viennent du cache useAsyncData('me')
+// partagé via usePermissions). Alertes = modération (MODERATOR+) ; import
+// catalogue = admin strict.
+const { isAdmin, canModerate } = usePermissions()
 
 // Badge d'alertes admin : on récupère le compteur au passage en zone admin puis
 // on le rafraîchit périodiquement (pas de websocket → léger polling). Source de
@@ -84,8 +92,8 @@ const startAlertsPolling = () => {
   pollTimer = setInterval(() => alertsStore.fetch().catch(() => {}), 60_000)
 }
 
-watch(isAdmin, (admin) => {
-  if (admin) startAlertsPolling()
+watch(canModerate, (moderator) => {
+  if (moderator) startAlertsPolling()
   else stopAlertsPolling()
 }, { immediate: true })
 

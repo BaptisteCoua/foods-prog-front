@@ -107,7 +107,7 @@
       </div>
 
       <FeedbackStatusControl
-        v-if="isAdmin"
+        v-if="canModerate"
         :model-value="feedback.status"
         :saving="savingStatus"
         @change="setStatus"
@@ -197,7 +197,7 @@ const formDialog = useTemplateRef('formDialog')
 const confirmOpen = ref(false)
 const replyBody = ref('')
 
-const { userId, isAdmin } = useCurrentUser()
+const { userId, isAdmin, canModerate } = useCurrentUser()
 const {
   feedback,
   pending,
