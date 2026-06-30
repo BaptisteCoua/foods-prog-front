@@ -222,7 +222,7 @@
 </template>
 
 <script setup lang="ts">
-definePageMeta({ middleware: 'admin' })
+definePageMeta({ middleware: 'admin', layout: 'admin' })
 useHead({ title: 'Import de recettes · Admin' })
 
 const stepLabels = ['Adresses', 'Recettes trouvées', 'Résultat']

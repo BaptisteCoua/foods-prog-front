@@ -71,6 +71,7 @@ import type { Component } from 'vue'
 // Step components are selected dynamically by name. Nuxt only auto-imports
 // components referenced as tags, so the wizard steps are imported explicitly
 // and mapped here — otherwise <component :is="name"> resolves to nothing.
+import OnboardingPseudo from '../components/OnboardingPseudo.vue'
 import OnboardingPhysical from '../components/OnboardingPhysical.vue'
 import OnboardingActivity from '../components/OnboardingActivity.vue'
 import OnboardingTraining from '../components/OnboardingTraining.vue'
@@ -81,6 +82,7 @@ import OnboardingPreferences from '../components/OnboardingPreferences.vue'
 import OnboardingHydration from '../components/OnboardingHydration.vue'
 
 const STEP_COMPONENTS: Record<string, Component> = {
+  OnboardingPseudo,
   OnboardingPhysical,
   OnboardingActivity,
   OnboardingTraining,

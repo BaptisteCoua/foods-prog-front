@@ -19,26 +19,12 @@
         offset-y="8"
       >
         <v-btn
-          icon="mdi-bell-outline"
+          icon="mdi-shield-crown-outline"
           variant="text"
-          aria-label="Alertes"
-          to="/admin/alerts"
+          aria-label="Espace admin"
+          to="/admin"
         />
       </v-badge>
-      <v-btn
-        v-if="isAdmin"
-        icon="mdi-account-group-outline"
-        variant="text"
-        aria-label="Utilisateurs"
-        to="/admin/users"
-      />
-      <v-btn
-        v-if="isAdmin"
-        icon="mdi-shield-account-outline"
-        variant="text"
-        aria-label="Administration"
-        to="/admin/recipes/import"
-      />
       <ThemeToggle />
       <v-btn
         v-if="isLoggedIn"
@@ -66,38 +52,11 @@ const authStore = useAuthStore()
 const { isLoggedIn } = storeToRefs(authStore)
 const { logout } = authStore
 
-// Liens staff discrets (rôle/abonnement viennent du cache useAsyncData('me')
-// partagé via usePermissions). Alertes = modération (MODERATOR+) ; import
-// catalogue = admin strict.
-const { isAdmin, canModerate } = usePermissions()
-
-// Badge d'alertes admin : on récupère le compteur au passage en zone admin puis
-// on le rafraîchit périodiquement (pas de websocket → léger polling). Source de
-// vérité partagée avec la page /admin/alerts (store Pinia), donc le badge se met
-// à jour instantanément quand l'admin lit / supprime des alertes là-bas.
-const alertsStore = useAdminAlertsStore()
-const { unreadCount } = storeToRefs(alertsStore)
-
-let pollTimer: ReturnType<typeof setInterval> | null = null
-
-const stopAlertsPolling = () => {
-  if (!pollTimer) return
-  clearInterval(pollTimer)
-  pollTimer = null
-}
-
-const startAlertsPolling = () => {
-  if (pollTimer) return
-  alertsStore.fetch().catch(() => {})
-  pollTimer = setInterval(() => alertsStore.fetch().catch(() => {}), 60_000)
-}
-
-watch(canModerate, (moderator) => {
-  if (moderator) startAlertsPolling()
-  else stopAlertsPolling()
-}, { immediate: true })
-
-onBeforeUnmount(stopAlertsPolling)
+// Bouton unique vers l'espace admin (`/admin`), visible pour les modérateurs et
+// admins. Le badge montre les alertes non lues : compteur + polling léger
+// encapsulés dans useAlertsBadge, qui s'appuie sur le store partagé avec
+// l'espace admin (mise à jour instantanée quand une alerte y est lue/supprimée).
+const { canModerate, unreadCount } = useAlertsBadge()
 </script>
 
 <style scoped lang="scss">

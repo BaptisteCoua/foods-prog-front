@@ -23,6 +23,7 @@ const GOOGLE_GENDER_TO_SEX: Record<string, Sex> = {
 }
 
 interface OnboardingForm {
+  pseudo: string
   sex: Sex | null
   birthDate: string
   heightCm: number | null
@@ -57,6 +58,7 @@ interface OnboardingStep {
 }
 
 const createForm = (): OnboardingForm => ({
+  pseudo: '',
   sex: null,
   birthDate: '',
   heightCm: null,
@@ -93,6 +95,14 @@ export const useOnboardingStore = defineStore('onboarding', () => {
   const prefilled = ref(false)
 
   const steps: OnboardingStep[] = [
+    {
+      key: 'pseudo',
+      title: 'On se connaît ?',
+      subtitle: 'Avant de parler chiffres, dis-nous comment t\'appeler.',
+      component: 'OnboardingPseudo',
+      optional: false,
+      isValid: () => form.pseudo.trim().length >= 2,
+    },
     {
       key: 'physical',
       title: 'Informations physiques',
@@ -179,6 +189,10 @@ export const useOnboardingStore = defineStore('onboarding', () => {
     catch {
       return
     }
+    if (!form.pseudo.trim()) {
+      const suggestion = me.displayName?.trim() || me.givenName?.trim()
+      if (suggestion) form.pseudo = suggestion
+    }
     if (!form.sex && me.gender) {
       const mapped = GOOGLE_GENDER_TO_SEX[me.gender.toLowerCase()]
       if (mapped) form.sex = mapped
@@ -221,6 +235,9 @@ export const useOnboardingStore = defineStore('onboarding', () => {
   const submit = async () => {
     isSubmitting.value = true
     try {
+      // Le pseudo (étape 1) vit sur l'identité User, pas sur le BodyProfile :
+      // on le persiste via PATCH /me avant d'enregistrer le profil corporel.
+      await useApi()<Me>('/me', { method: 'PATCH', body: { displayName: form.pseudo.trim() } })
       await profileStore.save(buildPayload())
       toast.success('Profil enregistré, ta cible est prête !')
       await navigateTo('/dashboard')
