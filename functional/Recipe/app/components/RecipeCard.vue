@@ -47,7 +47,7 @@
     </div>
 
     <span class="recipe-card__compact-kcal">
-      {{ formatKcal(recipe.perServing.calories) }}<small>/portion</small>
+      {{ formatKcal(recipe.perServing.calories) }}
     </span>
 
     <button
@@ -471,15 +471,10 @@ const ingredientCount = computed(() => {
   &__compact-kcal {
     flex: 0 0 auto;
     font-weight: 800;
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     letter-spacing: -0.01em;
+    white-space: nowrap;
     font-variant-numeric: tabular-nums;
-
-    small {
-      font-weight: 400;
-      color: rgb(var(--v-theme-on-surface-variant));
-      font-size: 0.68rem;
-    }
   }
 
   &__media {
