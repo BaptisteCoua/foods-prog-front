@@ -5,9 +5,9 @@ export interface MainNavItem {
   label: string
 }
 
-// Top-level mobile navigation entries, in swipe order (left ⇄ right).
-// Shared as a module constant so both the nav UI and the swipe/transition
-// logic agree on the order without re-instantiating the composable.
+// Top-level mobile navigation entries, in display order (left ⇄ right).
+// Shared as a module constant so the nav UI agrees on the order without
+// re-instantiating the composable.
 export const mainNavItems: MainNavItem[] = [
   { value: 'home', to: '/dashboard', icon: 'mdi-home-variant-outline', label: 'Accueil' },
   { value: 'planning', to: '/planning', icon: 'mdi-calendar-blank-outline', label: 'Planning' },

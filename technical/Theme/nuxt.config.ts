@@ -10,7 +10,10 @@ const currentDir = dirname(fileURLToPath(import.meta.url))
 export default defineNuxtConfig({
   modules: ['@nuxt/fonts'],
   app: {
-    pageTransition: { name: 'page', mode: 'out-in' },
+    // Cross-fade entre pages (pas de `mode: out-in`) : les deux pages s'animent
+    // en même temps pour un vrai fondu enchaîné. Cf. la transition `page` dans
+    // app/assets/scss/app.scss.
+    pageTransition: { name: 'page' },
     layoutTransition: { name: 'layout', mode: 'out-in' },
   },
   css: [join(currentDir, 'app/assets/scss/app.scss')],

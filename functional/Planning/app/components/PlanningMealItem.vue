@@ -23,7 +23,6 @@
         class="meal-item__btn"
         :class="{ 'meal-item__btn--dragging': dragging }"
         :style="removing ? undefined : { transform: `translateX(${offset}px)` }"
-        data-swipe-nav-ignore
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"

@@ -9,7 +9,6 @@
       class="app-sheet"
       :class="{ 'app-sheet--dragging': dragging, 'app-sheet--full-height': fullHeight }"
       :style="containerStyle"
-      data-swipe-nav-ignore
       @transitionend="onTransitionEnd"
     >
       <div

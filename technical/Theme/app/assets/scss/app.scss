@@ -53,62 +53,28 @@ input[type='number'] {
     border-color 0.45s var(--app-ease);
 }
 
-// Default page transition (slide + fade), mobile-app feel.
+// Single page transition used everywhere: a soft cross-fade with a gentle zoom,
+// mobile-app feel. Both pages animate at once (no `out-in` mode) — the leaving
+// page is pulled out of flow (absolute) so the entering page takes its place —
+// and the entering page grows from 98% to 100% as it fades in, while the
+// leaving page recedes the same way. No directional slide, no dead time.
 .page-enter-active,
 .page-leave-active {
-  transition: opacity 0.28s var(--app-ease), transform 0.28s var(--app-ease);
+  transition: opacity 0.3s var(--app-ease), transform 0.3s var(--app-ease);
+  will-change: opacity, transform;
 }
 
-.page-enter-from {
-  opacity: 0;
-  transform: translateY(10px);
-}
-
-.page-leave-to {
-  opacity: 0;
-  transform: translateY(-8px);
-}
-
-// Directional page transitions for swipe / nav between top-level sections.
-// "slide-left" = moving forward (deeper in the nav): the old page exits left,
-// the new one enters from the right. "slide-right" mirrors it for going back.
-//
-// Both pages move at once (the transition has no `out-in` mode): the leaving
-// page is taken out of flow (absolute) so the entering page sits in its place,
-// and the two glide across together over a full width — tiled, no dead time,
-// no gap. This continuous cross-slide is what reads as a native phone swipe.
-.slide-left-enter-active,
-.slide-left-leave-active,
-.slide-right-enter-active,
-.slide-right-leave-active {
-  transition: transform 0.34s var(--app-ease), opacity 0.34s var(--app-ease);
-  will-change: transform;
-}
-
-.slide-left-leave-active,
-.slide-right-leave-active {
+.page-leave-active {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
 }
 
-.slide-left-enter-from {
-  transform: translateX(100%);
-}
-
-.slide-left-leave-to {
-  opacity: 0.5;
-  transform: translateX(-100%);
-}
-
-.slide-right-enter-from {
-  transform: translateX(-100%);
-}
-
-.slide-right-leave-to {
-  opacity: 0.5;
-  transform: translateX(100%);
+.page-enter-from,
+.page-leave-to {
+  opacity: 0;
+  transform: scale(0.98);
 }
 
 // Layout transition (cross-fade between auth and app shells).
@@ -127,10 +93,6 @@ input[type='number'] {
 
   .page-enter-active,
   .page-leave-active,
-  .slide-left-enter-active,
-  .slide-left-leave-active,
-  .slide-right-enter-active,
-  .slide-right-leave-active,
   .layout-enter-active,
   .layout-leave-active,
   .v-application,

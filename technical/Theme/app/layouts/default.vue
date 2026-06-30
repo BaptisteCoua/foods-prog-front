@@ -21,15 +21,7 @@
 
     <v-main class="app-main">
       <v-container class="app-main__container">
-        <div
-          class="app-main__swipe"
-          :class="{ 'app-main__swipe--dragging': dragging }"
-          :style="{ transform: `translateX(${offset}px)` }"
-          @pointerdown="onPointerDown"
-          @pointermove="onPointerMove"
-          @pointerup="onPointerUp"
-          @pointercancel="onPointerCancel"
-        >
+        <div class="app-main__page">
           <slot />
         </div>
       </v-container>
@@ -43,16 +35,6 @@
 const authStore = useAuthStore()
 const { isLoggedIn } = storeToRefs(authStore)
 const { logout } = authStore
-
-// Swipe left/right to move between top-level sections (mobile-app feel).
-const {
-  offset,
-  dragging,
-  onPointerDown,
-  onPointerMove,
-  onPointerUp,
-  onPointerCancel,
-} = useSwipeNavigation()
 </script>
 
 <style scoped lang="scss">
@@ -63,9 +45,6 @@ const {
 
 .app-main {
   min-height: 100dvh;
-  // Le drag horizontal et les transitions slide ne doivent jamais révéler
-  // de scrollbar latérale.
-  overflow-x: clip;
 
   &__container {
     max-width: 560px;
@@ -73,24 +52,10 @@ const {
     padding: 12px 16px calc(104px + env(safe-area-inset-bottom));
   }
 
-  // Surface de swipe inter-pages : suit le doigt à l'horizontale,
-  // laisse le scroll vertical natif (pan-y), revient en place au relâcher.
   // `relative` = bloc de référence pour la page sortante (absolute) pendant
-  // la transition slide.
-  &__swipe {
+  // le fondu enchaîné entre pages.
+  &__page {
     position: relative;
-    touch-action: pan-y;
-    transition: transform 0.32s var(--app-ease);
-
-    &--dragging {
-      transition: none;
-    }
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .app-main__swipe {
-    transition: none;
   }
 }
 </style>
