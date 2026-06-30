@@ -77,6 +77,21 @@ input[type='number'] {
   transform: scale(0.98);
 }
 
+// Auth pages (login/register) override the global cross-fade: their card is
+// centered in a flex container, so the global `position: absolute` leave would
+// yank it to the top and make it linger while the next card reveals. Here a
+// simple `out-in` opacity fade keeps a single centered card on screen at a time
+// (entrance slide handled by AppReveal, which now plays without overlap).
+.auth-page-enter-active,
+.auth-page-leave-active {
+  transition: opacity 0.18s var(--app-ease);
+}
+
+.auth-page-enter-from,
+.auth-page-leave-to {
+  opacity: 0;
+}
+
 // Layout transition (cross-fade between auth and app shells).
 .layout-enter-active,
 .layout-leave-active {
@@ -93,6 +108,8 @@ input[type='number'] {
 
   .page-enter-active,
   .page-leave-active,
+  .auth-page-enter-active,
+  .auth-page-leave-active,
   .layout-enter-active,
   .layout-leave-active,
   .v-application,
