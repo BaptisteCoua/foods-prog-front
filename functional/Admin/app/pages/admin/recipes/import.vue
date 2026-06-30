@@ -5,8 +5,8 @@
         Import de recettes
       </h1>
       <p class="recipe-import__desc">
-        Colle des adresses Marmiton, vérifie les recettes trouvées, puis
-        ajoute-les au catalogue global.
+        Colle des adresses de recettes (Marmiton, CuisineAZ, 750g, Ptitchef),
+        vérifie les recettes trouvées, puis ajoute-les au catalogue global.
       </p>
     </header>
 
