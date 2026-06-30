@@ -209,24 +209,14 @@
                   :stroke-dasharray="`${seg.len} ${RING_CIRCUMFERENCE}`"
                   :transform="`rotate(${seg.rotate} ${RING_CENTER} ${RING_CENTER})`"
                 />
-                <text
-                  v-for="seg in donutSegments"
-                  v-show="seg.showLabel"
-                  :key="`label-${seg.key}`"
-                  class="recipe-detail__donut-label"
-                  :x="seg.labelX"
-                  :y="seg.labelY"
-                  text-anchor="middle"
-                  dominant-baseline="central"
-                >{{ seg.percent }}%</text>
               </svg>
               <div class="recipe-detail__donut-center">
                 <template v-if="dominantMacro">
+                  <span class="recipe-detail__donut-hint">le +</span>
                   <span
-                    class="recipe-detail__donut-pct"
-                    :class="`recipe-detail__donut-pct--${dominantMacro.key}`"
-                  >{{ Math.round(dominantMacro.percent) }}%</span>
-                  <span class="recipe-detail__donut-cap">{{ dominantMacro.label }}</span>
+                    class="recipe-detail__donut-dom"
+                    :class="`recipe-detail__donut-dom--${dominantMacro.key}`"
+                  >{{ dominantMacro.label }}</span>
                 </template>
                 <span
                   v-else
@@ -506,17 +496,11 @@ const donutSegments = computed(() => {
   let start = 0
   return visible.map((macro) => {
     const fraction = macro.percent / 100
-    // Mid-arc angle (-90° = 12 o'clock), used to drop the % label on the segment.
-    const midAngle = (((start + fraction / 2) * 360) - 90) * (Math.PI / 180)
     const segment = {
       key: macro.key,
-      percent: Math.round(macro.percent),
+      // -90° puts the start at 12 o'clock; half-gap centres the arc within its slot.
       rotate: start * 360 - 90 + RING_GAP_DEG / 2,
       len: Math.max(0, fraction * RING_CIRCUMFERENCE - gapLen),
-      labelX: RING_CENTER + RING_RADIUS * Math.cos(midAngle),
-      labelY: RING_CENTER + RING_RADIUS * Math.sin(midAngle),
-      // Hide the label on slivers too thin to hold the text legibly.
-      showLabel: macro.percent >= 10,
     }
     start += fraction
     return segment
@@ -740,9 +724,9 @@ const onDelete = async () => {
       stroke-dasharray 0.9s var(--app-ease),
       transform 0.9s var(--app-ease);
 
-    &--protein { stroke: rgb(var(--v-theme-protein)); }
-    &--carb { stroke: rgb(var(--v-theme-carb)); }
-    &--fat { stroke: rgb(var(--v-theme-fat)); }
+    &--protein { stroke: rgb(var(--v-theme-macro-protein)); }
+    &--carb { stroke: rgb(var(--v-theme-macro-carb)); }
+    &--fat { stroke: rgb(var(--v-theme-macro-fat)); }
   }
 
   &__donut-center {
@@ -755,23 +739,30 @@ const onDelete = async () => {
     text-align: center;
   }
 
-  &__donut-pct {
-    font-size: 1.5rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    line-height: 1;
-    font-variant-numeric: tabular-nums;
+  &__donut-hint {
+    font-size: 0.6rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: rgb(var(--v-theme-on-surface-variant));
+  }
 
-    &--protein { color: rgb(var(--v-theme-protein)); }
-    &--carb { color: rgb(var(--v-theme-carb)); }
-    &--fat { color: rgb(var(--v-theme-fat)); }
+  &__donut-dom {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-top: 0.1rem;
+
+    &--protein { color: rgb(var(--v-theme-macro-protein)); }
+    &--carb { color: rgb(var(--v-theme-macro-carb)); }
+    &--fat { color: rgb(var(--v-theme-macro-fat)); }
   }
 
   &__donut-cap {
     font-size: 0.7rem;
     font-weight: 600;
     color: rgb(var(--v-theme-on-surface-variant));
-    margin-top: 0.15rem;
   }
 
   &__legend {
@@ -827,9 +818,9 @@ const onDelete = async () => {
     flex-shrink: 0;
     align-self: center;
 
-    &--protein { background: rgb(var(--v-theme-protein)); }
-    &--carb { background: rgb(var(--v-theme-carb)); }
-    &--fat { background: rgb(var(--v-theme-fat)); }
+    &--protein { background: rgb(var(--v-theme-macro-protein)); }
+    &--carb { background: rgb(var(--v-theme-macro-carb)); }
+    &--fat { background: rgb(var(--v-theme-macro-fat)); }
   }
 
   &__total {
