@@ -33,7 +33,7 @@ export default defineOSDDNuxtConfig({
   },
   osdd: {
     technical: ['Vuetify', 'Theme', 'ApiClient', 'Forms', 'Auth'],
-    functional: ['Home', 'Dashboard', 'Profile', 'Ingredient', 'Recipe', 'Planning', 'ShoppingList', 'Feedback', 'Legal'],
+    functional: ['Home', 'Dashboard', 'Profile', 'Ingredient', 'Recipe', 'Planning', 'ShoppingList', 'Feedback', 'Legal', 'Admin'],
   },
   // @pinia/nuxt only auto-imports stores from the root srcDir by default, so the
   // per-layer stores/ folders are registered explicitly here.

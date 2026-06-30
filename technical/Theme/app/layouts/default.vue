@@ -9,6 +9,13 @@
         <AppLogo class="ms-3" />
       </template>
       <v-spacer />
+      <v-btn
+        v-if="isAdmin"
+        icon="mdi-shield-account-outline"
+        variant="text"
+        aria-label="Administration"
+        to="/admin/recipes/import"
+      />
       <ThemeToggle />
       <v-btn
         v-if="isLoggedIn"
@@ -35,6 +42,10 @@
 const authStore = useAuthStore()
 const { isLoggedIn } = storeToRefs(authStore)
 const { logout } = authStore
+
+// Lien admin discret (le rôle vient du cache useAsyncData('me') partagé).
+const { me } = useMe()
+const isAdmin = computed(() => me.value?.role === 'ADMIN')
 </script>
 
 <style scoped lang="scss">
