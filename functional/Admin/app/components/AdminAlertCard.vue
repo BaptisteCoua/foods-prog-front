@@ -2,15 +2,19 @@
   <li
     class="alert"
     :class="{ 'alert--unread': !alert.isRead, 'alert--removing': removing }"
+    @transitionend="onRemoveEnd"
   >
-    <!-- Fond destructif révélé par le swipe vers la gauche. -->
+    <!-- Fond destructif révélé progressivement par le swipe vers la gauche
+         (rouge qui monte + poubelle qui grossit), comme la liste de repas du
+         planning. Transparent au repos pour ne pas teinter la bordure. -->
     <div
       class="alert__backdrop"
-      :class="{ 'alert__backdrop--armed': willDelete }"
+      :style="{ opacity: backdropOpacity }"
     >
       <v-icon
-        icon="mdi-trash-can-outline"
+        icon="mdi-trash-can"
         size="22"
+        :style="{ transform: `scale(${trashScale})` }"
       />
     </div>
 
@@ -24,10 +28,16 @@
       @transitionend="onTransitionEnd"
       @click="onRowClick"
     >
-      <span
-        class="alert__icon"
-        :style="iconStyle"
-      >
+      <!-- Point émeraude : seul marqueur de non-lu, largeur réservée pour éviter
+           tout décalage de mise en page entre lu / non lu. -->
+      <span class="alert__flag">
+        <span
+          v-if="!alert.isRead"
+          class="alert__dot"
+        />
+      </span>
+
+      <span class="alert__icon">
         <v-icon
           :icon="typeMeta.icon"
           size="20"
@@ -39,10 +49,7 @@
           {{ alert.title }}
         </p>
         <p class="alert__meta">
-          <span
-            class="alert__type"
-            :style="{ color: typeMeta.color }"
-          >{{ typeMeta.label }}</span>
+          <span class="alert__type">{{ typeMeta.label }}</span>
           <span class="alert__sep">·</span>
           {{ authorLabel }}
           <span class="alert__sep">·</span>
@@ -76,6 +83,10 @@
 import type { AdminAlert } from '../types/admin-alert'
 import { FEEDBACK_TYPE_META, authorName } from '../../../Feedback/app/utils/feedbackMeta'
 import { formatAlertTime } from '../utils/alertMeta'
+// Import explicite : deux composables `useSwipeToDelete` existent (Theme + Planning),
+// l'auto-import est ambigu et peut résoudre vers la mauvaise copie. On vise le Theme,
+// qui porte rowStyle / suppressClick / le repli de suppression de cette carte.
+import { useSwipeToDelete } from '../../../../technical/Theme/app/composables/useSwipeToDelete'
 
 const props = defineProps<{ alert: AdminAlert }>()
 
@@ -87,25 +98,35 @@ const emit = defineEmits<{
 
 const {
   removing,
-  willDelete,
+  progress,
   suppressClick,
   rowStyle,
   onTransitionEnd,
+  onRemoveEnd,
   onPointerDown,
   onPointerMove,
   onPointerUp,
   onPointerCancel,
 } = useSwipeToDelete({ onDelete: () => emit('delete', props.alert) })
 
+// Reveal progressif du fond destructif, identique à la liste de repas du planning :
+// le rouge monte de 0,35 → 1 avec la distance de swipe. Transparent au repos
+// (`suppressClick` faux) pour ne pas teinter la bordure de la carte ; plein rouge
+// pendant le repli de suppression.
+const backdropOpacity = computed(() => {
+  if (removing.value) return 1
+  if (!suppressClick.value) return 0
+  return 0.35 + progress.value * 0.65
+})
+
+// La poubelle grossit de 0,7 → 1,2 avec le swipe (figée à 1,2 pendant la sortie).
+const trashScale = computed(() =>
+  removing.value ? 1.2 : 0.7 + progress.value * 0.5,
+)
+
 const typeMeta = computed(() => FEEDBACK_TYPE_META[props.alert.feedbackType])
 const authorLabel = computed(() => authorName(props.alert.authorName))
 const time = computed(() => formatAlertTime(props.alert.createdAt))
-
-// Tinted square behind the type icon — `1f` ≈ 12 % alpha over the opaque row.
-const iconStyle = computed(() => ({
-  color: typeMeta.value.color,
-  background: `${typeMeta.value.color}1f`,
-}))
 
 // Tap opens the alert, but only when it wasn't a swipe (the trailing click of a
 // drag is suppressed by the gesture composable).
@@ -122,6 +143,20 @@ const onRowClick = () => {
   border-radius: 16px;
   // Le fond destructif ne déborde pas des coins arrondis.
   overflow: hidden;
+  // Repli vertical à la suppression (même motion que la liste de repas du
+  // planning) : la carte s'écrase vers le haut en fondu. On passe par max-height
+  // (et non grid 1fr→0fr) car la carte est enveloppée dans AppReveal et n'est
+  // donc pas un flex item — le truc grid s'effondrerait à 0 dès le repos.
+  max-height: 8rem;
+  opacity: 1;
+  transition:
+    max-height 0.26s var(--app-ease, ease),
+    opacity 0.26s var(--app-ease, ease);
+
+  &--removing {
+    max-height: 0;
+    opacity: 0;
+  }
 
   &__backdrop {
     position: absolute;
@@ -130,16 +165,13 @@ const onRowClick = () => {
     align-items: center;
     justify-content: flex-end;
     padding-right: 1.25rem;
+    // Même rayon que la carte : sinon le rectangle rouge laisse un liseré
+    // d'anti-aliasing dans les 4 coins arrondis, sous la __row qui le recouvre.
+    border-radius: inherit;
     background: rgb(var(--v-theme-error));
     color: #fff;
-  }
-
-  &__backdrop :deep(.v-icon) {
-    transition: transform 0.18s var(--app-ease);
-  }
-
-  &__backdrop--armed :deep(.v-icon) {
-    transform: scale(1.2);
+    // Opacité et scale de la poubelle pilotés inline par la distance de swipe
+    // (`backdropOpacity` / `trashScale`) — reveal progressif comme le planning.
   }
 
   &__row {
@@ -158,13 +190,32 @@ const onRowClick = () => {
     user-select: none;
   }
 
+  // Pastille de non-lu : largeur fixe réservée même quand l'alerte est lue,
+  // pour que l'icône et le texte ne bougent pas d'une carte à l'autre.
+  &__flag {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 8px;
+  }
+
+  &__dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgb(var(--v-theme-primary));
+  }
+
+  // Icône neutre : aucune couleur de type, juste un cercle gris discret.
   &__icon {
     display: grid;
     place-items: center;
     flex: 0 0 auto;
     width: 40px;
     height: 40px;
-    border-radius: 12px;
+    border-radius: 999px;
+    color: rgb(var(--v-theme-on-surface-variant));
+    background: rgba(var(--v-border-color), 0.08);
   }
 
   &__body {
@@ -194,8 +245,13 @@ const onRowClick = () => {
     white-space: nowrap;
   }
 
+  // Type en petit label discret : pas de couleur vive, juste une majuscule
+  // espacée façon étiquette système.
   &__type {
     font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-size: 0.68rem;
   }
 
   &__sep {
@@ -224,22 +280,17 @@ const onRowClick = () => {
     color: rgba(var(--v-border-color), 0.8);
   }
 
-  // Une alerte non lue : fond teinté OPAQUE (dégradé posé sur la surface) + une
-  // barre d'accent à gauche + un titre plus fort. Aucun fond translucide, donc
-  // le fond destructif reste caché tant qu'on ne glisse pas la carte.
-  &--unread &__row {
-    background:
-      linear-gradient(
-        rgba(var(--v-theme-primary), 0.07),
-        rgba(var(--v-theme-primary), 0.07)
-      ),
-      rgb(var(--v-theme-surface));
-    border-color: rgba(var(--v-theme-primary), 0.25);
-    box-shadow: inset 3px 0 0 rgb(var(--v-theme-primary));
-  }
-
+  // Une alerte non lue se distingue par le seul point émeraude + un titre plus
+  // fort. Pas de teinte ni de barre colorée : on reste neutre et minimal.
   &--unread &__title {
     font-weight: 700;
+    color: rgb(var(--v-theme-on-surface));
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .alert {
+    transition: none;
   }
 }
 </style>

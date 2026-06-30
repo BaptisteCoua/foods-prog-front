@@ -1,8 +1,9 @@
 // Swipe-left-to-delete gesture for a list row (mobile-first, pointer-based so touch and
 // mouse behave alike). A leftward drag moves the row's foreground over a destructive
-// backdrop; past a threshold (or via `remove()`) it plays a slide-out to the left before
-// asking the host to drop the row. Rightward drag meets rubber-band resistance and a
-// release short of the threshold springs the row back. Respects `prefers-reduced-motion`.
+// backdrop; past a threshold (or via `remove()`) the host collapses the row vertically
+// (height + fade) before dropping it — same removal motion as the planning meal list.
+// Rightward drag meets rubber-band resistance and a release short of the threshold
+// springs the row back. Respects `prefers-reduced-motion`.
 //
 // The draggable element should set `touch-action: pan-y` so the browser keeps vertical
 // scrolling while horizontal pans are delivered here (a scroll then fires pointercancel).
@@ -99,13 +100,6 @@ export const useSwipeToDelete = ({ onDelete }: SwipeToDeleteOptions) => {
   }
 
   const rowStyle = computed(() => {
-    if (removing.value) {
-      return {
-        transform: 'translateX(-100%)',
-        opacity: 0,
-        transition: 'transform 0.25s cubic-bezier(0.4, 0, 1, 1), opacity 0.25s linear',
-      }
-    }
     if (dragging.value) {
       return { transform: `translateX(${offset.value}px)`, transition: 'none' }
     }
@@ -113,7 +107,7 @@ export const useSwipeToDelete = ({ onDelete }: SwipeToDeleteOptions) => {
       // Spring back to rest from the released position.
       return { transform: 'translateX(0)', transition: 'transform 0.32s cubic-bezier(0.22, 1, 0.36, 1)' }
     }
-    // At rest → leave the row untouched.
+    // At rest (and while removing → the host collapses the row, foreground stays put).
     return {}
   })
 
@@ -121,25 +115,39 @@ export const useSwipeToDelete = ({ onDelete }: SwipeToDeleteOptions) => {
   // (drives the backdrop ramping up to its "release to delete" state).
   const willDelete = computed(() => offset.value <= -THRESHOLD)
 
-  // Ends the slide-out (drop the row) or the spring-back (back to rest); ignores
+  // 0 → 1 as the leftward drag approaches the confirmation threshold; lets the host
+  // ramp the destructive backdrop (opacity + trash scale) progressively with the swipe.
+  const progress = computed(() => Math.min(1, Math.abs(offset.value) / THRESHOLD))
+
+  // Ends the spring-back (back to rest) on the foreground row's transform; ignores
   // transitions bubbling up from child elements.
   const onTransitionEnd = (event: TransitionEvent) => {
     if (event.target !== event.currentTarget) return
     if (event.propertyName !== 'transform') return
-    if (removing.value) onDelete()
-    else if (settling.value) settling.value = false
+    if (settling.value) settling.value = false
+  }
+
+  // Ends the collapse-out on the host row: once its own opacity transition finishes,
+  // drop the item. Bound to the collapsing element (not the foreground row).
+  const onRemoveEnd = (event: TransitionEvent) => {
+    if (event.target !== event.currentTarget) return
+    if (!removing.value || event.propertyName !== 'opacity') return
+    onDelete()
   }
 
   return {
     offset,
     dragging,
+    settling,
     removing,
     willDelete,
+    progress,
     suppressClick,
     reset,
     remove,
     rowStyle,
     onTransitionEnd,
+    onRemoveEnd,
     onPointerDown,
     onPointerMove,
     onPointerUp,

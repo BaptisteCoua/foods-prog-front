@@ -218,7 +218,6 @@
           @delete="askDelete"
           @clone="cloneToMine"
           @unclone="uncloneFromMine"
-          @toggle-like="toggleLike"
         />
       </AppReveal>
 
@@ -333,7 +332,6 @@ const {
   isCloning,
   cloneToMine,
   uncloneFromMine,
-  toggleLike,
 } = useRecipeList(scope)
 
 // Facet filters (meal types + dietary regimes) live in AppFilterSheet; only the

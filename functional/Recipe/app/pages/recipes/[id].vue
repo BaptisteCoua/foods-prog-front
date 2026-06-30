@@ -63,18 +63,16 @@
           </p>
         </div>
         <div class="recipe-detail__head-actions">
+          <!-- Pastille enregistrement : compteur + toggle (lecture seule si ma recette). -->
+          <RecipeSaveButton
+            v-if="!isMine || recipe.savesCount > 0"
+            :count="recipe.savesCount"
+            :saved="recipe.alreadySaved"
+            :readonly="isMine"
+            :loading="isCloning || isUncloning"
+            @toggle="onToggleSave"
+          />
           <template v-if="isMine">
-            <!-- Owner: read-only like count (you can't like your own recipe). -->
-            <span
-              class="recipe-detail__like recipe-detail__like--static"
-              :aria-label="`${recipe.likesCount} j'aime`"
-            >
-              <v-icon
-                icon="mdi-heart"
-                size="18"
-              />
-              {{ recipe.likesCount }}
-            </span>
             <v-btn
               icon="mdi-pencil"
               variant="tonal"
@@ -90,44 +88,6 @@
               aria-label="Supprimer"
               @click="confirmOpen = true"
             />
-          </template>
-          <template v-else>
-            <button
-              type="button"
-              class="recipe-detail__like"
-              :class="{ 'recipe-detail__like--on': recipe.liked }"
-              :aria-label="recipe.liked ? 'Retirer le like' : 'Liker'"
-              :aria-pressed="recipe.liked"
-              @click="toggleLike"
-            >
-              <v-icon
-                :icon="recipe.liked ? 'mdi-heart' : 'mdi-heart-outline'"
-                size="18"
-              />
-              {{ recipe.likesCount }}
-            </button>
-            <v-btn
-              v-if="recipe.alreadySaved"
-              color="primary"
-              variant="tonal"
-              size="small"
-              prepend-icon="mdi-bookmark-check"
-              :loading="isUncloning"
-              @click="onUnclone"
-            >
-              Enregistrée
-            </v-btn>
-            <v-btn
-              v-else
-              color="primary"
-              variant="tonal"
-              size="small"
-              prepend-icon="mdi-bookmark-plus-outline"
-              :loading="isCloning"
-              @click="onClone"
-            >
-              Enregistrer
-            </v-btn>
           </template>
         </div>
       </header>
@@ -223,37 +183,74 @@
             <span class="recipe-detail__per">{{ nutritionLabel }} · {{ formatCost(shownNutrition.costCents) }}</span>
           </div>
 
-          <div class="recipe-detail__bar">
-            <span
-              class="recipe-detail__bar-seg recipe-detail__bar-seg--protein"
-              :style="{ width: `${macroSplit.protein}%` }"
-            />
-            <span
-              class="recipe-detail__bar-seg recipe-detail__bar-seg--carb"
-              :style="{ width: `${macroSplit.carb}%` }"
-            />
-            <span
-              class="recipe-detail__bar-seg recipe-detail__bar-seg--fat"
-              :style="{ width: `${macroSplit.fat}%` }"
-            />
-          </div>
+          <div class="recipe-detail__chart">
+            <div class="recipe-detail__donut">
+              <svg
+                :viewBox="`0 0 ${RING_SIZE} ${RING_SIZE}`"
+                class="recipe-detail__donut-svg"
+                aria-hidden="true"
+              >
+                <circle
+                  class="recipe-detail__donut-track"
+                  :cx="RING_CENTER"
+                  :cy="RING_CENTER"
+                  :r="RING_RADIUS"
+                  :stroke-width="RING_WIDTH"
+                />
+                <circle
+                  v-for="seg in donutSegments"
+                  :key="seg.key"
+                  class="recipe-detail__donut-seg"
+                  :class="`recipe-detail__donut-seg--${seg.key}`"
+                  :cx="RING_CENTER"
+                  :cy="RING_CENTER"
+                  :r="RING_RADIUS"
+                  :stroke-width="RING_WIDTH"
+                  :stroke-dasharray="`${seg.len} ${RING_CIRCUMFERENCE}`"
+                  :transform="`rotate(${seg.rotate} ${RING_CENTER} ${RING_CENTER})`"
+                />
+                <text
+                  v-for="seg in donutSegments"
+                  v-show="seg.showLabel"
+                  :key="`label-${seg.key}`"
+                  class="recipe-detail__donut-label"
+                  :x="seg.labelX"
+                  :y="seg.labelY"
+                  text-anchor="middle"
+                  dominant-baseline="central"
+                >{{ seg.percent }}%</text>
+              </svg>
+              <div class="recipe-detail__donut-center">
+                <template v-if="dominantMacro">
+                  <span
+                    class="recipe-detail__donut-pct"
+                    :class="`recipe-detail__donut-pct--${dominantMacro.key}`"
+                  >{{ Math.round(dominantMacro.percent) }}%</span>
+                  <span class="recipe-detail__donut-cap">{{ dominantMacro.label }}</span>
+                </template>
+                <span
+                  v-else
+                  class="recipe-detail__donut-cap"
+                >—</span>
+              </div>
+            </div>
 
-          <div class="recipe-detail__macros">
-            <div class="recipe-detail__macro">
-              <span class="recipe-detail__dot recipe-detail__dot--protein" />
-              <b>{{ formatMacro(shownNutrition.proteinG) }}</b>
-              <small>Protéines</small>
-            </div>
-            <div class="recipe-detail__macro">
-              <span class="recipe-detail__dot recipe-detail__dot--carb" />
-              <b>{{ formatMacro(shownNutrition.carbG) }}</b>
-              <small>Glucides</small>
-            </div>
-            <div class="recipe-detail__macro">
-              <span class="recipe-detail__dot recipe-detail__dot--fat" />
-              <b>{{ formatMacro(shownNutrition.fatG) }}</b>
-              <small>Lipides</small>
-            </div>
+            <ul class="recipe-detail__legend">
+              <li
+                v-for="macro in macroStats"
+                :key="macro.key"
+                class="recipe-detail__legend-item"
+                :class="{ 'recipe-detail__legend-item--dominant': macro.dominant }"
+              >
+                <span
+                  class="recipe-detail__dot"
+                  :class="`recipe-detail__dot--${macro.key}`"
+                />
+                <span class="recipe-detail__legend-label">{{ macro.label }}</span>
+                <b class="recipe-detail__legend-pct">{{ Math.round(macro.percent) }}%</b>
+                <small class="recipe-detail__legend-grams">{{ formatMacro(macro.grams) }}</small>
+              </li>
+            </ul>
           </div>
 
           <p
@@ -371,7 +368,6 @@ import type { Recipe } from '../../types/recipe'
 const route = useRoute()
 const id = computed(() => Number(route.params.id))
 
-const api = useApi()
 const { recipe, pending, error, refresh } = useRecipeDetail(id)
 const { remove, setVisibility, clone, unclone } = useRecipes()
 const profileStore = useProfileStore()
@@ -413,16 +409,22 @@ const togglePublish = async (value: boolean) => {
   }
 }
 
+// Save = bookmark this shared recipe into my collection, staying on the page so
+// the feedback (filled pill + count +1) is visible. Optimistic, revert on error.
 const isCloning = ref(false)
 const onClone = async () => {
-  if (!recipe.value || isCloning.value) return
+  const current = recipe.value
+  if (!current || isCloning.value) return
   isCloning.value = true
+  current.alreadySaved = true
+  current.savesCount += 1
   try {
-    const created = await clone(recipe.value.id)
+    await clone(current.id)
     toast.success('Recette ajoutée à tes recettes.')
-    navigateTo(`/recipes/${created.id}`)
   }
   catch {
+    current.alreadySaved = false
+    current.savesCount = Math.max(0, current.savesCount - 1)
     toast.error('Impossible d\'enregistrer cette recette.')
   }
   finally {
@@ -430,18 +432,22 @@ const onClone = async () => {
   }
 }
 
-// Remove the saved copy of this shared recipe (inverse of onClone). Stays on
-// the source page and flips the button back to "Enregistrer".
+// Remove the saved copy of this shared recipe (inverse of onClone). Optimistic
+// count −1, revert on error.
 const isUncloning = ref(false)
 const onUnclone = async () => {
-  if (!recipe.value || isUncloning.value) return
+  const current = recipe.value
+  if (!current || isUncloning.value) return
   isUncloning.value = true
+  current.alreadySaved = false
+  current.savesCount = Math.max(0, current.savesCount - 1)
   try {
-    await unclone(recipe.value.id)
-    await refresh()
+    await unclone(current.id)
     toast.success('Recette retirée de tes recettes.')
   }
   catch {
+    current.alreadySaved = true
+    current.savesCount += 1
     toast.error('Impossible de retirer cette recette.')
   }
   finally {
@@ -449,27 +455,9 @@ const onUnclone = async () => {
   }
 }
 
-// Toggle a like on a shared/catalog recipe. Optimistic: flip flag + count
-// locally for instant feedback, revert on failure.
-const toggleLike = async () => {
-  const current = recipe.value
-  if (!current) return
-  const liked = !current.liked
-  // MAJ optimiste : le cœur et le compteur changent immédiatement au clic.
-  current.liked = liked
-  current.likesCount = Math.max(0, current.likesCount + (liked ? 1 : -1))
-  try {
-    // Le like/unlike renvoie la recette à jour : on réaligne sur la valeur
-    // autoritaire du serveur (compteur exact, aucune dérive front/back).
-    const updated = await api<Recipe>(`/recipes/${current.id}/like`, { method: liked ? 'POST' : 'DELETE' })
-    current.liked = updated.liked ?? liked
-    current.likesCount = updated.likesCount
-  }
-  catch {
-    current.liked = !liked
-    current.likesCount = Math.max(0, current.likesCount + (liked ? -1 : 1))
-    toast.error('Action impossible pour le moment.')
-  }
+const onToggleSave = () => {
+  if (recipe.value?.alreadySaved) onUnclone()
+  else onClone()
 }
 
 useHead(() => ({ title: recipe.value?.name ?? 'Recette' }))
@@ -484,19 +472,55 @@ const shownNutrition = computed(() => scaledTotal.value ?? recipe.value?.perServ
 const nutritionLabel = computed(() =>
   isScaled.value ? `pour ${portions.value} portions` : 'par portion')
 
-// Calorie contribution split for the macro bar (protein/carb 4 kcal/g, fat 9).
-const macroSplit = computed(() => {
+// Calorie contribution split (protein/carb 4 kcal/g, fat 9), driving both the
+// bar widths and the per-macro % shown in the stats. `dominant` flags the macro
+// with the biggest share so the UI can highlight it at a glance.
+const macroStats = computed(() => {
   const n = shownNutrition.value
-  const p = n.proteinG * 4
-  const c = n.carbG * 4
-  const f = n.fatG * 9
-  const sum = p + c + f
-  if (!sum) return { protein: 0, carb: 0, fat: 0 }
-  return {
-    protein: (p / sum) * 100,
-    carb: (c / sum) * 100,
-    fat: (f / sum) * 100,
-  }
+  const kcal = { protein: n.proteinG * 4, carb: n.carbG * 4, fat: n.fatG * 9 }
+  const sum = kcal.protein + kcal.carb + kcal.fat
+  const items = [
+    { key: 'protein', label: 'Protéines', grams: n.proteinG, percent: sum ? (kcal.protein / sum) * 100 : 0 },
+    { key: 'carb', label: 'Glucides', grams: n.carbG, percent: sum ? (kcal.carb / sum) * 100 : 0 },
+    { key: 'fat', label: 'Lipides', grams: n.fatG, percent: sum ? (kcal.fat / sum) * 100 : 0 },
+  ]
+  const max = Math.max(...items.map(item => item.percent))
+  return items.map(item => ({ ...item, dominant: sum > 0 && item.percent === max }))
+})
+
+const dominantMacro = computed(() => macroStats.value.find(macro => macro.dominant) ?? null)
+
+// Segmented donut geometry (one coloured arc per macro). Each arc is a circle
+// whose visible dash length encodes its calorie share, rotated to start where the
+// previous one ended; a small angular gap keeps the segments visually separated.
+const RING_SIZE = 108
+const RING_WIDTH = 12
+const RING_CENTER = RING_SIZE / 2
+const RING_RADIUS = RING_CENTER - RING_WIDTH / 2 - 2
+const RING_CIRCUMFERENCE = 2 * Math.PI * RING_RADIUS
+const RING_GAP_DEG = 4
+
+const donutSegments = computed(() => {
+  const visible = macroStats.value.filter(macro => macro.percent > 0)
+  const gapLen = (RING_GAP_DEG / 360) * RING_CIRCUMFERENCE
+  let start = 0
+  return visible.map((macro) => {
+    const fraction = macro.percent / 100
+    // Mid-arc angle (-90° = 12 o'clock), used to drop the % label on the segment.
+    const midAngle = (((start + fraction / 2) * 360) - 90) * (Math.PI / 180)
+    const segment = {
+      key: macro.key,
+      percent: Math.round(macro.percent),
+      rotate: start * 360 - 90 + RING_GAP_DEG / 2,
+      len: Math.max(0, fraction * RING_CIRCUMFERENCE - gapLen),
+      labelX: RING_CENTER + RING_RADIUS * Math.cos(midAngle),
+      labelY: RING_CENTER + RING_RADIUS * Math.sin(midAngle),
+      // Hide the label on slivers too thin to hold the text legibly.
+      showLabel: macro.percent >= 10,
+    }
+    start += fraction
+    return segment
+  })
 })
 
 const openEdit = (value: Recipe) => formDialog.value?.openEdit(value)
@@ -572,38 +596,6 @@ const onDelete = async () => {
     align-items: center;
     gap: 0.4rem;
     flex-shrink: 0;
-  }
-
-  &__like {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.25rem;
-    padding: 0.3rem 0.6rem;
-    border-radius: 999px;
-    font-size: 0.85rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: rgb(var(--v-theme-on-surface-variant));
-    transition: color 0.18s var(--app-ease), background 0.18s var(--app-ease);
-
-    &:hover {
-      background: rgba(var(--v-theme-primary), 0.1);
-      color: rgb(var(--v-theme-primary));
-    }
-
-    &--on {
-      color: rgb(var(--v-theme-primary));
-    }
-
-    // Read-only count (owner's own recipe): no interaction, no hover affordance.
-    &--static {
-      cursor: default;
-
-      &:hover {
-        background: transparent;
-        color: rgb(var(--v-theme-on-surface-variant));
-      }
-    }
   }
 
   &__tags {
@@ -717,51 +709,123 @@ const onDelete = async () => {
     color: rgb(var(--v-theme-on-surface-variant));
   }
 
-  &__bar {
+  &__chart {
     display: flex;
-    height: 10px;
-    border-radius: 999px;
-    overflow: hidden;
-    background: rgba(var(--v-border-color), 0.12);
+    align-items: center;
+    gap: 1.25rem;
   }
 
-  &__bar-seg {
+  &__donut {
+    position: relative;
+    flex: 0 0 auto;
+    width: 108px;
+    height: 108px;
+  }
+
+  &__donut-svg {
+    width: 100%;
     height: 100%;
-    transition: width 0.9s var(--app-ease);
-
-    &--protein { background: rgb(var(--v-theme-protein)); }
-    &--carb { background: rgb(var(--v-theme-carb)); }
-    &--fat { background: rgb(var(--v-theme-fat)); }
+    display: block;
   }
 
-  &__macros {
-    display: flex;
-    justify-content: space-between;
-    gap: 0.5rem;
+  &__donut-track {
+    fill: none;
+    stroke: rgba(var(--v-border-color), 0.14);
   }
 
-  &__macro {
+  &__donut-seg {
+    fill: none;
+    stroke-linecap: butt;
+    transition:
+      stroke-dasharray 0.9s var(--app-ease),
+      transform 0.9s var(--app-ease);
+
+    &--protein { stroke: rgb(var(--v-theme-protein)); }
+    &--carb { stroke: rgb(var(--v-theme-carb)); }
+    &--fat { stroke: rgb(var(--v-theme-fat)); }
+  }
+
+  &__donut-center {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-direction: column;
-    align-items: flex-start;
-    gap: 0.15rem;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+
+  &__donut-pct {
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    line-height: 1;
     font-variant-numeric: tabular-nums;
 
-    b {
-      font-size: 1.05rem;
-      font-weight: 700;
-    }
+    &--protein { color: rgb(var(--v-theme-protein)); }
+    &--carb { color: rgb(var(--v-theme-carb)); }
+    &--fat { color: rgb(var(--v-theme-fat)); }
+  }
 
-    small {
-      font-size: 0.72rem;
-      color: rgb(var(--v-theme-on-surface-variant));
+  &__donut-cap {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: rgb(var(--v-theme-on-surface-variant));
+    margin-top: 0.15rem;
+  }
+
+  &__legend {
+    flex: 1 1 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  &__legend-item {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    align-items: baseline;
+    gap: 0.5rem;
+    padding: 0.35rem 0.6rem;
+    border-radius: 10px;
+    border: 1px solid transparent;
+    font-variant-numeric: tabular-nums;
+    transition: background 0.25s var(--app-ease);
+
+    // The dominant macro gets a faint surface so the eye lands on it first.
+    &--dominant {
+      background: rgb(var(--v-theme-surface-variant));
+      border-color: rgba(var(--v-border-color), var(--v-border-opacity));
     }
+  }
+
+  &__legend-label {
+    font-size: 0.85rem;
+    font-weight: 600;
+  }
+
+  &__legend-pct {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: -0.02em;
+  }
+
+  &__legend-grams {
+    font-size: 0.78rem;
+    color: rgb(var(--v-theme-on-surface-variant));
+    min-width: 3.5ch;
+    text-align: right;
   }
 
   &__dot {
     width: 9px;
     height: 9px;
     border-radius: 50%;
+    flex-shrink: 0;
+    align-self: center;
 
     &--protein { background: rgb(var(--v-theme-protein)); }
     &--carb { background: rgb(var(--v-theme-carb)); }
@@ -856,6 +920,12 @@ const onDelete = async () => {
     justify-content: flex-end;
     gap: 0.5rem;
     padding: 1rem 1.25rem 1.4rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .recipe-detail__donut-seg {
+    transition: none;
   }
 }
 </style>

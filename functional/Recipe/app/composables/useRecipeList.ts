@@ -45,11 +45,11 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
   // Multi-criteria sort on the PER-SERVING values shown on the card, pushed to
   // the API so it holds over the full dataset (not just lazy-loaded rows).
   const sortStore = useListSortStore()
-  // Popularité (nb de likes) n'a de sens que sur du contenu partagé : on
-  // l'expose pour la bibliothèque et les recettes partagées, pas pour « mine ».
+  // Popularité (nb d'enregistrements) n'a de sens que sur du contenu partagé :
+  // on l'expose pour la bibliothèque et les recettes partagées, pas pour « mine ».
   const sortOptions = computed<SortOption[]>(() => {
     const options: SortOption[] = []
-    if (scope.value !== 'mine') options.push({ value: 'likes', label: 'Popularité' })
+    if (scope.value !== 'mine') options.push({ value: 'saves', label: 'Popularité' })
     options.push(
       { value: 'calories', label: 'Calories' },
       { value: 'protein', label: 'Protéines' },
@@ -159,14 +159,22 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
   const cloneToMine = async (recipe: Recipe) => {
     if (isCloning.value) return
     isCloning.value = recipe.id
+    // MAJ optimiste : la pastille passe « enregistrée » et le compteur +1
+    // immédiatement (sinon l'utilisateur ne comprend pas que l'action a marché).
+    const item = items.value.find(r => r.id === recipe.id)
+    if (item) {
+      item.alreadySaved = true
+      item.savesCount += 1
+    }
     try {
       await cloneRecipe(recipe.id)
-      // Flag the source as saved so the card flips to "Déjà enregistré".
-      const item = items.value.find(r => r.id === recipe.id)
-      if (item) item.alreadySaved = true
       toast.success('Recette ajoutée à tes recettes.')
     }
     catch {
+      if (item) {
+        item.alreadySaved = false
+        item.savesCount = Math.max(0, item.savesCount - 1)
+      }
       toast.error('Impossible d\'enregistrer cette recette.')
     }
     finally {
@@ -179,41 +187,25 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
   const uncloneFromMine = async (recipe: Recipe) => {
     if (isCloning.value) return
     isCloning.value = recipe.id
+    // MAJ optimiste : retour à « non enregistrée » et compteur −1.
+    const item = items.value.find(r => r.id === recipe.id)
+    if (item) {
+      item.alreadySaved = false
+      item.savesCount = Math.max(0, item.savesCount - 1)
+    }
     try {
       await uncloneRecipe(recipe.id)
-      const item = items.value.find(r => r.id === recipe.id)
-      if (item) item.alreadySaved = false
       toast.success('Recette retirée de tes recettes.')
     }
     catch {
+      if (item) {
+        item.alreadySaved = true
+        item.savesCount += 1
+      }
       toast.error('Impossible de retirer cette recette.')
     }
     finally {
       isCloning.value = null
-    }
-  }
-
-  // Toggle a like on a shared/catalog recipe. Optimistic: flip the flag and the
-  // count locally for instant feedback, revert on failure. POST = like,
-  // DELETE = unlike (both idempotent server-side).
-  const toggleLike = async (recipe: Recipe) => {
-    const item = items.value.find(r => r.id === recipe.id)
-    if (!item) return
-    const liked = !item.liked
-    // MAJ optimiste : le cœur et le compteur changent immédiatement au clic.
-    item.liked = liked
-    item.likesCount = Math.max(0, item.likesCount + (liked ? 1 : -1))
-    try {
-      // Le like/unlike renvoie la recette à jour : on réaligne sur la valeur
-      // autoritaire du serveur (compteur exact, aucune dérive front/back).
-      const updated = await api<Recipe>(`/recipes/${recipe.id}/like`, { method: liked ? 'POST' : 'DELETE' })
-      item.liked = updated.liked ?? liked
-      item.likesCount = updated.likesCount
-    }
-    catch {
-      item.liked = !liked
-      item.likesCount = Math.max(0, item.likesCount + (liked ? -1 : 1))
-      toast.error('Action impossible pour le moment.')
     }
   }
 
@@ -275,7 +267,6 @@ export const useRecipeList = (scope: Ref<RecipeScope> = ref<RecipeScope>('mine')
     isCloning,
     cloneToMine,
     uncloneFromMine,
-    toggleLike,
     mealTypes,
     selectedMealTypeIds,
     dietaryRegimes,

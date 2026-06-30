@@ -50,10 +50,9 @@ export interface Recipe {
   sourceRecipeId?: number | null
   // On clonable recipes (catalog / shared): true if I already saved a copy.
   alreadySaved?: boolean
-  // Number of likes received (denormalised, maintained server-side).
-  likesCount: number
-  // On likable recipes (catalog / shared): true if the current user liked it.
-  liked?: boolean
+  // Number of distinct users who saved (cloned) this recipe — the popularity
+  // metric (denormalised, maintained server-side on clone/unclone).
+  savesCount: number
   name: string
   description: string | null
   steps: string | null

@@ -16,6 +16,10 @@ export const formatKcal = (calories: number): string =>
 export const formatMacro = (grams: number): string =>
   `${Math.round(grams)} g`
 
+// "12 enregistrements" — popularity metric (number of users who saved it).
+export const formatSaves = (count: number): string =>
+  `${count} enregistrement${count > 1 ? 's' : ''}`
+
 export const quantityUnit = (unitType: UnitType): string =>
   unitType === 'VOLUME' ? 'ml' : 'g'
 

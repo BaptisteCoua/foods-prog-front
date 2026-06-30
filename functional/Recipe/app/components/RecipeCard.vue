@@ -50,33 +50,15 @@
       {{ formatKcal(recipe.perServing.calories) }}
     </span>
 
-    <button
-      v-if="likable"
-      type="button"
-      class="recipe-card__like"
-      :class="{ 'recipe-card__like--on': recipe.liked }"
-      :aria-label="recipe.liked ? 'Retirer le like' : 'Liker'"
-      :aria-pressed="recipe.liked"
-      @click.stop="emit('toggle-like', recipe)"
-    >
-      <v-icon
-        :icon="recipe.liked ? 'mdi-heart' : 'mdi-heart-outline'"
-        size="16"
-      />
-      {{ recipe.likesCount }}
-    </button>
-    <!-- Owner: read-only like count (you can't like your own recipe). -->
-    <span
-      v-else
-      class="recipe-card__like recipe-card__like--static"
-      :aria-label="`${recipe.likesCount} j'aime`"
-    >
-      <v-icon
-        icon="mdi-heart"
-        size="16"
-      />
-      {{ recipe.likesCount }}
-    </span>
+    <!-- Pastille enregistrement : compteur + toggle (lecture seule si ma recette). -->
+    <RecipeSaveButton
+      v-if="!isMine || recipe.savesCount > 0"
+      :count="recipe.savesCount"
+      :saved="recipe.alreadySaved"
+      :readonly="isMine"
+      :loading="cloning"
+      @toggle="onToggleSave"
+    />
 
     <v-btn
       v-if="isMine"
@@ -106,44 +88,6 @@
           />
         </v-list>
       </v-menu>
-    </v-btn>
-    <v-btn
-      v-else-if="recipe.alreadySaved"
-      icon
-      variant="text"
-      color="primary"
-      size="small"
-      density="comfortable"
-      :loading="cloning"
-      aria-label="Retirer de mes recettes"
-      @click.stop="emit('unclone', recipe)"
-    >
-      <v-icon
-        icon="mdi-bookmark-check"
-        size="20"
-      />
-      <v-tooltip
-        activator="parent"
-        location="bottom"
-      >
-        Retirer de mes recettes
-      </v-tooltip>
-    </v-btn>
-    <v-btn
-      v-else
-      icon
-      variant="text"
-      color="primary"
-      size="small"
-      density="comfortable"
-      :loading="cloning"
-      aria-label="Enregistrer dans mes recettes"
-      @click.stop="emit('clone', recipe)"
-    >
-      <v-icon
-        icon="mdi-bookmark-plus-outline"
-        size="20"
-      />
     </v-btn>
   </v-card>
 
@@ -232,10 +176,10 @@
       <div class="recipe-card__overlay">
         <span class="recipe-card__name">{{ recipe.name }}</span>
         <span class="recipe-card__meta">
-          {{ recipe.servings }} portion{{ recipe.servings > 1 ? 's' : '' }} · {{ totalTime }} · {{ ingredientCount }}<template v-if="isMine"> · <v-icon
-            icon="mdi-heart"
+          {{ recipe.servings }} portion{{ recipe.servings > 1 ? 's' : '' }} · {{ totalTime }} · {{ ingredientCount }}<template v-if="isMine && recipe.savesCount > 0"> · <v-icon
+            icon="mdi-bookmark-multiple-outline"
             size="12"
-          /> {{ recipe.likesCount }}</template>
+          /> {{ recipe.savesCount }}</template>
         </span>
       </div>
     </div>
@@ -307,48 +251,14 @@
         </v-avatar>
         <span class="recipe-card__author-name">par {{ authorName }}</span>
       </span>
-      <button
-        type="button"
-        class="recipe-card__like"
-        :class="{ 'recipe-card__like--on': recipe.liked }"
-        :aria-label="recipe.liked ? 'Retirer le like' : 'Liker'"
-        :aria-pressed="recipe.liked"
-        @click.stop="emit('toggle-like', recipe)"
-      >
-        <v-icon
-          :icon="recipe.liked ? 'mdi-heart' : 'mdi-heart-outline'"
-          size="17"
-        />
-        {{ recipe.likesCount }}
-      </button>
       <v-spacer />
-      <!-- État enregistré vs non : on contraste fortement les deux boutons
-           (plein = action à faire, contour discret = déjà enregistrée) pour
-           qu'on distingue d'un coup d'œil les recettes déjà dans ses recettes. -->
-      <v-btn
-        v-if="recipe.alreadySaved"
-        color="primary"
-        variant="outlined"
-        size="small"
-        prepend-icon="mdi-bookmark-check"
+      <!-- Pastille enregistrement : compteur + toggle d'un seul tenant. -->
+      <RecipeSaveButton
+        :count="recipe.savesCount"
+        :saved="recipe.alreadySaved"
         :loading="cloning"
-        class="recipe-card__save recipe-card__save--saved"
-        @click.stop="emit('unclone', recipe)"
-      >
-        Enregistrée
-      </v-btn>
-      <v-btn
-        v-else
-        color="primary"
-        variant="flat"
-        size="small"
-        prepend-icon="mdi-bookmark-plus-outline"
-        :loading="cloning"
-        class="recipe-card__save"
-        @click.stop="emit('clone', recipe)"
-      >
-        Enregistrer
-      </v-btn>
+        @toggle="onToggleSave"
+      />
     </div>
   </v-card>
 </template>
@@ -361,13 +271,19 @@ const props = withDefaults(
   { detailed: true, cloning: false },
 )
 const emit = defineEmits<{
-  'open': [Recipe]
-  'edit': [Recipe]
-  'delete': [Recipe]
-  'clone': [Recipe]
-  'unclone': [Recipe]
-  'toggle-like': [Recipe]
+  open: [Recipe]
+  edit: [Recipe]
+  delete: [Recipe]
+  clone: [Recipe]
+  unclone: [Recipe]
 }>()
+
+// Save pill toggles between clone (save) and unclone (remove) on the parent,
+// which owns the optimistic count update.
+const onToggleSave = () => {
+  if (props.recipe.alreadySaved) emit('unclone', props.recipe)
+  else emit('clone', props.recipe)
+}
 
 // Ownership drives the actions: only the owner edits/deletes. Recipes that
 // aren't mine (global catalog or another user's public recipe) can be cloned.
@@ -375,9 +291,6 @@ const profileStore = useProfileStore()
 const isMine = computed(() =>
   props.recipe.userId != null && props.recipe.userId === profileStore.profile?.userId)
 const isPublic = computed(() => props.recipe.visibility === 'PUBLIC')
-// Likable = shared content the user doesn't own (global catalog or another
-// user's public recipe). You can't like your own recipe.
-const likable = computed(() => !isMine.value)
 const authorName = computed(() => props.recipe.author?.displayName?.trim() || 'Anonyme')
 
 // Tiny inline blur placeholder shown while the real image lazy-loads.
@@ -653,17 +566,6 @@ const ingredientCount = computed(() => {
     border-top: 1px solid rgba(var(--v-border-color), var(--v-border-opacity));
   }
 
-  &__save {
-    font-weight: 700;
-    letter-spacing: -0.01em;
-
-    // « Déjà enregistrée » : pastille calme et confirmée (contour + léger fond
-    // teinté), nettement distincte du bouton plein « Enregistrer ».
-    &--saved {
-      background: rgba(var(--v-theme-primary), 0.08);
-    }
-  }
-
   &__author {
     display: inline-flex;
     align-items: center;
@@ -684,37 +586,5 @@ const ingredientCount = computed(() => {
     text-overflow: ellipsis;
   }
 
-  &__like {
-    flex: 0 0 auto;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.22rem;
-    padding: 0.22rem 0.5rem;
-    border-radius: 999px;
-    font-size: 0.82rem;
-    font-weight: 700;
-    font-variant-numeric: tabular-nums;
-    color: rgb(var(--v-theme-on-surface-variant));
-    transition: color 0.18s var(--app-ease), background 0.18s var(--app-ease);
-
-    &:hover {
-      background: rgba(var(--v-theme-primary), 0.1);
-      color: rgb(var(--v-theme-primary));
-    }
-
-    &--on {
-      color: rgb(var(--v-theme-primary));
-    }
-
-    // Read-only count (owner's own recipe): no interaction, no hover affordance.
-    &--static {
-      cursor: default;
-
-      &:hover {
-        background: transparent;
-        color: rgb(var(--v-theme-on-surface-variant));
-      }
-    }
-  }
 }
 </style>
