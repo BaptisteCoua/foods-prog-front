@@ -88,10 +88,10 @@
           </span>
         </div>
         <p
-          v-if="board.checkedCount.value"
+          v-if="board.coveredCount.value"
           class="shopping__progress"
         >
-          {{ board.checkedCount.value }} / {{ board.lines.value.length }} article{{ board.lines.value.length > 1 ? 's' : '' }} pris
+          {{ board.coveredCount.value }} / {{ board.lines.value.length }} article{{ board.lines.value.length > 1 ? 's' : '' }} déjà en stock
         </p>
       </v-card>
 
@@ -106,8 +106,9 @@
           v-for="line in board.lines.value"
           :key="line.ingredientId"
           :line="line"
-          :checked="board.isChecked(line.ingredientId)"
-          @toggle="board.toggleCheck(line.ingredientId)"
+          :covered="board.isCovered(line)"
+          :buying="board.isBuying(line.ingredientId)"
+          @buy="board.buy(line)"
         />
       </TransitionGroup>
     </template>

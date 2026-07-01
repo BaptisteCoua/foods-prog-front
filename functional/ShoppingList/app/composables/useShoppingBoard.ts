@@ -1,12 +1,16 @@
+import { toast } from 'vue3-toastify'
 import type { PeriodSeed } from './useShoppingPeriod'
 import { useShoppingList } from './useShoppingList'
 import { useShoppingPeriod } from './useShoppingPeriod'
+import type { ShoppingListLine } from '../types/shoppingList'
 
-// Orchestrates the shopping page: resolves the period, fetches its list, sorts
-// the lines and tracks which items have been picked up. The check-off state is
-// local and intentionally non-persisted (it covers a single shopping session and
-// resets whenever the period changes). `seed` lets a caller (the Planning popup)
-// open the board on a given period rather than the route query / current week.
+// Orchestrates the shopping page: resolves the period, fetches its list (needs
+// already netted against the pantry stock server-side), sorts the lines and turns
+// checking an item into a real "buy" that tops the pantry up. Because coverage is
+// derived from server stock (a line is covered when there's nothing left to buy),
+// the check-off is persistent by construction — it survives reloads and syncs
+// with the Garde-manger page. `seed` lets a caller (the Planning popup) open the
+// board on a given period rather than the route query / current week.
 export const useShoppingBoard = (seed?: PeriodSeed) => {
   const periodApi = useShoppingPeriod(seed)
   const period = periodApi.period
@@ -16,46 +20,53 @@ export const useShoppingBoard = (seed?: PeriodSeed) => {
     () => period.value.to,
   )
 
-  // Unchecked items first, picked-up ones sink to the bottom; each group sorted
-  // by name (French collation). Depends on `checked`, so ticking an item
-  // recomputes the order and the list animates the move.
+  // Buying tops up the pantry stock; the shared 'pantry' cache is refreshed too.
+  const { adjust } = usePantry()
+
+  // Still-to-buy items first, covered ones (fully in stock) sink to the bottom;
+  // each group sorted by name (French collation).
   const lines = computed(() =>
     [...(list.value?.lines ?? [])].sort((a, b) => {
-      const aChecked = checked.value.has(a.ingredientId)
-      const bChecked = checked.value.has(b.ingredientId)
-      if (aChecked !== bChecked) return aChecked ? 1 : -1
+      const aCovered = a.toBuyQuantity <= 0
+      const bCovered = b.toBuyQuantity <= 0
+      if (aCovered !== bCovered) return aCovered ? 1 : -1
       return a.name.localeCompare(b.name, 'fr')
     }),
   )
 
   const isEmpty = computed(() => !pending.value && !error.value && lines.value.length === 0)
 
-  // Local check-off, by ingredient id. Cleared on every period change.
-  const checked = ref<Set<number>>(new Set())
-  const isChecked = (ingredientId: number) => checked.value.has(ingredientId)
-  const toggleCheck = (ingredientId: number) => {
-    const next = new Set(checked.value)
-    if (next.has(ingredientId)) {
-      next.delete(ingredientId)
-    }
-    else {
-      next.add(ingredientId)
-    }
-    checked.value = next
-  }
-  watch(period, () => {
-    checked.value = new Set()
-  })
+  // A line is covered when the stock already meets the need (nothing to buy).
+  const isCovered = (line: ShoppingListLine) => line.toBuyQuantity <= 0
 
-  // Total cost of the list and cost of what's left to buy (unchecked lines).
+  // Per-line spinner while its "buy" request is in flight.
+  const buying = ref<Set<number>>(new Set())
+  const isBuying = (ingredientId: number) => buying.value.has(ingredientId)
+
+  // Check an item = "acheté" : add the shortfall to the pantry, then refetch the
+  // list so the line recomputes as covered. Persistent because it's real stock.
+  const buy = async (line: ShoppingListLine) => {
+    if (line.toBuyQuantity <= 0) return
+    buying.value = new Set(buying.value).add(line.ingredientId)
+    try {
+      await adjust({ ingredientId: line.ingredientId, delta: line.toBuyQuantity })
+      await refresh()
+    }
+    catch {
+      toast.error('Achat impossible.')
+    }
+    finally {
+      const next = new Set(buying.value)
+      next.delete(line.ingredientId)
+      buying.value = next
+    }
+  }
+
+  // Full-need cost and cost of what's left to buy (after the pantry stock).
   const totalCostCents = computed(() => list.value?.totalCostCents ?? 0)
-  const remainingCostCents = computed(() =>
-    lines.value
-      .filter(line => !checked.value.has(line.ingredientId))
-      .reduce((sum, line) => sum + line.costCents, 0),
-  )
-  const checkedCount = computed(() =>
-    lines.value.filter(line => checked.value.has(line.ingredientId)).length,
+  const remainingCostCents = computed(() => list.value?.toBuyTotalCostCents ?? 0)
+  const coveredCount = computed(() =>
+    lines.value.filter(line => line.toBuyQuantity <= 0).length,
   )
 
   return {
@@ -75,9 +86,10 @@ export const useShoppingBoard = (seed?: PeriodSeed) => {
     refresh,
     totalCostCents,
     remainingCostCents,
-    checkedCount,
-    // check-off
-    isChecked,
-    toggleCheck,
+    coveredCount,
+    // buy / coverage
+    isCovered,
+    isBuying,
+    buy,
   }
 }

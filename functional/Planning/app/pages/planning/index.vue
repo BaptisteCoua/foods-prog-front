@@ -59,6 +59,23 @@
           <span class="planning__quick-sub">Mon catalogue</span>
         </span>
       </button>
+
+      <button
+        type="button"
+        class="planning__quick-tile"
+        @click="pantryOpen = true"
+      >
+        <span class="planning__quick-badge">
+          <v-icon
+            icon="mdi-fridge-outline"
+            size="24"
+          />
+        </span>
+        <span class="planning__quick-text">
+          <span class="planning__quick-label">Garde-manger</span>
+          <span class="planning__quick-sub">Mon stock</span>
+        </span>
+      </button>
     </div>
 
     <PlanningWeekStrip
@@ -218,6 +235,14 @@
     >
       <IngredientListPanel padded />
     </AppSheet>
+
+    <AppSheet
+      v-model="pantryOpen"
+      :max-width="640"
+      full-height
+    >
+      <PantryPanel padded />
+    </AppSheet>
   </div>
 </template>
 
@@ -229,9 +254,10 @@ useHead({ title: 'Planning' })
 
 const board = usePlanningBoard()
 
-// [EXPERIMENT nav] Courses + Ingrédients ouverts en popup depuis le Planning.
+// [EXPERIMENT nav] Courses + Ingrédients + Garde-manger ouverts en popup depuis le Planning.
 const shoppingOpen = ref(false)
 const ingredientsOpen = ref(false)
+const pantryOpen = ref(false)
 
 // Pré-remplit la liste de courses sur la semaine actuellement affichée.
 const shoppingSeed = computed(() => ({
