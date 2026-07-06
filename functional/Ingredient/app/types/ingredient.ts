@@ -12,6 +12,9 @@ export interface FoodType {
 export interface Ingredient {
   id: number
   name: string
+  // Thumbnail URL matched offline (TheMealDB/Spoonacular); `null` when no photo
+  // was found — the UI falls back to a category emoji.
+  imageUrl: string | null
   unitType: UnitType
   calories: number
   proteinG: number

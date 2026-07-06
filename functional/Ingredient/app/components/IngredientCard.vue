@@ -6,6 +6,22 @@
     @click="emit('edit', ingredient)"
   >
     <div class="ingredient-card__head">
+      <div class="ingredient-card__thumb">
+        <v-img
+          v-if="photoUrl"
+          :src="photoUrl"
+          :alt="ingredient.name"
+          :width="28"
+          :height="28"
+          contain
+          class="ingredient-card__img"
+        />
+        <span
+          v-else
+          class="ingredient-card__emoji"
+          aria-hidden="true"
+        >{{ emoji }}</span>
+      </div>
       <div class="ingredient-card__title">
         <span class="ingredient-card__name">{{ ingredient.name }}</span>
         <span class="ingredient-card__meta">{{ caloriesLabel }} · {{ priceLabel }}</span>
@@ -76,6 +92,8 @@ const emit = defineEmits<{ edit: [Ingredient], delete: [Ingredient] }>()
 
 const caloriesLabel = computed(() => `${props.ingredient.calories} kcal`)
 const priceLabel = computed(() => formatPrice(props.ingredient.pricePerKgCents, props.ingredient.unitType))
+const photoUrl = computed(() => props.ingredient.imageUrl ?? '')
+const emoji = computed(() => ingredientEmoji(props.ingredient.foodTypes))
 </script>
 
 <style scoped lang="scss">
@@ -95,15 +113,39 @@ const priceLabel = computed(() => formatPrice(props.ingredient.pricePerKgCents, 
 
   &__head {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 0.5rem;
+    align-items: center;
+    gap: 0.7rem;
+  }
+
+  &__thumb {
+    flex: 0 0 auto;
+    width: 44px;
+    height: 44px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(var(--v-theme-on-surface), 0.05);
+  }
+
+  // Fixed icon box (smaller than the thumb) → guaranteed margin, centered,
+  // and every icon reads at the same size regardless of its own SVG padding.
+  &__img {
+    flex: 0 0 auto;
+    width: 28px;
+    height: 28px;
+  }
+
+  &__emoji {
+    font-size: 1.55rem;
+    line-height: 1;
   }
 
   &__title {
     display: flex;
     flex-direction: column;
     min-width: 0;
+    flex: 1 1 auto;
   }
 
   &__name {
