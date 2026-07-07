@@ -481,17 +481,16 @@ const shownNutrition = computed(() => scaledTotal.value ?? recipe.value?.perServ
 const nutritionLabel = computed(() =>
   isScaled.value ? `pour ${portions.value} portions` : 'par portion')
 
-// Calorie contribution split (protein/carb 4 kcal/g, fat 9), driving both the
-// bar widths and the per-macro % shown in the stats. `dominant` flags the macro
+// Macro split by WEIGHT (share of total grams), driving both the donut arc
+// lengths and the per-macro % shown in the stats. `dominant` flags the macro
 // with the biggest share so the UI can highlight it at a glance.
 const macroStats = computed(() => {
   const n = shownNutrition.value
-  const kcal = { protein: n.proteinG * 4, carb: n.carbG * 4, fat: n.fatG * 9 }
-  const sum = kcal.protein + kcal.carb + kcal.fat
+  const sum = n.proteinG + n.carbG + n.fatG
   const items = [
-    { key: 'protein', label: 'Protéines', grams: n.proteinG, percent: sum ? (kcal.protein / sum) * 100 : 0 },
-    { key: 'carb', label: 'Glucides', grams: n.carbG, percent: sum ? (kcal.carb / sum) * 100 : 0 },
-    { key: 'fat', label: 'Lipides', grams: n.fatG, percent: sum ? (kcal.fat / sum) * 100 : 0 },
+    { key: 'protein', label: 'Protéines', grams: n.proteinG, percent: sum ? (n.proteinG / sum) * 100 : 0 },
+    { key: 'carb', label: 'Glucides', grams: n.carbG, percent: sum ? (n.carbG / sum) * 100 : 0 },
+    { key: 'fat', label: 'Lipides', grams: n.fatG, percent: sum ? (n.fatG / sum) * 100 : 0 },
   ]
   const max = Math.max(...items.map(item => item.percent))
   return items.map(item => ({ ...item, dominant: sum > 0 && item.percent === max }))
