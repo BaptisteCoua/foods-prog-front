@@ -27,6 +27,17 @@
         ref="formRef"
         @submit.prevent="submit"
       >
+        <p
+          v-if="errorMessage"
+          class="auth-form__error"
+          role="alert"
+        >
+          <v-icon
+            icon="mdi-alert-circle-outline"
+            size="18"
+          />
+          {{ errorMessage }}
+        </p>
         <v-text-field
           v-model="email"
           label="E-mail"
@@ -86,7 +97,7 @@ import type { AuthMode } from '../types/auth'
 const props = defineProps<{ mode: AuthMode }>()
 
 const { required, email: emailRule, minLength } = useValidationRules()
-const { formRef, email, password, isSubmitting, submit } = useAuthForm(props.mode)
+const { formRef, email, password, isSubmitting, errorMessage, submit } = useAuthForm(props.mode)
 
 const {
   isEnabled: isGoogleEnabled,
@@ -150,6 +161,20 @@ const passwordRules = computed(() => (isRegister.value ? [required, minLength(8)
     color: rgb(var(--v-theme-on-surface-variant));
     margin-top: 0.35rem;
     font-size: 0.95rem;
+  }
+
+  &__error {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-bottom: 1rem;
+    padding: 0.6rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgb(var(--v-theme-error));
+    background: rgba(var(--v-theme-error), 0.1);
+    border: 1px solid rgba(var(--v-theme-error), 0.25);
   }
 
   &__submit {

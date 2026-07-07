@@ -18,63 +18,82 @@
         />
       </div>
 
-      <button
-        type="button"
-        class="meal-item__btn"
-        :class="{ 'meal-item__btn--dragging': dragging }"
+      <div
+        class="meal-item__row"
+        :class="{ 'meal-item__row--dragging': dragging }"
         :style="removing ? undefined : { transform: `translateX(${offset}px)` }"
         @pointerdown="onPointerDown"
         @pointermove="onPointerMove"
         @pointerup="onPointerUp"
         @pointercancel="onPointerCancel"
-        @click="onClick"
       >
-        <v-avatar
-          class="meal-item__thumb"
-          size="36"
-          rounded="lg"
+        <component
+          :is="openable ? 'button' : 'div'"
+          :type="openable ? 'button' : undefined"
+          class="meal-item__btn"
+          :class="{ 'meal-item__btn--static': !openable }"
+          @click="onClick"
         >
-          <v-img
-            v-if="item.recipe && item.recipe.img"
-            :src="item.recipe.img"
-            cover
-            :alt="item.recipe.name ?? ''"
-          />
-          <v-icon
-            v-else
-            :icon="item.kind === 'INGREDIENT' ? 'mdi-food-apple-outline' : icon"
-            size="18"
-            color="on-surface-variant"
-          />
-        </v-avatar>
-
-        <div class="meal-item__main">
-          <span class="meal-item__name">{{ mealItemName(item) }}</span>
-          <span
-            v-if="courseName || detail || !isRecipeItem(item)"
-            class="meal-item__meta"
+          <v-avatar
+            class="meal-item__thumb"
+            size="36"
+            rounded="lg"
           >
-            <span
-              v-if="courseName"
-              class="meal-item__course"
-            >{{ courseName }}</span>
-            <span
-              v-else-if="!isRecipeItem(item)"
-              class="meal-item__course"
-            >Hors plan</span>
-            <span
-              v-if="detail"
-              class="meal-item__kcal"
-            >{{ detail }}</span>
-          </span>
-        </div>
+            <v-img
+              v-if="item.recipe && item.recipe.img"
+              :src="item.recipe.img"
+              cover
+              :alt="item.recipe.name ?? ''"
+            />
+            <v-icon
+              v-else
+              :icon="item.kind === 'INGREDIENT' ? 'mdi-food-apple-outline' : icon"
+              size="18"
+              color="on-surface-variant"
+            />
+          </v-avatar>
 
-        <v-icon
-          icon="mdi-chevron-right"
-          size="18"
-          class="meal-item__chevron"
-        />
-      </button>
+          <div class="meal-item__main">
+            <span class="meal-item__name">{{ mealItemName(item) }}</span>
+            <span
+              v-if="courseName || detail || !isRecipeItem(item)"
+              class="meal-item__meta"
+            >
+              <span
+                v-if="courseName"
+                class="meal-item__course"
+              >{{ courseName }}</span>
+              <span
+                v-else-if="!isRecipeItem(item)"
+                class="meal-item__course"
+              >Hors plan</span>
+              <span
+                v-if="detail"
+                class="meal-item__kcal"
+              >{{ detail }}</span>
+            </span>
+          </div>
+
+          <v-icon
+            v-if="openable"
+            icon="mdi-chevron-right"
+            size="18"
+            class="meal-item__chevron"
+          />
+        </component>
+
+        <button
+          type="button"
+          class="meal-item__remove"
+          :aria-label="`Retirer ${mealItemName(item)}`"
+          @click="emit('remove')"
+        >
+          <v-icon
+            icon="mdi-close"
+            size="16"
+          />
+        </button>
+      </div>
     </div>
   </li>
 </template>
@@ -95,6 +114,10 @@ const emit = defineEmits<{
 }>()
 
 const detail = computed(() => mealItemDetail(props.item))
+// Only recipe lines have a detail sheet to open; ingredient / free lines are
+// static (their sole action is the always-visible Remove button), so they render
+// as a plain div rather than a button that does nothing.
+const openable = computed(() => isRecipeItem(props.item))
 
 const {
   offset,
@@ -109,9 +132,10 @@ const {
   onRemoveEnd,
 } = useSwipeToDelete({ onDelete: () => emit('remove') })
 
-// Suppress the click that trails a swipe so it doesn't open the row sheet.
+// Open the detail sheet on a genuine tap of an openable row. A swipe sets `moved`,
+// whose trailing click we ignore so the gesture doesn't also open the sheet.
 const onClick = () => {
-  if (moved.value) return
+  if (moved.value || !openable.value) return
   emit('open')
 }
 </script>
@@ -148,15 +172,11 @@ const onClick = () => {
     color: rgb(var(--v-theme-on-error, 255, 255, 255));
   }
 
-  &__btn {
+  &__row {
     position: relative;
     display: flex;
     align-items: center;
-    gap: 0.6rem;
     width: 100%;
-    padding: 0.5rem 0.55rem;
-    text-align: left;
-    cursor: pointer;
     border-radius: 12px;
     background: rgb(var(--v-theme-surface-variant));
     border: 1px solid rgba(var(--v-border-color), calc(var(--v-border-opacity) * 0.6));
@@ -169,6 +189,56 @@ const onClick = () => {
 
     &:hover {
       border-color: rgba(var(--v-border-color), var(--v-border-opacity));
+    }
+  }
+
+  &__btn {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 1 1 auto;
+    min-width: 0;
+    padding: 0.5rem 0.55rem;
+    text-align: left;
+    background: transparent;
+    border: none;
+    color: inherit;
+    font: inherit;
+    cursor: pointer;
+
+    &--static {
+      cursor: default;
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgb(var(--v-theme-primary));
+      outline-offset: -2px;
+      border-radius: 12px;
+    }
+  }
+
+  &__remove {
+    flex: 0 0 auto;
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    margin-right: 0.15rem;
+    border: none;
+    background: transparent;
+    color: rgb(var(--v-theme-on-surface-variant));
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s var(--app-ease, ease), color 0.2s var(--app-ease, ease);
+
+    &:hover {
+      background: rgba(var(--v-theme-error), 0.12);
+      color: rgb(var(--v-theme-error));
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgb(var(--v-theme-error));
+      outline-offset: 2px;
     }
   }
 
@@ -217,7 +287,7 @@ const onClick = () => {
 
 @media (prefers-reduced-motion: reduce) {
   .meal-item,
-  .meal-item__btn {
+  .meal-item__row {
     transition: none;
   }
 }

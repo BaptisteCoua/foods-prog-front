@@ -20,6 +20,9 @@
 
     <div
       class="alert__row"
+      role="button"
+      tabindex="0"
+      :aria-label="`Ouvrir l'alerte : ${alert.title}`"
       :style="rowStyle"
       @pointerdown="onPointerDown"
       @pointermove="onPointerMove"
@@ -27,6 +30,8 @@
       @pointercancel="onPointerCancel"
       @transitionend="onTransitionEnd"
       @click="onRowClick"
+      @keydown.enter.self="onRowClick"
+      @keydown.space.self.prevent="onRowClick"
     >
       <!-- Point émeraude : seul marqueur de non-lu, largeur réservée pour éviter
            tout décalage de mise en page entre lu / non lu. -->
@@ -75,6 +80,19 @@
         size="20"
         class="alert__chevron"
       />
+
+      <button
+        type="button"
+        class="alert__delete"
+        :aria-label="`Supprimer l'alerte : ${alert.title}`"
+        @click.stop="emit('delete', alert)"
+        @pointerdown.stop
+      >
+        <v-icon
+          icon="mdi-trash-can-outline"
+          size="18"
+        />
+      </button>
     </div>
   </li>
 </template>
@@ -188,6 +206,11 @@ const onRowClick = () => {
     // Laisse le scroll vertical au navigateur, capte les pans horizontaux.
     touch-action: pan-y;
     user-select: none;
+
+    &:focus-visible {
+      outline: 2px solid rgb(var(--v-theme-primary));
+      outline-offset: 2px;
+    }
   }
 
   // Pastille de non-lu : largeur fixe réservée même quand l'alerte est lue,
@@ -278,6 +301,29 @@ const onRowClick = () => {
   &__chevron {
     flex: 0 0 auto;
     color: rgba(var(--v-border-color), 0.8);
+  }
+
+  // Bouton supprimer — alternative accessible (clavier / lecteur d'écran) au
+  // swipe, qui reste un raccourci. Rouge au survol / focus.
+  &__delete {
+    display: grid;
+    place-items: center;
+    flex: 0 0 auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 999px;
+    color: rgb(var(--v-theme-on-surface-variant));
+    transition: background 0.18s var(--app-ease), color 0.18s var(--app-ease);
+
+    &:hover {
+      background: rgba(var(--v-theme-error), 0.12);
+      color: rgb(var(--v-theme-error));
+    }
+
+    &:focus-visible {
+      outline: 2px solid rgb(var(--v-theme-error));
+      outline-offset: 2px;
+    }
   }
 
   // Une alerte non lue se distingue par le seul point émeraude + un titre plus

@@ -42,7 +42,9 @@
             :key="recipe.id"
             size="small"
             variant="tonal"
+            link
             :disabled="busy"
+            :aria-label="`Ajouter ${recipe.name}`"
             @click="emit('pick', recipe)"
           >
             {{ recipe.name }}

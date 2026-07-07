@@ -3,7 +3,12 @@
     v-if="!detailed"
     class="recipe-card recipe-card--compact"
     elevation="0"
+    role="button"
+    tabindex="0"
+    :aria-label="`Ouvrir la recette ${recipe.name}`"
     @click="emit('open', recipe)"
+    @keydown.enter.self="emit('open', recipe)"
+    @keydown.space.self.prevent="emit('open', recipe)"
   >
     <div class="recipe-card__thumb">
       <v-img
@@ -95,7 +100,12 @@
     v-else
     class="recipe-card"
     elevation="0"
+    role="button"
+    tabindex="0"
+    :aria-label="`Ouvrir la recette ${recipe.name}`"
     @click="emit('open', recipe)"
+    @keydown.enter.self="emit('open', recipe)"
+    @keydown.space.self.prevent="emit('open', recipe)"
   >
     <div class="recipe-card__media">
       <v-img
@@ -318,6 +328,11 @@ const ingredientCount = computed(() => {
   &:hover {
     border-color: rgba(var(--v-theme-primary), 0.4);
     transform: translateY(-2px);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--v-theme-primary));
+    outline-offset: 2px;
   }
 
   &:hover .recipe-card__img {

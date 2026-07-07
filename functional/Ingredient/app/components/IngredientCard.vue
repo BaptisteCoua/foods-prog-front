@@ -3,7 +3,12 @@
     class="ingredient-card"
     :class="{ 'ingredient-card--compact': !detailed }"
     elevation="0"
+    role="button"
+    tabindex="0"
+    :aria-label="`Modifier ${ingredient.name}`"
     @click="emit('edit', ingredient)"
+    @keydown.enter.self="emit('edit', ingredient)"
+    @keydown.space.self.prevent="emit('edit', ingredient)"
   >
     <div class="ingredient-card__head">
       <div class="ingredient-card__thumb">
@@ -105,6 +110,11 @@ const emoji = computed(() => ingredientEmoji(props.ingredient.foodTypes))
 
   &:hover {
     border-color: rgba(var(--v-theme-primary), 0.4);
+  }
+
+  &:focus-visible {
+    outline: 2px solid rgb(var(--v-theme-primary));
+    outline-offset: 2px;
   }
 
   &--compact {

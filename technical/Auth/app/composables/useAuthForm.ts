@@ -11,8 +11,13 @@ export const useAuthForm = (mode: AuthMode) => {
   const email = ref('')
   const password = ref('')
   const isSubmitting = ref(false)
+  // Persistent, form-anchored error surface (in addition to the transient toast):
+  // rendered in a role="alert" region so screen readers announce it and it stays
+  // visible until the next attempt — the toast alone auto-dismisses and is easy to miss.
+  const errorMessage = ref('')
 
   const submit = async () => {
+    errorMessage.value = ''
     const validation = await formRef.value?.validate()
     if (!validation?.valid) return
 
@@ -28,16 +33,15 @@ export const useAuthForm = (mode: AuthMode) => {
       await navigateTo(mode === 'register' ? '/onboarding' : '/dashboard')
     }
     catch {
-      toast.error(
-        mode === 'register'
-          ? 'Impossible de créer le compte. E-mail déjà utilisé ?'
-          : 'E-mail ou mot de passe incorrect.',
-      )
+      errorMessage.value = mode === 'register'
+        ? 'Impossible de créer le compte. E-mail déjà utilisé ?'
+        : 'E-mail ou mot de passe incorrect.'
+      toast.error(errorMessage.value)
     }
     finally {
       isSubmitting.value = false
     }
   }
 
-  return { formRef, email, password, isSubmitting, submit }
+  return { formRef, email, password, isSubmitting, errorMessage, submit }
 }
