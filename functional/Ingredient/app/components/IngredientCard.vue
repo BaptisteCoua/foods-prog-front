@@ -11,8 +11,8 @@
           v-if="photoUrl"
           :src="photoUrl"
           :alt="ingredient.name"
-          :width="28"
-          :height="28"
+          :width="24"
+          :height="24"
           contain
           class="ingredient-card__img"
         />
@@ -119,9 +119,9 @@ const emoji = computed(() => ingredientEmoji(props.ingredient.foodTypes))
 
   &__thumb {
     flex: 0 0 auto;
-    width: 44px;
-    height: 44px;
-    border-radius: 10px;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -132,12 +132,12 @@ const emoji = computed(() => ingredientEmoji(props.ingredient.foodTypes))
   // and every icon reads at the same size regardless of its own SVG padding.
   &__img {
     flex: 0 0 auto;
-    width: 28px;
-    height: 28px;
+    width: 24px;
+    height: 24px;
   }
 
   &__emoji {
-    font-size: 1.55rem;
+    font-size: 1.35rem;
     line-height: 1;
   }
 
