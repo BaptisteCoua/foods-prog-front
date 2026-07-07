@@ -80,6 +80,11 @@ const ringStyle = (ratio: number | null) => {
     text-transform: uppercase;
     letter-spacing: 0.02em;
     color: rgb(var(--v-theme-on-surface-variant));
+
+    .week-strip__day--today & {
+      color: rgb(var(--v-theme-primary));
+      font-weight: 800;
+    }
   }
 
   &__ring {
