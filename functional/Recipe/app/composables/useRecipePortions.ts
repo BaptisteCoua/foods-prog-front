@@ -44,6 +44,8 @@ export const useRecipePortions = (recipe: Ref<Recipe | null | undefined>) => {
     (recipe.value?.recipeIngredients ?? []).map(line => ({
       id: line.id,
       name: line.ingredient.name,
+      imageUrl: line.ingredient.imageUrl,
+      foodTypes: line.ingredient.foodTypes,
       unitType: line.ingredient.unitType,
       cookedFactor: line.ingredient.cookedFactor,
       quantity: line.quantity * scaleFactor.value,

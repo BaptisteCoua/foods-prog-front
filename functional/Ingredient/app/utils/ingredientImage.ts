@@ -24,8 +24,10 @@ export const FOOD_TYPE_EMOJI: Record<string, string> = {
 }
 
 // Emoji for the ingredient's first recognised category, or a neutral default.
-export const ingredientEmoji = (foodTypes: FoodType[]): string => {
-  const known = foodTypes.find(type => type.types in FOOD_TYPE_EMOJI)
+// `foodTypes` may be absent when the ingredient comes from an endpoint that
+// returns a reduced shape (e.g. recipe lines), so default to an empty list.
+export const ingredientEmoji = (foodTypes: FoodType[] | undefined | null): string => {
+  const known = (foodTypes ?? []).find(type => type.types in FOOD_TYPE_EMOJI)
   return known ? FOOD_TYPE_EMOJI[known.types]! : DEFAULT_EMOJI
 }
 

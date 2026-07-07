@@ -273,7 +273,26 @@
             :key="line.id"
             class="recipe-detail__line"
           >
-            <span>{{ line.name }}</span>
+            <span class="recipe-detail__line-name">
+              <span
+                class="recipe-detail__line-icon"
+                aria-hidden="true"
+              >
+                <v-img
+                  v-if="line.imageUrl"
+                  :src="line.imageUrl"
+                  :alt="line.name"
+                  :width="18"
+                  :height="18"
+                  contain
+                />
+                <span
+                  v-else
+                  class="recipe-detail__line-emoji"
+                >{{ ingredientEmoji(line.foodTypes) }}</span>
+              </span>
+              {{ line.name }}
+            </span>
             <span class="recipe-detail__qty">
               {{ formatQuantity(line.quantity) }} {{ quantityUnit(line.unitType) }}
               <small
@@ -862,6 +881,29 @@ const onDelete = async () => {
     &:last-child {
       border-bottom: none;
     }
+  }
+
+  &__line-name {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-width: 0;
+  }
+
+  &__line-icon {
+    flex: 0 0 auto;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: rgba(var(--v-theme-on-surface), 0.05);
+  }
+
+  &__line-emoji {
+    font-size: 0.95rem;
+    line-height: 1;
   }
 
   &__qty {
