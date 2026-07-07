@@ -7,6 +7,7 @@
       :progress="progress"
       :size="216"
       :width="13"
+      :label="ringLabel"
     >
       <span
         class="hero__num"
@@ -73,6 +74,16 @@ const props = defineProps<{
 // Once eaten passes the target the ring is full: switch the centre figure from
 // "kcal remaining" to the excess so the overshoot reads at a glance.
 const isOver = computed(() => props.consumed > props.target)
+
+// Spoken description of the calorie ring (the centre figure alone doesn't convey
+// the eaten / target relationship to a screen reader).
+const ringLabel = computed(() => {
+  const eaten = props.consumed.toLocaleString('fr-FR')
+  const goal = props.target.toLocaleString('fr-FR')
+  return isOver.value
+    ? `Calories : ${eaten} mangées sur ${goal}, ${(props.consumed - props.target).toLocaleString('fr-FR')} au-dessus de la cible`
+    : `Calories : ${eaten} mangées sur ${goal}, ${props.remaining.toLocaleString('fr-FR')} restantes`
+})
 const centerValue = computed(() => isOver.value ? props.consumed - props.target : props.remaining)
 const { formatted: centerLabel } = useCountUp(centerValue, { duration: 1400 })
 const { formatted: consumedLabel } = useCountUp(() => props.consumed, { duration: 1400 })

@@ -192,7 +192,7 @@ const board = useShoppingBoard(props.seed)
   &__progress {
     font-size: 0.82rem;
     font-weight: 600;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__list {

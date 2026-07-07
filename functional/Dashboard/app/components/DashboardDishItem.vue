@@ -169,7 +169,7 @@ const subtitle = computed(() =>
     font-weight: 800;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.12);
     border-radius: 999px;
     padding: 0.08rem 0.4rem;
@@ -214,11 +214,11 @@ const subtitle = computed(() =>
   }
 
   &--eaten &__kcal {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &--logged &__kcal {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 }
 

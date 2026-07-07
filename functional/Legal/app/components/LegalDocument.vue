@@ -51,7 +51,7 @@ defineProps<{
     font-size: 0.82rem;
     font-weight: 700;
     text-decoration: none;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__title {
@@ -96,7 +96,7 @@ defineProps<{
     }
 
     :deep(a) {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
       font-weight: 600;
     }
 

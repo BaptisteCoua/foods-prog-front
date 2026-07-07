@@ -12,6 +12,8 @@
         :step="250"
         color="primary"
         hide-details
+        aria-label="Objectif d'eau par jour"
+        :aria-valuetext="litersLabel"
       />
     </div>
 
@@ -74,7 +76,7 @@ const toggleDrink = (value: DrinkType) => {
   &__value {
     font-weight: 800;
     font-size: 1.1rem;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__grid {

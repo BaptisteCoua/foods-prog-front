@@ -84,12 +84,12 @@
 
     <div
       class="recipes__segments"
-      role="tablist"
+      role="group"
+      aria-label="Filtrer les recettes"
     >
       <button
         type="button"
-        role="tab"
-        :aria-selected="scope === 'mine'"
+        :aria-pressed="scope === 'mine'"
         class="recipes__segment"
         :class="{ 'recipes__segment--active': scope === 'mine' }"
         @click="scope = 'mine'"
@@ -98,8 +98,7 @@
       </button>
       <button
         type="button"
-        role="tab"
-        :aria-selected="scope === 'catalog'"
+        :aria-pressed="scope === 'catalog'"
         class="recipes__segment"
         :class="{ 'recipes__segment--active': scope === 'catalog' }"
         @click="scope = 'catalog'"
@@ -108,8 +107,7 @@
       </button>
       <button
         type="button"
-        role="tab"
-        :aria-selected="scope === 'shared'"
+        :aria-pressed="scope === 'shared'"
         class="recipes__segment"
         :class="{ 'recipes__segment--active': scope === 'shared' }"
         @click="scope = 'shared'"
@@ -121,6 +119,7 @@
     <v-text-field
       v-model="search"
       placeholder="Rechercher une recette"
+      aria-label="Rechercher une recette"
       prepend-inner-icon="mdi-magnify"
       density="comfortable"
       hide-details
@@ -481,7 +480,7 @@ const goToRecipe = (recipe: Recipe) => navigateTo(`/recipes/${recipe.id}`)
     width: 52px;
     height: 52px;
     border-radius: 16px;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.12);
   }
 

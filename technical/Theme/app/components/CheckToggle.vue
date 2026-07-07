@@ -61,7 +61,7 @@ const emit = defineEmits<{ 'update:modelValue': [boolean] }>()
     transform 0.12s var(--app-ease);
 
   &:hover {
-    border-color: rgb(var(--v-theme-primary));
+    border-color: rgb(var(--v-theme-primary-text));
   }
 
   &:active {
@@ -79,7 +79,7 @@ const emit = defineEmits<{ 'update:modelValue': [boolean] }>()
   }
 
   &--checked {
-    border-color: rgb(var(--v-theme-primary));
+    border-color: rgb(var(--v-theme-primary-text));
     background: rgb(var(--v-theme-primary));
     animation: check-pop 0.4s var(--app-ease);
     box-shadow: 0 3px 10px rgba(var(--v-theme-primary), 0.4);

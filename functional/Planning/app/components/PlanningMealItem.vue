@@ -281,7 +281,7 @@ const onClick = () => {
     text-transform: uppercase;
     letter-spacing: 0.03em;
     font-weight: 600;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 }
 

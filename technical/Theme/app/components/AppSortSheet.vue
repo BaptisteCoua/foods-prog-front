@@ -148,7 +148,7 @@ const toggle = (field: string, direction: SortDirection) => {
     border-radius: 999px;
     font-size: 0.72rem;
     font-weight: 800;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.14);
   }
 

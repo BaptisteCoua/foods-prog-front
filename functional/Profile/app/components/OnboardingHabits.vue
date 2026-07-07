@@ -13,6 +13,7 @@
         color="primary"
         thumb-label
         hide-details
+        aria-label="Repas par jour"
       />
     </div>
 
@@ -95,7 +96,7 @@ const { form } = useOnboardingStore()
   &__value {
     font-weight: 800;
     font-size: 1.1rem;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__row {

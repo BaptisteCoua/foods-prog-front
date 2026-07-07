@@ -65,7 +65,7 @@ const panelId = useId()
 
     &:hover,
     &--open {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
   }
 

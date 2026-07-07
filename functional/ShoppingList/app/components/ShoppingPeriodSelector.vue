@@ -2,19 +2,19 @@
   <div class="period">
     <div
       class="segmented"
-      role="tablist"
+      role="group"
       aria-label="Période de la liste"
     >
       <span
         class="segmented__thumb"
         :style="thumbStyle"
+        aria-hidden="true"
       />
       <button
         v-for="option in PRESETS"
         :key="option.value"
         type="button"
-        role="tab"
-        :aria-selected="preset === option.value"
+        :aria-pressed="preset === option.value"
         class="segmented__option"
         :class="{ 'segmented__option--active': preset === option.value }"
         @click="preset = option.value"
@@ -34,7 +34,10 @@
         aria-label="Période précédente"
         @click="emit('prev')"
       />
-      <span class="period__label">{{ label }}</span>
+      <span
+        class="period__label"
+        aria-live="polite"
+      >{{ label }}</span>
       <v-btn
         icon="mdi-chevron-right"
         variant="text"

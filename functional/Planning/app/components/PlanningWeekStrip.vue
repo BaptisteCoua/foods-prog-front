@@ -10,7 +10,7 @@
         'week-strip__day--today': day.isToday,
       }"
       :aria-pressed="day.isSelected"
-      :aria-label="ariaLabel(day.date)"
+      :aria-label="ariaLabel(day)"
       @click="emit('select', day.date)"
     >
       <span class="week-strip__weekday">{{ weekdayInitial(day.date) }}</span>
@@ -42,7 +42,16 @@ interface DaySummary {
 defineProps<{ days: DaySummary[] }>()
 const emit = defineEmits<{ select: [string] }>()
 
-const ariaLabel = (date: string) => formatLongDate(date)
+// Full spoken description: the ring fill (planned %), the "meals planned" dot and
+// the today / selected states all convey meaning by colour alone otherwise.
+const ariaLabel = (day: DaySummary) => {
+  const parts = [formatLongDate(day.date)]
+  if (day.ratio !== null) parts.push(`${Math.round(day.ratio * 100)} % de la cible`)
+  if (day.hasMeals) parts.push('repas prévus')
+  if (day.isToday) parts.push('aujourd\'hui')
+  if (day.isSelected) parts.push('sélectionné')
+  return parts.join(', ')
+}
 
 // Emerald conic fill for the completion ring; neutral track when no target.
 const ringStyle = (ratio: number | null) => {
@@ -82,7 +91,7 @@ const ringStyle = (ratio: number | null) => {
     color: rgb(var(--v-theme-on-surface-variant));
 
     .week-strip__day--today & {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
       font-weight: 800;
     }
   }
@@ -109,7 +118,7 @@ const ringStyle = (ratio: number | null) => {
     letter-spacing: -0.01em;
 
     .week-strip__day--today & {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
   }
 

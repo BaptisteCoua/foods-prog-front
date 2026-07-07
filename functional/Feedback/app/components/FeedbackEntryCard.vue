@@ -53,7 +53,7 @@ const goToBoard = () => navigateTo('/feedback')
     width: 44px;
     height: 44px;
     border-radius: 14px;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.12);
   }
 

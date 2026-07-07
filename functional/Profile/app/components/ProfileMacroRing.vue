@@ -5,6 +5,7 @@
       :size="92"
       :width="8"
       :color="color"
+      :label="ringLabel"
     >
       <span class="macro-ring__grams">{{ gramsLabel }}</span>
       <span class="macro-ring__sub">g</span>
@@ -25,6 +26,7 @@ const props = defineProps<{
 
 const { formatted: gramsLabel } = useCountUp(() => props.grams, { duration: 1200 })
 const kcalLabel = computed(() => Math.round(props.kcal).toLocaleString('fr-FR'))
+const ringLabel = computed(() => `${props.label} : ${props.grams} g, ${kcalLabel.value} kcal`)
 </script>
 
 <style scoped lang="scss">

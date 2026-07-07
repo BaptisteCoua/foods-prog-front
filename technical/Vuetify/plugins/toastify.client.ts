@@ -9,9 +9,13 @@ import '../assets/toastify.css'
 // Thème `light` : nos overlays gèrent les fonds clairs + accents colorés par type.
 export default defineNuxtPlugin((nuxtApp) => {
   nuxtApp.vueApp.use(Vue3Toastify, {
-    autoClose: 1500,
+    // 1500 ms was too short to read a message (surtout une erreur) ; 4 s laisse
+    // le temps de lire tout en restant discret. vue3-toastify pose déjà role="alert".
+    autoClose: 4000,
     position: 'top-center',
-    theme: 'light',
+    // `auto` suit la préférence claire/sombre du système au lieu d'un thème figé
+    // (un toast clair sur une app en mode sombre était inconfortable).
+    theme: 'auto',
     hideProgressBar: true,
     clearOnUrlChange: false,
   } as ToastContainerOptions)

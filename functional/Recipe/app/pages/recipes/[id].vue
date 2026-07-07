@@ -564,7 +564,7 @@ const onDelete = async () => {
     transition: color 0.18s var(--app-ease);
 
     &:hover {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
   }
 
@@ -662,7 +662,7 @@ const onDelete = async () => {
     align-self: flex-start;
     font-size: 0.78rem;
     font-weight: 600;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     transition: opacity 0.18s var(--app-ease);
 
     &:hover {
@@ -917,7 +917,7 @@ const onDelete = async () => {
 
   &__qty-cooked {
     font-size: 0.74rem;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__text {

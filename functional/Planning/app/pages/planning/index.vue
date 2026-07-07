@@ -461,7 +461,7 @@ const barWidth = computed(() => {
   &__remaining {
     font-size: 0.82rem;
     font-weight: 600;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
 
     &--over {
       color: rgb(var(--v-theme-error));

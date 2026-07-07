@@ -285,7 +285,7 @@ const goToFeedback = (feedback: Feedback) => navigateTo(`/feedback/${feedback.id
     width: 52px;
     height: 52px;
     border-radius: 16px;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.12);
   }
 }

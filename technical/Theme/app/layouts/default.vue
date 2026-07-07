@@ -35,7 +35,10 @@
       />
     </v-app-bar>
 
-    <v-main class="app-main">
+    <v-main
+      id="main-content"
+      class="app-main"
+    >
       <v-container class="app-main__container">
         <div class="app-main__page">
           <slot />

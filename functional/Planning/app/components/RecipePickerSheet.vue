@@ -213,7 +213,7 @@ watch(() => props.modelValue, (open) => {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.04em;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     opacity: 1;
   }
 

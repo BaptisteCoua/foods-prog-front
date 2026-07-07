@@ -8,6 +8,9 @@
       :height="size"
       :viewBox="`0 0 ${size} ${size}`"
       class="animated-ring__svg"
+      :role="label ? 'img' : undefined"
+      :aria-label="label"
+      :aria-hidden="label ? undefined : 'true'"
     >
       <circle
         class="animated-ring__track"
@@ -53,6 +56,10 @@ const props = withDefaults(defineProps<{
   color?: string
   // Colour of the overshoot arc shown when progress exceeds 1.
   overColor?: string
+  // Accessible description of what the ring represents (e.g. "1450 / 2000 kcal").
+  // When set, the SVG becomes role="img" with this label; the centre slot text
+  // stays separately readable. Omitted → the ring is decorative (aria-hidden).
+  label?: string
 }>(), {
   size: 216,
   width: 13,

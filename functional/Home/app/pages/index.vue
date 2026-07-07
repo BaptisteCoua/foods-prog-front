@@ -164,7 +164,7 @@ const features = [
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.1em;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.1);
     padding: 0.4rem 0.8rem;
     border-radius: 999px;
@@ -179,7 +179,7 @@ const features = [
   }
 
   &__title-accent {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__lead {

@@ -35,6 +35,7 @@
           size="22"
           class="app-bottom-nav__icon"
         />
+        <span class="app-bottom-nav__label">{{ item.label }}</span>
       </NuxtLink>
     </div>
   </nav>
@@ -89,7 +90,10 @@ const initials = computed(() => {
       );
     backdrop-filter: blur(12px) saturate(180%);
     -webkit-backdrop-filter: blur(12px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.25);
+    // Bordure liée au thème : hairline sombre sur fond clair (où le liseré blanc
+    // était invisible), liseré clair en thème sombre — la pilule reste définie
+    // dans les deux modes.
+    border: 1px solid rgba(var(--v-border-color), 0.16);
     // Profondeur portée douce + reflet de bord interne (effet goutte d'eau).
     box-shadow:
       0 10px 40px rgba(0, 0, 0, 0.16),
@@ -100,18 +104,28 @@ const initials = computed(() => {
   &__item {
     position: relative;
     display: flex;
+    flex-direction: column;
     align-items: center;
     justify-content: center;
+    gap: 2px;
     width: 66px;
-    height: 46px;
+    height: 52px;
     border-radius: 999px;
-    color: rgba(var(--v-theme-on-surface), 0.55);
+    color: rgba(var(--v-theme-on-surface), 0.65);
     text-decoration: none;
     transition: color 0.3s var(--app-ease);
 
     &--active {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
+  }
+
+  &__label {
+    position: relative;
+    font-size: 0.6rem;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1;
   }
 
   &__halo {
@@ -156,7 +170,7 @@ const initials = computed(() => {
   }
 
   &__item--active &__avatar {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.16);
     box-shadow: 0 0 0 1.5px rgba(var(--v-theme-primary), 0.45);
   }

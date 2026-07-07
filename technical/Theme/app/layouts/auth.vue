@@ -1,13 +1,16 @@
 <template>
-  <v-main class="auth-layout">
-    <div class="auth-layout__top">
+  <div class="auth-layout">
+    <header class="auth-layout__top">
       <AppLogo />
       <ThemeToggle />
-    </div>
-    <div class="auth-layout__content">
+    </header>
+    <main
+      id="main-content"
+      class="auth-layout__content"
+    >
       <slot />
-    </div>
-  </v-main>
+    </main>
+  </div>
 </template>
 
 <script setup lang="ts"></script>

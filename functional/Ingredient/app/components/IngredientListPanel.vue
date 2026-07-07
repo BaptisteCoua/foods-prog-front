@@ -104,6 +104,7 @@
     <v-text-field
       v-model="search"
       placeholder="Rechercher un ingrédient"
+      aria-label="Rechercher un ingrédient"
       prepend-inner-icon="mdi-magnify"
       density="comfortable"
       hide-details
@@ -398,7 +399,7 @@ const openEdit = (ingredient: typeof items.value[number]) => formDialog.value?.o
     width: 52px;
     height: 52px;
     border-radius: 16px;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.12);
   }
 

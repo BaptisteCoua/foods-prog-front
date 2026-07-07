@@ -29,6 +29,7 @@
           density="comfortable"
           variant="outlined"
           maxlength="80"
+          label="Nom affiché"
           placeholder="Ton prénom ou pseudo"
           class="identity__input"
           @keyup.enter="commit"
@@ -59,6 +60,7 @@
           type="button"
           class="identity__name"
           :class="{ 'identity__name--empty': !me?.displayName }"
+          :aria-label="`Modifier le nom affiché (${nameLabel})`"
           @click="startEdit"
         >
           {{ nameLabel }}
@@ -146,7 +148,7 @@ watch(() => props.saving, (now, before) => {
     font-size: 1.2rem;
     font-weight: 800;
     letter-spacing: -0.02em;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.12);
     overflow: hidden;
 
@@ -189,7 +191,7 @@ watch(() => props.saving, (now, before) => {
     }
 
     &:hover .v-icon {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
 
     &--empty {

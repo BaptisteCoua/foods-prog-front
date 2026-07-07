@@ -148,7 +148,7 @@ const courseName = (item: MealItem) => mealItemCourseTags(item)[0] ?? ''
     padding: 0.35rem 0;
     font-size: 0.85rem;
     font-weight: 600;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
 
     &--empty {
       width: 100%;

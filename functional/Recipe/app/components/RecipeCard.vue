@@ -558,7 +558,7 @@ const ingredientCount = computed(() => {
     font-size: 0.66rem;
     font-weight: 700;
     letter-spacing: 0.01em;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.14);
     vertical-align: middle;
   }

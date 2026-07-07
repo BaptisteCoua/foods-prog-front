@@ -313,7 +313,7 @@ const openLog = (slot?: MealSlot) => {
     width: 52px;
     height: 52px;
     border-radius: 16px;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.12);
 
     &--error {
@@ -349,7 +349,7 @@ const openLog = (slot?: MealSlot) => {
 
   &__link {
     font-size: 0.85rem;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     font-weight: 700;
     text-decoration: none;
   }
@@ -373,7 +373,7 @@ const openLog = (slot?: MealSlot) => {
     gap: 0.1rem;
     font-size: 0.8rem;
     font-weight: 700;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: none;
     border: none;
     cursor: pointer;
@@ -397,13 +397,13 @@ const openLog = (slot?: MealSlot) => {
     transition: border-color 0.2s var(--app-ease);
 
     &:hover {
-      border-color: rgb(var(--v-theme-primary));
+      border-color: rgb(var(--v-theme-primary-text));
     }
   }
 
   &__nudge-add {
     font-weight: 700;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__empty-actions {
@@ -428,7 +428,7 @@ const openLog = (slot?: MealSlot) => {
     width: 52px;
     height: 52px;
     border-radius: 16px;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.12);
   }
 

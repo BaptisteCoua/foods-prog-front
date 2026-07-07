@@ -207,7 +207,7 @@ const passwordRules = computed(() => (isRegister.value ? [required, minLength(8)
   }
 
   &__link {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     font-weight: 700;
     text-decoration: none;
   }

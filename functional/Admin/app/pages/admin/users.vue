@@ -415,11 +415,11 @@ const headline = computed(() => {
     transition: color 0.18s var(--app-ease);
 
     &:hover {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
 
     &--active {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
   }
 }

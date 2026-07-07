@@ -28,23 +28,33 @@
 
       <!-- Context: which slot, which day -->
       <div class="log__ctx">
-        <div class="log__chips">
+        <div
+          class="log__chips"
+          role="group"
+          aria-label="Créneau du repas"
+        >
           <button
             v-for="s in SLOTS"
             :key="s.value"
             type="button"
             class="log__chip"
             :class="{ 'log__chip--on': slot === s.value }"
+            :aria-pressed="slot === s.value"
             @click="slot = s.value"
           >
             {{ s.label }}
           </button>
         </div>
-        <div class="log__chips">
+        <div
+          class="log__chips"
+          role="group"
+          aria-label="Jour"
+        >
           <button
             type="button"
             class="log__chip"
             :class="{ 'log__chip--on': day === 'today' }"
+            :aria-pressed="day === 'today'"
             @click="day = 'today'"
           >
             Aujourd'hui
@@ -53,6 +63,7 @@
             type="button"
             class="log__chip"
             :class="{ 'log__chip--on': day === 'yesterday' }"
+            :aria-pressed="day === 'yesterday'"
             @click="day = 'yesterday'"
           >
             Hier
@@ -65,6 +76,7 @@
         <v-text-field
           v-model="search"
           placeholder="Rechercher une recette ou un aliment"
+          aria-label="Rechercher une recette ou un aliment"
           prepend-inner-icon="mdi-magnify"
           density="comfortable"
           variant="solo-filled"
@@ -77,12 +89,12 @@
 
         <div
           class="log__segments"
-          role="tablist"
+          role="group"
+          aria-label="Filtrer par type"
         >
           <button
             type="button"
-            role="tab"
-            :aria-selected="kindFilter === 'all'"
+            :aria-pressed="kindFilter === 'all'"
             class="log__segment"
             :class="{ 'log__segment--active': kindFilter === 'all' }"
             @click="kindFilter = 'all'"
@@ -91,8 +103,7 @@
           </button>
           <button
             type="button"
-            role="tab"
-            :aria-selected="kindFilter === 'recipes'"
+            :aria-pressed="kindFilter === 'recipes'"
             class="log__segment"
             :class="{ 'log__segment--active': kindFilter === 'recipes' }"
             @click="kindFilter = 'recipes'"
@@ -101,8 +112,7 @@
           </button>
           <button
             type="button"
-            role="tab"
-            :aria-selected="kindFilter === 'ingredients'"
+            :aria-pressed="kindFilter === 'ingredients'"
             class="log__segment"
             :class="{ 'log__segment--active': kindFilter === 'ingredients' }"
             @click="kindFilter = 'ingredients'"
@@ -116,7 +126,10 @@
           class="log__free-row"
           @click="openFree"
         >
-          <span class="log__opt-ico">⚡</span>
+          <span
+            class="log__opt-ico"
+            aria-hidden="true"
+          >⚡</span>
           <span class="log__opt-main">
             <span class="log__opt-name">Saisie rapide (kcal)</span>
             <span class="log__opt-sub">Resto, plat sans recette…</span>
@@ -655,7 +668,7 @@ watch(() => props.modelValue, (open) => {
     transition: all 0.2s var(--app-ease);
 
     &--on {
-      border-color: rgb(var(--v-theme-primary));
+      border-color: rgb(var(--v-theme-primary-text));
       background: rgb(var(--v-theme-primary));
       color: rgb(var(--v-theme-on-primary));
     }
@@ -713,7 +726,7 @@ watch(() => props.modelValue, (open) => {
     font-weight: 800;
     text-transform: uppercase;
     letter-spacing: 0.06em;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     margin: 0.3rem 0.2rem 0.1rem;
   }
 
@@ -786,7 +799,7 @@ watch(() => props.modelValue, (open) => {
 
     &--recipe {
       background: rgba(var(--v-theme-primary), 0.12);
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
   }
 
@@ -819,7 +832,7 @@ watch(() => props.modelValue, (open) => {
     cursor: pointer;
     border: none;
     background: transparent;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     padding: 0.4rem 0.9rem;
     border-radius: 999px;
     transition: background 0.2s var(--app-ease);
@@ -842,7 +855,7 @@ watch(() => props.modelValue, (open) => {
     cursor: pointer;
 
     &:hover {
-      border-color: rgb(var(--v-theme-primary));
+      border-color: rgb(var(--v-theme-primary-text));
     }
   }
 

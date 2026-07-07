@@ -13,6 +13,7 @@
         color="primary"
         thumb-label
         hide-details
+        aria-label="Séances par semaine"
       />
     </div>
 
@@ -102,7 +103,7 @@ const toggleType = (value: TrainingType) => {
   &__value {
     font-weight: 800;
     font-size: 1.1rem;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__grid {

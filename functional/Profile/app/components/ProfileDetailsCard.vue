@@ -135,7 +135,7 @@ const { sections } = useProfileDetails()
   }
 
   &__section-icon {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__section-title {

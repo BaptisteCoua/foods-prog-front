@@ -114,6 +114,7 @@
                 color="primary"
                 thumb-label
                 hide-details
+                aria-label="Séances par semaine"
               />
             </div>
             <v-expand-transition>
@@ -247,6 +248,7 @@
                 color="primary"
                 thumb-label
                 hide-details
+                aria-label="Repas par jour"
               />
             </div>
             <div class="step__group">
@@ -355,6 +357,8 @@
                 :step="250"
                 color="primary"
                 hide-details
+                aria-label="Objectif d'eau par jour"
+                :aria-valuetext="litersLabel"
               />
             </div>
             <div class="step__group">
@@ -487,7 +491,7 @@ defineExpose({ open: openDialog, close })
     }
 
     .v-icon {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
   }
 }
@@ -518,7 +522,7 @@ defineExpose({ open: openDialog, close })
   &__value {
     font-weight: 800;
     font-size: 1.1rem;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__row {

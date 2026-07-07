@@ -175,7 +175,7 @@ const greeting = computed(() => {
     }
 
     &--alerts {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
       background: rgba(var(--v-theme-primary), 0.12);
     }
   }
@@ -227,7 +227,7 @@ const greeting = computed(() => {
     height: 44px;
     border-radius: 12px;
     flex-shrink: 0;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.1);
   }
 

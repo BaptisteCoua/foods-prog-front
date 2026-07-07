@@ -63,7 +63,7 @@ const emit = defineEmits<{ toggle: [] }>()
   }
 
   &--active {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     border-color: rgba(var(--v-theme-primary), 0.5);
     background: rgba(var(--v-theme-primary), 0.1);
   }

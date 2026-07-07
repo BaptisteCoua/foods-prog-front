@@ -294,7 +294,7 @@ const onRowClick = () => {
 
     &:hover {
       background: rgba(var(--v-theme-primary), 0.12);
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
   }
 

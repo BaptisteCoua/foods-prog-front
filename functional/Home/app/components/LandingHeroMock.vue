@@ -192,7 +192,7 @@ onBeforeUnmount(() => clearInterval(timer))
     gap: 0.4rem;
     font-size: 0.72rem;
     font-weight: 700;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.12);
     padding: 0.3rem 0.6rem;
     border-radius: 999px;

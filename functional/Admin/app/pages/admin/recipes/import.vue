@@ -299,7 +299,7 @@ const {
     }
 
     &--active {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
   }
 
@@ -321,7 +321,7 @@ const {
 
   &__step--done &__step-num {
     background: rgba(var(--v-theme-primary), 0.16);
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__pane {
@@ -396,7 +396,7 @@ const {
   &__stat-value {
     font-size: 1.5rem;
     font-weight: 800;
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__stat-label {

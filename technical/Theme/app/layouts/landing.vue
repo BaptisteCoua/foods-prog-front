@@ -1,5 +1,5 @@
 <template>
-  <v-main class="landing-layout">
+  <div class="landing-layout">
     <header class="landing-layout__bar">
       <AppLogo />
       <div class="landing-layout__actions">
@@ -21,9 +21,12 @@
       </div>
     </header>
 
-    <div class="landing-layout__content">
+    <main
+      id="main-content"
+      class="landing-layout__content"
+    >
       <slot />
-    </div>
+    </main>
 
     <footer class="landing-layout__footer">
       <span class="landing-layout__copy">© FoodProg</span>
@@ -40,7 +43,7 @@
         CGU
       </NuxtLink>
     </footer>
-  </v-main>
+  </div>
 </template>
 
 <script setup lang="ts"></script>
@@ -96,7 +99,7 @@
     font-weight: 600;
 
     &:hover {
-      color: rgb(var(--v-theme-primary));
+      color: rgb(var(--v-theme-primary-text));
     }
   }
 }

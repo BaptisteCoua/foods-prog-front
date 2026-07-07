@@ -3,6 +3,7 @@
     type="button"
     class="onboarding-option"
     :class="{ 'onboarding-option--selected': selected }"
+    :aria-pressed="selected"
   >
     <v-icon
       v-if="icon"
@@ -56,7 +57,7 @@ defineProps<{
   }
 
   &--selected {
-    border-color: rgb(var(--v-theme-primary));
+    border-color: rgb(var(--v-theme-primary-text));
     background: rgba(var(--v-theme-primary), 0.08);
   }
 
@@ -66,7 +67,7 @@ defineProps<{
   }
 
   &--selected &__icon {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   &__body {
@@ -88,7 +89,7 @@ defineProps<{
   }
 
   &__check {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     flex: none;
   }
 }

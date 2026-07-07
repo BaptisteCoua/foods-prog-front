@@ -88,7 +88,7 @@ const onClick = () => {
 
   &:hover:not(:disabled) {
     border-color: rgba(var(--v-theme-primary), 0.5);
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
   }
 
   // Petit « pop » tactile au clic : renforce le retour visuel de l'incrément.
@@ -98,7 +98,7 @@ const onClick = () => {
 
   // Enregistrée : pastille émeraude pleine, signet rempli.
   &--on {
-    color: rgb(var(--v-theme-primary));
+    color: rgb(var(--v-theme-primary-text));
     border-color: transparent;
     background: rgba(var(--v-theme-primary), 0.14);
 
