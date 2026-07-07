@@ -2,6 +2,7 @@
   <AppSheet
     v-model="dialogOpen"
     :max-width="560"
+    :title="title"
   >
     <div class="fb-dialog">
       <header class="fb-dialog__title">

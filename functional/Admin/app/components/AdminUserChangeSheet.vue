@@ -2,6 +2,7 @@
   <AppSheet
     :model-value="modelValue"
     :max-width="520"
+    :title="kind === 'role' ? 'Changer le rôle' : 'Changer l\'abonnement'"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div

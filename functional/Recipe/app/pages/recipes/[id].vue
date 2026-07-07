@@ -341,6 +341,7 @@
     <AppSheet
       v-model="confirmOpen"
       :max-width="400"
+      title="Supprimer la recette ?"
     >
       <div class="recipe-detail__confirm">
         <header class="recipe-detail__confirm-title">

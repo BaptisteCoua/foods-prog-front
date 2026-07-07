@@ -20,6 +20,7 @@
     <AppSheet
       v-model="open"
       :max-width="380"
+      :title="label"
     >
       <div class="app-date-field__sheet">
         <v-date-picker

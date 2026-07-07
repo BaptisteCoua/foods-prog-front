@@ -2,6 +2,7 @@
   <AppSheet
     v-model="open"
     :max-width="640"
+    title="Modifier mon profil"
   >
     <div class="editor">
       <header class="editor__bar">

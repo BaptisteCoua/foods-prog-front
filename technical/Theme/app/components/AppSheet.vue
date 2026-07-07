@@ -3,6 +3,8 @@
     :model-value="modelValue"
     :max-width="maxWidth"
     :scrim="scrim"
+    :aria-label="title"
+    :transition="reduceMotion ? false : undefined"
     @update:model-value="onUpdate"
   >
     <section
@@ -43,6 +45,10 @@ const props = withDefaults(defineProps<{
   modelValue: boolean
   maxWidth?: string | number
   scrim?: boolean
+  // Accessible name for the dialog. Vuetify puts role="dialog"/aria-modal on the
+  // overlay element and lets attrs fall through to it, so this `aria-label` names
+  // the popup for screen readers (otherwise announced as an unnamed "dialog").
+  title?: string
   // Lock the panel to its max height so its size never reflows as the content changes
   // (avoids the flicker when, e.g., the shopping list filters down to fewer items).
   fullHeight?: boolean
@@ -50,6 +56,13 @@ const props = withDefaults(defineProps<{
   maxWidth: 640,
   scrim: true,
   fullHeight: false,
+})
+
+// Skip Vuetify's open transition under prefers-reduced-motion (the close/dismiss
+// slide is already gated inside useSwipeToDismiss). Resolved on the client only.
+const reduceMotion = ref(false)
+onMounted(() => {
+  reduceMotion.value = prefersReducedMotion()
 })
 
 const emit = defineEmits<{ 'update:modelValue': [boolean] }>()

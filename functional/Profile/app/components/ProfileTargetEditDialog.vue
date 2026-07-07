@@ -2,6 +2,7 @@
   <AppSheet
     v-model="open"
     :max-width="460"
+    title="Modifier la cible"
   >
     <div class="target-edit">
       <header class="target-edit__title">

@@ -3,6 +3,7 @@
     :model-value="modelValue"
     :max-width="560"
     full-height
+    :title="headTitle"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="log">

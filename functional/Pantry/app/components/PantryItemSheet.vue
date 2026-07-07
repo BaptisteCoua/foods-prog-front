@@ -2,6 +2,7 @@
   <AppSheet
     v-model="open"
     :max-width="480"
+    :title="title"
   >
     <div class="pantry-sheet">
       <header class="pantry-sheet__title">

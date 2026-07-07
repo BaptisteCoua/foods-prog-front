@@ -14,9 +14,17 @@ const foodLight: ThemeDefinition = {
     'background': '#FBFBFA',
     'surface': '#FFFFFF',
     'surface-variant': '#F5F5F3',
-    'on-surface-variant': '#8A8A93',
+    // Secondary text: #8A8A93 was 3.4:1 on white (fails WCAG AA 4.5:1). Darkened
+    // to reach 5.1:1 while staying a soft grey.
+    'on-surface-variant': '#6B6B73',
     'primary': '#10B981',
-    'on-primary': '#FFFFFF',
+    // Text/icons ON a primary-filled surface (buttons, badges). White on #10B981
+    // was 2.5:1 (fails); near-black-emerald hits 6.6:1 — same approach the dark
+    // theme already uses. Keeps the bright brand green as the fill.
+    'on-primary': '#04231A',
+    // Emerald tuned for use AS TEXT on light backgrounds (links, accents, tonal
+    // buttons). The brand #10B981 is only 2.5:1 as text; this is 5.5:1.
+    'primary-text': '#047857',
     'secondary': '#18181B',
     'on-secondary': '#FFFFFF',
     'on-background': '#18181B',
@@ -45,6 +53,9 @@ const foodDark: ThemeDefinition = {
     'on-surface-variant': '#9A9AA3',
     'primary': '#34D399',
     'on-primary': '#04231A',
+    // Emerald-as-text token (see light theme). On dark surfaces the bright brand
+    // green is already high-contrast, so it doubles as the text tone.
+    'primary-text': '#34D399',
     'secondary': '#FAFAFA',
     'on-secondary': '#18181B',
     'on-background': '#FAFAFA',

@@ -220,6 +220,7 @@
       v-model="shoppingOpen"
       :max-width="640"
       full-height
+      title="Liste de courses"
     >
       <ShoppingListPanel
         :key="shoppingSeed.from"
@@ -232,6 +233,7 @@
       v-model="ingredientsOpen"
       :max-width="720"
       full-height
+      title="Ingrédients"
     >
       <IngredientListPanel padded />
     </AppSheet>
@@ -240,6 +242,7 @@
       v-model="pantryOpen"
       :max-width="640"
       full-height
+      title="Garde-manger"
     >
       <PantryPanel padded />
     </AppSheet>

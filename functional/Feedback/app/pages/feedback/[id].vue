@@ -159,6 +159,7 @@
     <AppSheet
       v-model="confirmOpen"
       :max-width="400"
+      title="Supprimer l'avis ?"
     >
       <div class="detail__confirm">
         <header class="detail__confirm-title">

@@ -2,6 +2,7 @@
   <AppSheet
     :model-value="modelValue"
     :max-width="560"
+    title="Copier la journée"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="dup">

@@ -2,6 +2,7 @@
   <AppSheet
     v-model="dialogOpen"
     :max-width="520"
+    :title="title"
   >
     <div class="ingredient-dialog">
       <header class="ingredient-dialog__title">

@@ -227,6 +227,7 @@
     <AppSheet
       :model-value="confirmTarget !== null"
       :max-width="400"
+      title="Supprimer l'ingrédient ?"
       @update:model-value="cancelDelete"
     >
       <div class="ingredients__confirm">

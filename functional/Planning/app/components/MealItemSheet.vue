@@ -2,6 +2,7 @@
   <AppSheet
     :model-value="modelValue"
     :max-width="640"
+    :title="item?.recipe?.name ?? 'Détail du repas'"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div

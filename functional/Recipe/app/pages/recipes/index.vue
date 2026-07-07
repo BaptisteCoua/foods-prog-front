@@ -256,6 +256,7 @@
     <AppSheet
       :model-value="confirmTarget !== null"
       :max-width="400"
+      title="Supprimer la recette ?"
       @update:model-value="cancelDelete"
     >
       <div class="recipes__confirm">

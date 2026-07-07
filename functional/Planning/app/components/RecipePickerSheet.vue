@@ -2,6 +2,7 @@
   <AppSheet
     :model-value="modelValue"
     :max-width="640"
+    title="Ajouter une recette"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="picker">

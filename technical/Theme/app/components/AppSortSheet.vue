@@ -2,6 +2,7 @@
   <AppSheet
     :model-value="modelValue"
     :max-width="440"
+    title="Trier"
     @update:model-value="emit('update:modelValue', $event)"
   >
     <div class="sort-sheet">

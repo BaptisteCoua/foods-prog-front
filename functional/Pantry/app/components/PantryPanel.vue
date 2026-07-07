@@ -115,6 +115,7 @@
     <AppSheet
       :model-value="board.confirmTarget.value !== null"
       :max-width="400"
+      title="Retirer du garde-manger ?"
       @update:model-value="board.cancelDelete()"
     >
       <div class="pantry__confirm">
