@@ -14,6 +14,21 @@
           icon
           variant="text"
           density="comfortable"
+          aria-label="Mes ingrédients"
+          to="/ingredients"
+        >
+          <v-icon icon="mdi-food-apple-outline" />
+          <v-tooltip
+            activator="parent"
+            location="bottom"
+          >
+            Mes ingrédients
+          </v-tooltip>
+        </v-btn>
+        <v-btn
+          icon
+          variant="text"
+          density="comfortable"
           aria-label="Filtrer"
           @click="filterSheetOpen = true"
         >

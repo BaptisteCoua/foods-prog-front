@@ -23,61 +23,6 @@
       </div>
     </header>
 
-    <!-- [EXPERIMENT nav] Accès mis en évidence vers Courses + Ingrédients,
-         déplacés ici depuis le menu du bas (voir useMainNav.ts). -->
-    <div class="planning__quick">
-      <button
-        type="button"
-        class="planning__quick-tile"
-        @click="shoppingOpen = true"
-      >
-        <span class="planning__quick-badge">
-          <v-icon
-            icon="mdi-cart-outline"
-            size="24"
-          />
-        </span>
-        <span class="planning__quick-text">
-          <span class="planning__quick-label">Liste de courses</span>
-          <span class="planning__quick-sub">Cette semaine</span>
-        </span>
-      </button>
-
-      <button
-        type="button"
-        class="planning__quick-tile"
-        @click="ingredientsOpen = true"
-      >
-        <span class="planning__quick-badge">
-          <v-icon
-            icon="mdi-food-apple-outline"
-            size="24"
-          />
-        </span>
-        <span class="planning__quick-text">
-          <span class="planning__quick-label">Ingrédients</span>
-          <span class="planning__quick-sub">Mon catalogue</span>
-        </span>
-      </button>
-
-      <button
-        type="button"
-        class="planning__quick-tile"
-        @click="pantryOpen = true"
-      >
-        <span class="planning__quick-badge">
-          <v-icon
-            icon="mdi-fridge-outline"
-            size="24"
-          />
-        </span>
-        <span class="planning__quick-text">
-          <span class="planning__quick-label">Garde-manger</span>
-          <span class="planning__quick-sub">Mon stock</span>
-        </span>
-      </button>
-    </div>
-
     <PlanningWeekStrip
       :days="board.daySummaries.value"
       @select="board.selectDate"
@@ -87,15 +32,26 @@
       <p class="planning__day-label">
         {{ formatLongDate(board.selectedDate.value) }}
       </p>
-      <v-btn
-        v-if="!isToday"
-        variant="text"
-        size="x-small"
-        prepend-icon="mdi-calendar-today"
-        @click="board.goToToday()"
-      >
-        Aujourd'hui
-      </v-btn>
+      <div class="planning__day-actions">
+        <v-btn
+          v-if="board.selectedDay.value.meals.length"
+          variant="text"
+          size="x-small"
+          prepend-icon="mdi-content-copy"
+          @click="board.openDuplicate()"
+        >
+          Dupliquer
+        </v-btn>
+        <v-btn
+          v-if="!isToday"
+          variant="text"
+          size="x-small"
+          prepend-icon="mdi-calendar-today"
+          @click="board.goToToday()"
+        >
+          Aujourd'hui
+        </v-btn>
+      </div>
     </div>
 
     <!-- Loading -->
@@ -169,16 +125,6 @@
           <span class="planning__macro planning__macro--protein"><b>{{ formatMacro(summary.proteinG) }}</b> P</span>
           <span class="planning__macro planning__macro--carb"><b>{{ formatMacro(summary.carbG) }}</b> G</span>
           <span class="planning__macro planning__macro--fat"><b>{{ formatMacro(summary.fatG) }}</b> L</span>
-          <v-btn
-            v-if="board.selectedDay.value.meals.length"
-            class="planning__dup"
-            variant="text"
-            size="x-small"
-            prepend-icon="mdi-content-copy"
-            @click="board.openDuplicate()"
-          >
-            Dupliquer
-          </v-btn>
         </div>
       </v-card>
 
@@ -199,6 +145,48 @@
       </div>
     </template>
 
+    <!-- Outils liés (courses, catalogue d'ingrédients, garde-manger). Placés
+         APRÈS le planning pour que la page mène avec son contenu, pas avec des
+         portes de sortie. [EXPERIMENT nav] — déplacés ici depuis le menu du bas. -->
+    <section
+      class="planning__tools"
+      aria-label="Outils liés au planning"
+    >
+      <button
+        type="button"
+        class="planning__quick-tile"
+        @click="shoppingOpen = true"
+      >
+        <span class="planning__quick-badge">
+          <v-icon
+            icon="mdi-cart-outline"
+            size="24"
+          />
+        </span>
+        <span class="planning__quick-text">
+          <span class="planning__quick-label">Liste de courses</span>
+          <span class="planning__quick-sub">Cette semaine</span>
+        </span>
+      </button>
+
+      <button
+        type="button"
+        class="planning__quick-tile"
+        @click="pantryOpen = true"
+      >
+        <span class="planning__quick-badge">
+          <v-icon
+            icon="mdi-fridge-outline"
+            size="24"
+          />
+        </span>
+        <span class="planning__quick-text">
+          <span class="planning__quick-label">Garde-manger</span>
+          <span class="planning__quick-sub">Mon stock</span>
+        </span>
+      </button>
+    </section>
+
     <RecipePickerSheet
       v-model="board.pickerOpen.value"
       :slot-label="pickerLabel"
@@ -215,7 +203,7 @@
       @confirm="board.confirmDuplicate"
     />
 
-    <!-- [EXPERIMENT nav] Courses + Ingrédients en popup plutôt qu'en page. -->
+    <!-- Courses + Garde-manger en popup depuis le Planning (cluster meal-prep). -->
     <AppSheet
       v-model="shoppingOpen"
       :max-width="640"
@@ -227,15 +215,6 @@
         :seed="shoppingSeed"
         padded
       />
-    </AppSheet>
-
-    <AppSheet
-      v-model="ingredientsOpen"
-      :max-width="720"
-      full-height
-      title="Ingrédients"
-    >
-      <IngredientListPanel padded />
     </AppSheet>
 
     <AppSheet
@@ -257,9 +236,9 @@ useHead({ title: 'Planning' })
 
 const board = usePlanningBoard()
 
-// [EXPERIMENT nav] Courses + Ingrédients + Garde-manger ouverts en popup depuis le Planning.
+// Courses + Garde-manger ouverts en popup depuis le Planning (cluster meal-prep).
+// Ingrédients vit désormais dans l'espace Recettes (bibliothèque).
 const shoppingOpen = ref(false)
-const ingredientsOpen = ref(false)
 const pantryOpen = ref(false)
 
 // Pré-remplit la liste de courses sur la semaine actuellement affichée.
@@ -320,10 +299,11 @@ const barWidth = computed(() => {
     letter-spacing: -0.03em;
   }
 
-  &__quick {
+  &__tools {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.6rem;
+    margin-top: 0.5rem;
   }
 
   &__quick-tile {
@@ -501,8 +481,10 @@ const barWidth = computed(() => {
   &__macro--carb b { color: rgb(var(--v-theme-carb)); }
   &__macro--fat b { color: rgb(var(--v-theme-fat)); }
 
-  &__dup {
-    margin-left: auto;
+  &__day-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
   }
 
   &__slots {
